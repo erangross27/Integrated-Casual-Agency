@@ -387,6 +387,27 @@ class SandboxEnvironment:
             
             # Create mock observations from graph
             observations = []
+            
+            # First pass: Add all nodes to ensure they exist before edges
+            all_entities = []
+            for node in train_graph.nodes():
+                node_data = train_graph.nodes[node]
+                all_entities.append({
+                    "id": node, 
+                    "label": node_data.get("label", "unknown"),
+                    "properties_static": node_data.get("properties_static", {}),
+                    "properties_dynamic": node_data.get("properties_dynamic", {})
+                })
+            
+            # Initial observation with all entities to establish nodes
+            initial_observation = {
+                "entities": all_entities,
+                "relationships": [],
+                "state": np.random.normal(0, 0.1, 10)
+            }
+            observations.append(initial_observation)
+            
+            # Second pass: Create observations with relationships
             for node in train_graph.nodes():
                 node_data = train_graph.nodes[node]
                 observation = {
@@ -395,7 +416,7 @@ class SandboxEnvironment:
                     "state": np.random.normal(0, 0.1, 10)  # Mock state
                 }
                 
-                # Add relationships
+                # Add relationships for this node
                 for neighbor in train_graph.neighbors(node):
                     edge_data = train_graph.edges[node, neighbor]
                     observation["relationships"].append({

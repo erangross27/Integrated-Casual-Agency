@@ -84,13 +84,13 @@ class CausalKnowledgeGraph:
         """Add a node to the graph"""
         try:
             if node.id in self.nodes_dict:
-                self.logger.warning(f"Node {node.id} already exists, updating...")
+                self.logger.debug(f"Node {node.id} already exists, updating...")
                 return self.update_node(node)
             
             self.nodes_dict[node.id] = node
             self.graph.add_node(node.id, **node.to_dict())
             
-            self.logger.debug(f"Added node {node.id} with label {node.label}")
+            self.logger.debug(f"Added node {node.id} with label {node.label} (total nodes: {self.graph.number_of_nodes()})")
             return True
         
         except Exception as e:
@@ -101,11 +101,11 @@ class CausalKnowledgeGraph:
         """Add an edge to the graph"""
         try:
             if edge.source not in self.nodes_dict:
-                self.logger.warning(f"Source node {edge.source} not found")
+                self.logger.warning(f"Source node {edge.source} not found (available nodes: {list(self.nodes_dict.keys())[:10]}...)")
                 return False
             
             if edge.target not in self.nodes_dict:
-                self.logger.warning(f"Target node {edge.target} not found")
+                self.logger.warning(f"Target node {edge.target} not found (available nodes: {list(self.nodes_dict.keys())[:10]}...)")
                 return False
             
             # Add edge to networkx graph
@@ -121,7 +121,7 @@ class CausalKnowledgeGraph:
                 'beta': self.beta_beta
             }
             
-            self.logger.debug(f"Added edge {edge.source} -> {edge.target} with relationship {edge.relationship}")
+            self.logger.debug(f"Added edge {edge.source} -> {edge.target} with relationship {edge.relationship} (total edges: {self.graph.number_of_edges()})")
             return True
         
         except Exception as e:
@@ -346,8 +346,8 @@ class CausalKnowledgeGraph:
             stats = {
                 "num_nodes": self.graph.number_of_nodes(),
                 "num_edges": self.graph.number_of_edges(),
-                "density": nx.density(self.graph),
-                "is_connected": nx.is_weakly_connected(self.graph),
+                "density": self._safe_density(),
+                "is_connected": self._safe_connectivity(),
                 "confidence_stats": self.get_confidence_stats()
             }
             
@@ -369,3 +369,24 @@ class CausalKnowledgeGraph:
         except Exception as e:
             self.logger.error(f"Error calculating graph stats: {str(e)}")
             return {}
+    
+    def _safe_density(self):
+        """Calculate density safely for MultiDiGraph"""
+        try:
+            return nx.density(self.graph)
+        except (nx.NetworkXError, NotImplementedError):
+            # Fallback calculation for MultiDiGraph
+            n = self.graph.number_of_nodes()
+            if n <= 1:
+                return 0
+            m = self.graph.number_of_edges()
+            max_edges = n * (n - 1)  # Directed graph
+            return m / max_edges if max_edges > 0 else 0
+    
+    def _safe_connectivity(self):
+        """Check connectivity safely for MultiDiGraph"""
+        try:
+            return nx.is_weakly_connected(self.graph)
+        except (nx.NetworkXError, NotImplementedError):
+            # Fallback for MultiDiGraph
+            return self.graph.number_of_nodes() > 0

@@ -90,3 +90,5 @@ datasets/
 
 # Virtual environments
 conda-meta/
+check_neo4j.py
+config/database/neo4j_custom.json

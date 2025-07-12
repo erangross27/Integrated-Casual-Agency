@@ -1,0 +1,16 @@
+# Development dependencies for ICA Framework
+# Install with: pip install -r requirements/requirements-dev.txt
+
+# Core requirements
+-r requirements.txt
+
+# Development tools
+jupyter>=1.0.0
+notebook>=6.5.0
+mypy>=1.4.0
+
+# Enhanced visualization for development
+seaborn>=0.11.0
+plotly>=5.10.0
+pandas>=1.5.0
+tqdm>=4.60.0

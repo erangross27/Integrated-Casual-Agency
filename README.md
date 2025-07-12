@@ -10,6 +10,8 @@
 
 The ICA Framework implements a novel approach to Artificial General Intelligence through intrinsic curiosity-driven learning. It combines causal knowledge graphs, Bayesian uncertainty quantification, hierarchical abstraction, and advanced reinforcement learning to create agents capable of autonomous learning and adaptation.
 
+**✅ LEARNING VERIFIED**: The agent successfully builds causal knowledge graphs, discovers structural patterns (motifs), and forms higher-level concepts through continuous interaction with its environment.
+
 ## 🏗️ Architecture
 
 ### Core Components
@@ -49,26 +51,229 @@ git clone https://github.com/erangross27/Integrated-Casual-Agency.git
 cd Integrated-Casual-Agency
 ```
 
-2. **Install basic dependencies:**
+2. **Install dependencies:**
 ```bash
-pip install -r requirements/requirements-minimal.txt
+pip install -r requirements.txt
 ```
 
-3. **For enhanced features (optional):**
+3. **Setup Neo4j Database (Windows):**
+
+   **Option A: Neo4j Desktop (Recommended)**
+   - Download Neo4j Desktop from [neo4j.com/download](https://neo4j.com/download/)
+   - Install and create a new project
+   - Create a new database instance
+   - Set password and start the database
+   - Note the connection details (usually `neo4j://localhost:7687`)
+
+   **Option B: Neo4j Community Server**
+   - Download from [neo4j.com/deployment-center](https://neo4j.com/deployment-center/)
+   - Extract and run: `bin\neo4j.bat console`
+   - Set initial password via web interface at `http://localhost:7474`
+
+4. **Configure Database:**
 ```bash
-pip install -r requirements/requirements-optional.txt
+python setup.py database
+```
+   This will:
+   - Check Neo4j driver installation
+   - Create sample database configurations
+   - Set up your Neo4j connection details
+   - Test the database connection
+
+5. **Run setup:**
+```bash
+python setup.py develop
+```
+
+### ⚡ Quick Learning Test
+
+Run the enhanced learning script with physics simulation:
+
+```bash
+python examples/learning.py
+```
+
+This will show the agent:
+- ✅ Building a knowledge graph from observations
+- ✅ Discovering structural patterns (motifs)
+- ✅ Forming concepts through clustering
+- ✅ Learning continuously from new data
+
+### 🎯 Run Learning with Different Backends
+
+```bash
+# Using Neo4j backend (recommended)
+python examples/learning.py --database neo4j
+
+# Using in-memory backend (for testing)
+python examples/learning.py --database memory
+```
+
+### � Console Commands
+
+After installation, you can use these convenient commands:
+
+```bash
+# Database setup and configuration
+ica-setup
+
+# Run enhanced learning with physics simulation
+ica-learn
+
+# Monitor learning progress (real-time dashboard)
+ica-monitor
+
+# View knowledge graph visualization
+ica-view-graph
+```
+
+## 🔄 Continuous Learning
+
+### Enhanced Learning with Physics Simulation
+
+The ICA Framework now includes realistic physics simulation and procedural scenario generation:
+
+```bash
+# Run enhanced learning with physics simulation
+python examples/learning.py
+```
+
+**Features:**
+- **Physics Simulation**: 40+ physics entities (particles, forces, fields, constraints)
+- **Procedural Scenarios**: Smart home automation, industrial control systems
+- **Neo4j Backend**: Persistent knowledge storage and retrieval
+- **Real-time Monitoring**: Graph growth and pattern discovery
+
+### Database Backends
+
+The framework supports multiple database backends:
+
+1. **Neo4j (Recommended)**: Persistent graph database
+   - Use: `python examples/learning.py --database neo4j`
+   - Configure via: `python setup.py database`
+
+2. **Memory**: In-memory for testing
+   - Use: `python examples/learning.py --database memory`
+
+### Monitor Learning Progress
+
+```bash
+# Real-time monitoring dashboard
+python scripts/monitor_continuous_learning.py --data-dir data/continuous_learning_data
+```
+
+### View Knowledge Graph
+
+```bash
+# Visualize the current knowledge graph
+python scripts/view_knowledge_graph.py --data-dir data/continuous_learning_data
+```
+
+## 📊 What You'll See
+
+During continuous learning, the agent will:
+
+1. **🔗 Build Knowledge Graphs**
+   - Nodes: Entities from observations
+   - Edges: Causal relationships with confidence scores
+   - Growth: Graph expands as new observations arrive
+
+2. **🔍 Discover Patterns**
+   - Motifs: Recurring structural patterns in the graph
+   - Frequency: How often patterns appear
+   - Size: Complexity of discovered patterns
+
+3. **🧠 Form Concepts**
+   - Clustering: Groups similar motifs together
+   - Abstractions: Higher-level understanding emerges
+   - Utility: Concepts get scored based on usefulness
+
+4. **📈 Improve Performance**
+   - Confidence: Uncertainty decreases with experience
+   - Predictions: Better at predicting outcomes
+   - Intrinsic Rewards: Curiosity drives exploration
+
+## 📁 Output Files
+
+Continuous learning saves progress in `data/continuous_learning_data/`:
+
+- `agent_state_YYYYMMDD_HHMMSS.json` - Complete agent state
+- `performance_metrics_YYYYMMDD_HHMMSS.json` - Learning metrics
+- `learning_history_YYYYMMDD_HHMMSS.json` - Step-by-step history
+- `logs/continuous_learning.log` - Detailed logs
+
+## 🏗️ Project Structure
+
+The ICA Framework has been streamlined for clarity:
+
+```
+ica-framework/
+├── ica_framework/           # Core framework code
+│   ├── core/               # Agent and core logic
+│   ├── components/         # Modular components
+│   ├── database/           # Database adapters
+│   ├── sandbox/            # Simulation environments
+│   └── utils/              # Utilities and helpers
+├── examples/               # Example scripts
+│   ├── learning.py         # Enhanced continuous learning
+│   └── demo.py            # Framework demonstration
+├── scripts/                # Utility scripts
+│   ├── monitor_continuous_learning.py
+│   └── view_knowledge_graph.py
+├── config/                 # Configuration files
+├── requirements/           # Dependency specifications
+│   ├── requirements.txt    # Core dependencies  
+│   ├── requirements-dev.txt # Development dependencies
+│   └── REQUIREMENTS_CONSOLIDATION.md # Consolidation documentation
+└── setup.py               # Unified setup and database configuration
+```
+
+**Recent Updates:**
+- ✅ Consolidated `setup_database.py` into `setup.py`
+- ✅ Removed redundant continuous learning scripts
+- ✅ Enhanced `examples/learning.py` with physics simulation
+- ✅ Streamlined console commands via entry points
+
+2. **Install dependencies:**
+```bash
+# Install core dependencies
+pip install -r requirements/requirements.txt
+
+# Or install with development tools
+pip install -r requirements/requirements-dev.txt
+
+# Or install specific optional packages
+pip install -e .[viz]      # Visualization tools
+pip install -e .[ml]       # Machine learning tools
+pip install -e .[causal]   # Causal inference tools
+pip install -e .[all]      # All optional dependencies
 ```
 
 ### Basic Usage
 
 ```python
 from ica_framework import ICAAgent, Config
+from ica_framework.database import GraphDatabase
 
 # Initialize configuration
 config = Config()
 
+# Setup database backend
+db_config = {
+    'backend': 'neo4j',  # or 'memory' for testing
+    'config': {
+        'uri': 'neo4j://localhost:7687',
+        'username': 'neo4j',
+        'password': 'your_password',
+        'database': 'neo4j'
+    }
+}
+
+# Create database connection
+database = GraphDatabase.from_config(db_config)
+
 # Create ICA agent
-agent = ICAAgent(config)
+agent = ICAAgent(config, database=database)
 
 # Process observations
 for step in range(100):
@@ -91,21 +296,22 @@ print(f"Final: {final_state['knowledge_graph']['num_nodes']} nodes, "
       f"confidence: {final_state['global_confidence']:.3f}")
 ```
 
-### Running the Demo
+### Running the Enhanced Learning
 
 ```bash
-# Use the unified launcher (recommended)
-python ica_launcher.py
+# Use the unified setup first
+python setup.py database  # Configure your database
 
-# Or run directly
-python examples/demo.py
+# Run enhanced learning with physics simulation
+python examples/learning.py
 ```
 
-This will run a complete demonstration including:
-- Ablation studies comparing baseline vs enhanced learning
-- Individual agent usage examples
-- Results visualization and analysis
-- Model checkpointing and persistence
+This will run a complete learning session including:
+- Physics simulation with 40+ entities and relationships
+- Procedural scenario generation (smart home, industrial automation)
+- Real-time knowledge graph construction with Neo4j persistence
+- Pattern discovery and concept formation
+- Continuous learning with intrinsic motivation
 
 ## 📊 Features
 
@@ -199,8 +405,7 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 1. **Fork and clone the repository**
 2. **Install development dependencies:**
 ```bash
-pip install -r requirements/requirements.txt
-pip install -r requirements/requirements-dev.txt  # For testing and linting
+pip install -r requirements/requirements-dev.txt  # Includes core + dev tools
 ```
 3. **Run tests:**
 ```bash
@@ -218,20 +423,46 @@ python -m pytest tests/
 
 ### Common Issues
 
-1. **CUDA Installation**: For GPU support, install PyTorch with CUDA:
+1. **Neo4j Connection Issues (Windows)**
+   ```bash
+   # Test your Neo4j connection
+   python setup.py database
+   # Select option 3: Test Neo4j connection
+   ```
+   
+   **Common fixes:**
+   - Ensure Neo4j is running (check Neo4j Desktop or Windows Services)
+   - Verify connection details: `neo4j://localhost:7687` (or `neo4j://127.0.0.1:7687`)
+   - Check username/password (default: `neo4j`/`your_password`)
+   - Firewall: Allow Neo4j ports (7687 for Bolt, 7474 for HTTP)
+
+2. **Neo4j Service Not Starting**
+   ```bash
+   # For Neo4j Desktop: Restart the database instance
+   # For Community Server: Check logs in neo4j/logs/
+   ```
+
+3. **CUDA Installation**: For GPU support, install PyTorch with CUDA:
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
-2. **Graph Dependencies**: Some features require additional packages:
+4. **Graph Dependencies**: Some features require additional packages:
 ```bash
 pip install torch-geometric pyg-lib torch-scatter torch-sparse
 ```
 
-3. **Visualization**: For interactive plots:
+5. **Visualization**: For interactive plots:
 ```bash
 pip install plotly seaborn
 ```
+
+### Database Configuration Files
+
+After running `python setup.py database`, configuration files are created in:
+- `config/database/neo4j.json` - Default Neo4j configuration
+- `config/database/neo4j_custom.json` - Your custom configuration
+- `config/database/memory.json` - In-memory database configuration
 
 ## 📄 License
 

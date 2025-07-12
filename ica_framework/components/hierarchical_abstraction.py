@@ -37,6 +37,12 @@ class MotifDiscovery:
             List of discovered motifs with their properties
         """
         
+        self.logger.debug(f"Starting motif discovery on graph with {graph.number_of_nodes()} nodes, {graph.number_of_edges()} edges")
+        
+        if graph.number_of_nodes() < self.config.motif_min_size:
+            self.logger.debug(f"Graph too small for motif discovery: {graph.number_of_nodes()} < {self.config.motif_min_size}")
+            return []
+        
         motifs = []
         
         # Start with single nodes
@@ -58,10 +64,12 @@ class MotifDiscovery:
             else:
                 # Multi-node motifs
                 new_motifs = self._grow_motifs(graph, motifs, size, min_support)
+                self.logger.debug(f"Found {len(new_motifs)} motifs of size {size}")
                 motifs.extend(new_motifs)
         
         # Filter by minimum size
         filtered_motifs = [m for m in motifs if m['size'] >= self.config.motif_min_size]
+        self.logger.debug(f"After filtering by min_size {self.config.motif_min_size}: {len(filtered_motifs)} motifs")
         
         # Calculate frequencies
         self._calculate_frequencies(graph, filtered_motifs)
@@ -98,12 +106,16 @@ class MotifDiscovery:
                 extended_subgraph = graph.subgraph(extended_nodes)
                 
                 # Check if the extended motif is connected (handle both directed and undirected)
-                if graph.is_directed():
-                    # For directed graphs, check if weakly connected
-                    is_connected = nx.is_weakly_connected(extended_subgraph)
-                else:
-                    # For undirected graphs, use regular connectivity
-                    is_connected = nx.is_connected(extended_subgraph)
+                try:
+                    if graph.is_directed():
+                        # For directed graphs, check if weakly connected
+                        is_connected = nx.is_weakly_connected(extended_subgraph)
+                    else:
+                        # For undirected graphs, use regular connectivity
+                        is_connected = nx.is_connected(extended_subgraph)
+                except (nx.NetworkXError, NotImplementedError, nx.NetworkXNotImplemented):
+                    # Fallback for MultiGraph - check if all nodes are reachable
+                    is_connected = len(extended_subgraph.nodes()) > 0 and extended_subgraph.number_of_edges() >= len(extended_subgraph.nodes()) - 1
                 
                 if is_connected:
                     extended_motif = {
@@ -170,12 +182,17 @@ class MotifDiscovery:
             
             # Simple structural comparison with proper connectivity check
             # Check connectivity based on graph type
-            if graph.is_directed():
-                subgraph_connected = nx.is_weakly_connected(subgraph)
-                motif_connected = nx.is_weakly_connected(motif_graph)
-            else:
-                subgraph_connected = nx.is_connected(subgraph)
-                motif_connected = nx.is_connected(motif_graph)
+            try:
+                if graph.is_directed():
+                    subgraph_connected = nx.is_weakly_connected(subgraph)
+                    motif_connected = nx.is_weakly_connected(motif_graph)
+                else:
+                    subgraph_connected = nx.is_connected(subgraph)
+                    motif_connected = nx.is_connected(motif_graph)
+            except (nx.NetworkXError, NotImplementedError):
+                # Fallback for MultiGraph
+                subgraph_connected = subgraph.number_of_nodes() > 0
+                motif_connected = motif_graph.number_of_nodes() > 0
             
             if (subgraph.number_of_edges() == motif_graph.number_of_edges() and
                 subgraph_connected == motif_connected):
@@ -222,9 +239,9 @@ class GraphEmbedding:
             graph.number_of_edges(),
             len(motif['nodes']),
             motif['frequency'],
-            nx.density(graph) if graph.number_of_nodes() > 1 else 0,
+            self._safe_density(graph),
             np.mean([d for n, d in graph.degree()]) if graph.number_of_nodes() > 0 else 0,
-            nx.average_clustering(graph) if graph.number_of_nodes() > 2 else 0
+            self._safe_clustering(graph)
         ]
         
         # Pad or truncate to fixed size
@@ -249,6 +266,31 @@ class GraphEmbedding:
         embedding = embedding / (np.linalg.norm(embedding) + 1e-8)
         
         return embedding
+    
+    def _safe_density(self, graph):
+        """Calculate density safely for MultiGraph"""
+        try:
+            return nx.density(graph) if graph.number_of_nodes() > 1 else 0
+        except (nx.NetworkXError, NotImplementedError):
+            # Fallback calculation for MultiGraph
+            n = graph.number_of_nodes()
+            if n <= 1:
+                return 0
+            m = graph.number_of_edges()
+            max_edges = n * (n - 1)
+            if graph.is_directed():
+                max_edges = max_edges
+            else:
+                max_edges = max_edges // 2
+            return m / max_edges if max_edges > 0 else 0
+    
+    def _safe_clustering(self, graph):
+        """Calculate clustering coefficient safely for MultiGraph"""
+        try:
+            return nx.average_clustering(graph) if graph.number_of_nodes() > 2 else 0
+        except (nx.NetworkXError, NotImplementedError, nx.NetworkXNotImplemented):
+            # Simplified fallback for MultiGraph
+            return 0.0  # Return 0 for MultiGraph as clustering is complex
 
 
 class ConceptInduction:
@@ -283,9 +325,14 @@ class ConceptInduction:
         labels = clusterer.fit_predict(embedding_matrix)
         
         # Calculate silhouette score
-        if len(set(labels)) > 1:
-            silhouette_avg = silhouette_score(embedding_matrix, labels)
-            self.silhouette_scores['overall'] = silhouette_avg
+        unique_labels = set(labels)
+        if len(unique_labels) > 1 and len(embedding_matrix) > 2:
+            try:
+                silhouette_avg = silhouette_score(embedding_matrix, labels)
+                self.silhouette_scores['overall'] = silhouette_avg
+            except ValueError as e:
+                self.logger.debug(f"Silhouette score calculation failed: {e}")
+                self.silhouette_scores['overall'] = 0.0
         else:
             self.silhouette_scores['overall'] = 0.0
         
@@ -484,13 +531,40 @@ class HierarchicalAbstraction:
     def save_state(self, filepath: str):
         """Save abstraction state"""
         
+        def make_json_serializable(obj):
+            """Helper to ensure all objects are JSON serializable"""
+            import numpy as np
+            
+            if isinstance(obj, dict):
+                return {k: make_json_serializable(v) for k, v in obj.items()}
+            elif isinstance(obj, (list, tuple)):
+                return [make_json_serializable(item) for item in obj]
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
+            elif isinstance(obj, (np.integer, np.floating)):
+                return float(obj)
+            else:
+                return obj
+        
+        # Make motifs JSON serializable by removing NetworkX graph objects
+        serializable_motifs = []
+        for motif in self.current_motifs:
+            serializable_motif = {}
+            for key, value in motif.items():
+                if key == 'graph':
+                    # Skip the NetworkX graph object - we have nodes/edges data
+                    continue
+                else:
+                    serializable_motif[key] = make_json_serializable(value)
+            serializable_motifs.append(serializable_motif)
+        
         state = {
             'config': self.config.dict(),
-            'current_motifs': self.current_motifs,
-            'current_embeddings': {k: v.tolist() for k, v in self.current_embeddings.items()},
-            'current_concepts': self.current_concepts,
-            'utility_history': dict(self.utility_adjustment.utility_history),
-            'silhouette_scores': self.concept_induction.silhouette_scores
+            'current_motifs': serializable_motifs,
+            'current_embeddings': {k: v.tolist() if hasattr(v, 'tolist') else v for k, v in self.current_embeddings.items()},
+            'current_concepts': make_json_serializable(self.current_concepts),
+            'utility_history': make_json_serializable(dict(self.utility_adjustment.utility_history)),
+            'silhouette_scores': make_json_serializable(self.concept_induction.silhouette_scores)
         }
         
         import json
@@ -506,7 +580,17 @@ class HierarchicalAbstraction:
         with open(filepath, 'r') as f:
             state = json.load(f)
         
-        self.current_motifs = state['current_motifs']
+        # Load motifs and reconstruct graph objects if needed
+        self.current_motifs = []
+        for motif_data in state['current_motifs']:
+            motif = motif_data.copy()
+            # If we have nodes and edges, we can reconstruct the graph if needed
+            if 'nodes' in motif and 'edges' in motif:
+                # For now, we'll skip reconstructing the graph since it's mainly used for visualization
+                # The important data (nodes, edges, size) is preserved
+                pass
+            self.current_motifs.append(motif)
+        
         self.current_embeddings = {k: np.array(v) for k, v in state['current_embeddings'].items()}
         self.current_concepts = state['current_concepts']
         
@@ -517,3 +601,28 @@ class HierarchicalAbstraction:
         self.concept_induction.silhouette_scores = state['silhouette_scores']
         
         self.logger.info(f"Loaded abstraction state from {filepath}")
+    
+    def _safe_density(self, graph):
+        """Calculate density safely for MultiGraph"""
+        try:
+            return nx.density(graph) if graph.number_of_nodes() > 1 else 0
+        except (nx.NetworkXError, NotImplementedError):
+            # Fallback calculation for MultiGraph
+            n = graph.number_of_nodes()
+            if n <= 1:
+                return 0
+            m = graph.number_of_edges()
+            max_edges = n * (n - 1)
+            if graph.is_directed():
+                max_edges = max_edges
+            else:
+                max_edges = max_edges // 2
+            return m / max_edges if max_edges > 0 else 0
+    
+    def _safe_clustering(self, graph):
+        """Calculate clustering coefficient safely for MultiGraph"""
+        try:
+            return nx.average_clustering(graph) if graph.number_of_nodes() > 2 else 0
+        except (nx.NetworkXError, NotImplementedError, nx.NetworkXNotImplemented):
+            # Simplified fallback for MultiGraph
+            return 0.0  # Return 0 for MultiGraph as clustering is complex

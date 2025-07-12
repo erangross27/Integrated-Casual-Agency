@@ -243,7 +243,18 @@ class ICAAgent:
         # Simulate state change
         if self.current_state is not None:
             noise = np.random.normal(0, 0.01, size=self.current_state.shape)
-            next_state = self.current_state + action[:len(self.current_state)] + noise
+            # Handle dimension mismatch between action and state
+            if len(action) < len(self.current_state):
+                # Pad action with zeros if it's smaller than state
+                action_padded = np.zeros(len(self.current_state))
+                action_padded[:len(action)] = action
+                next_state = self.current_state + action_padded * 0.1 + noise
+            elif len(action) > len(self.current_state):
+                # Truncate action if it's larger than state
+                next_state = self.current_state + action[:len(self.current_state)] * 0.1 + noise
+            else:
+                # Same dimensions
+                next_state = self.current_state + action * 0.1 + noise
         else:
             next_state = np.random.normal(0, 0.1, size=10)  # Default state size
         
@@ -377,8 +388,8 @@ class ICAAgent:
             avg_prediction_error = np.mean([exp.prediction_error for exp in self.experiment_history[-5:]])
             intrinsic_reward = self.curiosity_module.calculate_intrinsic_reward(
                 torch.tensor(avg_prediction_error),
-                torch.randn(10),  # Placeholder model representation
-                torch.randn(10)   # Placeholder updated model representation
+                torch.randn(128),  # Placeholder model representation (matches complexity estimator input size)
+                torch.randn(128)   # Placeholder updated model representation (matches complexity estimator input size)
             )
             step_results['intrinsic_reward'] = intrinsic_reward.item()
         
@@ -390,10 +401,13 @@ class ICAAgent:
         
         # 6. Update hierarchical abstraction
         if self.knowledge_graph.graph.number_of_nodes() > 0:
+            self.logger.debug(f"Processing graph with {self.knowledge_graph.graph.number_of_nodes()} nodes and {self.knowledge_graph.graph.number_of_edges()} edges")
             abstraction_results = self.hierarchical_abstraction.process_graph(
                 self.knowledge_graph.graph
             )
             step_results['abstraction_results'] = abstraction_results
+        else:
+            self.logger.debug("Skipping hierarchical abstraction - knowledge graph is empty")
         
         # 7. Update metrics
         confidence_value = self.global_confidence.item() if hasattr(self.global_confidence, 'item') else float(self.global_confidence)
@@ -460,24 +474,85 @@ class ICAAgent:
     def get_agent_state(self) -> Dict[str, Any]:
         """Get comprehensive agent state"""
         
+        # Get basic agent state
         state = {
             'step_count': self.step_count,
             'episode_count': self.episode_count,
-            'global_confidence': self.global_confidence,
+            'global_confidence': float(self.global_confidence),
             'current_state': self.current_state.tolist() if self.current_state is not None else None,
-            'graph_stats': self.knowledge_graph.get_graph_stats(),
-            'metrics': self.metrics.get_metrics_summary(),
             'experiment_history_length': len(self.experiment_history)
         }
         
-        # Add component-specific metrics
-        if self.curiosity_module:
-            state['curiosity_metrics'] = self.curiosity_module.get_curiosity_metrics()
+        # Get graph stats safely
+        try:
+            graph_stats = self.knowledge_graph.get_graph_stats()
+            # Ensure all values are JSON serializable
+            serializable_stats = {}
+            for key, value in graph_stats.items():
+                if isinstance(value, (np.integer, np.floating)):
+                    serializable_stats[key] = float(value)
+                elif isinstance(value, dict):
+                    # Handle nested dicts (like centrality_stats)
+                    nested_dict = {}
+                    for k, v in value.items():
+                        if isinstance(v, (np.integer, np.floating)):
+                            nested_dict[k] = float(v)
+                        else:
+                            nested_dict[k] = v
+                    serializable_stats[key] = nested_dict
+                else:
+                    serializable_stats[key] = value
+            state['graph_stats'] = serializable_stats
+        except Exception as e:
+            self.logger.warning(f"Error getting graph stats: {e}")
+            state['graph_stats'] = {
+                'num_nodes': self.knowledge_graph.graph.number_of_nodes(),
+                'num_edges': self.knowledge_graph.graph.number_of_edges()
+            }
         
-        if self.action_planner:
-            state['planner_metrics'] = self.action_planner.get_planner_metrics()
+        # Get metrics safely
+        try:
+            metrics = self.metrics.get_metrics_summary()
+            # Convert numpy types to Python types
+            serializable_metrics = {}
+            for key, value in metrics.items():
+                if isinstance(value, (np.integer, np.floating)):
+                    serializable_metrics[key] = float(value)
+                elif isinstance(value, (list, tuple)):
+                    serializable_metrics[key] = [float(v) if isinstance(v, (np.integer, np.floating)) else v for v in value]
+                else:
+                    serializable_metrics[key] = value
+            state['metrics'] = serializable_metrics
+        except Exception as e:
+            self.logger.warning(f"Error getting metrics: {e}")
+            state['metrics'] = {}
         
-        state['abstraction_metrics'] = self.hierarchical_abstraction.get_abstraction_metrics()
+        # Add component-specific metrics safely
+        try:
+            if self.curiosity_module:
+                curiosity_metrics = self.curiosity_module.get_curiosity_metrics()
+                state['curiosity_metrics'] = {k: float(v) if isinstance(v, (np.integer, np.floating)) else v 
+                                            for k, v in curiosity_metrics.items()}
+        except Exception as e:
+            self.logger.warning(f"Error getting curiosity metrics: {e}")
+            state['curiosity_metrics'] = {}
+        
+        try:
+            if self.action_planner:
+                planner_metrics = self.action_planner.get_planner_metrics()
+                state['planner_metrics'] = {k: float(v) if isinstance(v, (np.integer, np.floating)) else v 
+                                          for k, v in planner_metrics.items()}
+        except Exception as e:
+            self.logger.warning(f"Error getting planner metrics: {e}")
+            state['planner_metrics'] = {}
+        
+        try:
+            abstraction_metrics = self.hierarchical_abstraction.get_abstraction_metrics()
+            state['abstraction_metrics'] = {k: float(v) if isinstance(v, (np.integer, np.floating)) else v 
+                                          for k, v in abstraction_metrics.items()}
+        except Exception as e:
+            self.logger.warning(f"Error getting abstraction metrics: {e}")
+            state['abstraction_metrics'] = {}
         
         return state
     
@@ -512,9 +587,39 @@ class ICAAgent:
             
             # Save agent state
             agent_state = self.get_agent_state()
+            
+            # Make agent state JSON serializable
+            def make_serializable(obj):
+                """Convert numpy arrays and other non-serializable objects to JSON-compatible format."""
+                import networkx as nx
+                
+                if isinstance(obj, dict):
+                    return {k: make_serializable(v) for k, v in obj.items()}
+                elif isinstance(obj, (list, tuple)):
+                    return [make_serializable(item) for item in obj]
+                elif isinstance(obj, np.ndarray):
+                    return obj.tolist()
+                elif isinstance(obj, np.integer):
+                    return int(obj)
+                elif isinstance(obj, np.floating):
+                    return float(obj)
+                elif isinstance(obj, (nx.Graph, nx.DiGraph, nx.MultiGraph, nx.MultiDiGraph)):
+                    # Convert NetworkX graph to serializable format
+                    return {
+                        'nodes': list(obj.nodes(data=True)),
+                        'edges': list(obj.edges(data=True)),
+                        'graph_type': obj.__class__.__name__,
+                        'num_nodes': obj.number_of_nodes(),
+                        'num_edges': obj.number_of_edges()
+                    }
+                else:
+                    return obj
+            
+            serializable_state = make_serializable(agent_state)
+            
             import json
             with open(save_dir / "agent_state.json", 'w') as f:
-                json.dump(agent_state, f, indent=2)
+                json.dump(serializable_state, f, indent=2)
             
             self.logger.info(f"Saved agent to {directory}")
             return True
