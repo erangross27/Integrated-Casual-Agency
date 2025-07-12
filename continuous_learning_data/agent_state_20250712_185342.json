@@ -1,0 +1,16 @@
+{
+  "step_count": 0,
+  "episode_count": 0,
+  "global_confidence": 0.5,
+  "current_state": null,
+  "graph_stats": {},
+  "metrics": {},
+  "experiment_history_length": 0,
+  "abstraction_metrics": {
+    "num_motifs": 0,
+    "num_concepts": 0,
+    "avg_motif_size": 0,
+    "avg_concept_size": 0,
+    "silhouette_score": 0.0
+  }
+}

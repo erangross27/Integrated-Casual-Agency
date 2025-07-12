@@ -1,0 +1,8 @@
+{
+  "total_experiments": 0,
+  "successful_predictions": 0,
+  "failed_predictions": 0,
+  "confidence_trend": [],
+  "knowledge_graph_size": [],
+  "curiosity_rewards": []
+}
