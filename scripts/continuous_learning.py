@@ -21,11 +21,18 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('continuous_learning.log'),
+        logging.FileHandler('logs/continuous_learning.log'),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
+
+import sys
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from ica_framework import ICAAgent, Config
 from ica_framework.sandbox import SandboxEnvironment
@@ -37,7 +44,7 @@ class ContinuousLearningEnvironment:
     for the ICA agent through procedurally generated scenarios and challenges.
     """
     
-    def __init__(self, config: Config, save_dir: str = "continuous_learning_data"):
+    def __init__(self, config: Config, save_dir: str = "data/continuous_learning_data"):
         self.config = config
         self.save_dir = Path(save_dir)
         self.save_dir.mkdir(exist_ok=True)
@@ -357,7 +364,7 @@ def main():
     parser = argparse.ArgumentParser(description="Continuous Learning ICA Agent")
     parser.add_argument("--max-steps", type=int, help="Maximum number of learning steps")
     parser.add_argument("--max-hours", type=float, help="Maximum runtime in hours")
-    parser.add_argument("--save-dir", type=str, default="continuous_learning_data",
+    parser.add_argument("--save-dir", type=str, default="data/continuous_learning_data",
                        help="Directory to save learning data")
     parser.add_argument("--config", type=str, help="Path to custom configuration file")
     

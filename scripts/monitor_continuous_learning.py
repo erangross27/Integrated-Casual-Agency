@@ -5,6 +5,13 @@ Real-time Monitoring Dashboard for Continuous Learning
 This script provides real-time visualization and monitoring of the continuous learning agent.
 """
 
+import sys
+from pathlib import Path
+
+# Add project root to path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 import os
 import json
 import time
@@ -39,7 +46,7 @@ class ContinuousLearningMonitor:
     Real-time monitoring dashboard for the continuous learning agent.
     """
     
-    def __init__(self, data_dir: str = "continuous_learning_data", update_interval: int = 5):
+    def __init__(self, data_dir: str = "data/continuous_learning_data", update_interval: int = 5):
         self.data_dir = Path(data_dir)
         self.update_interval = update_interval
         
@@ -308,7 +315,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="Continuous Learning Monitor")
-    parser.add_argument("--data-dir", type=str, default="continuous_learning_data",
+    parser.add_argument("--data-dir", type=str, default="data/continuous_learning_data",
                        help="Directory containing learning data")
     parser.add_argument("--update-interval", type=int, default=5,
                        help="Update interval in seconds")

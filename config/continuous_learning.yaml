@@ -93,7 +93,7 @@ continuous_learning:
 # Logging and monitoring
 logging:
   level: "INFO"
-  log_file: "continuous_learning.log"
+  log_file: "logs/continuous_learning.log"
   max_log_size: "100MB"
   backup_count: 5
   

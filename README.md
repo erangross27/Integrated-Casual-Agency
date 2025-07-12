@@ -51,12 +51,12 @@ cd Integrated-Casual-Agency
 
 2. **Install basic dependencies:**
 ```bash
-pip install -r requirements-minimal.txt
+pip install -r requirements/requirements-minimal.txt
 ```
 
 3. **For enhanced features (optional):**
 ```bash
-pip install -r requirements-optional.txt
+pip install -r requirements/requirements-optional.txt
 ```
 
 ### Basic Usage
@@ -94,6 +94,10 @@ print(f"Final: {final_state['knowledge_graph']['num_nodes']} nodes, "
 ### Running the Demo
 
 ```bash
+# Use the unified launcher (recommended)
+python ica_launcher.py
+
+# Or run directly
 python examples/demo.py
 ```
 
@@ -195,8 +199,8 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 1. **Fork and clone the repository**
 2. **Install development dependencies:**
 ```bash
-pip install -r requirements.txt
-pip install -r requirements-dev.txt  # For testing and linting
+pip install -r requirements/requirements.txt
+pip install -r requirements/requirements-dev.txt  # For testing and linting
 ```
 3. **Run tests:**
 ```bash
