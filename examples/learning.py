@@ -10,6 +10,7 @@ import json
 import time
 import signal
 import sys
+import argparse  # Added missing import
 from datetime import datetime
 import logging
 import warnings
@@ -789,14 +790,20 @@ class ContinuousLearning:
             print(f"   Current round: {scenario_round}")
             print(f"   Existing knowledge: {self.session_stats['total_nodes']} nodes, {self.session_stats['total_edges']} edges")
             print()
+            print("⏱️ Starting learning loop...")
         else:
             print("🆕 STARTING NEW SESSION")
             print()
+            print("⏱️ Starting learning loop...")
         
         # Infinite continuous learning loop
         scenario_count = start_scenario
         last_save_time = time.time()
+        last_progress_time = time.time()  # Track time for 30-second updates
         # last_detailed_edges is now set above based on Neo4j resume data
+        
+        print(f"🚀 Beginning continuous learning from scenario {scenario_count + 1}...")
+        print("📊 Progress updates every 30 seconds...")
         
         try:
             while self.running:
@@ -813,7 +820,8 @@ class ContinuousLearning:
                 if scenario_type == 0 and self.procedural_gen:
                     # Use enhanced procedural dataset with complex motifs
                     try:
-                        dataset = self.procedural_gen.generate_dataset(num_nodes=50, num_edges=100)
+                        dataset = self.procedural_gen.generate_dataset(num_nodes=20, num_edges=40)  # Reduced complexity
+                        
                         # Convert dataset to scenario format
                         entities = []
                         relationships = []
@@ -842,7 +850,6 @@ class ContinuousLearning:
                             'description': f"Complex motifs: {', '.join(dataset.get('motif_types', []))}"
                         }
                     except Exception as e:
-                        print(f"⚠️ Procedural generation error: {e}")
                         # Fallback to base scenario
                         pass
                 
@@ -864,37 +871,6 @@ class ContinuousLearning:
                                 'description': f"Domain: {domain_scenario['domain']}, Pattern: {domain_scenario['pattern']}"
                             }
                     except Exception as e:
-                        print(f"⚠️ Multi-domain generation error: {e}")
-                        # Fallback to base scenario
-                        pass
-                
-                elif scenario_type == 2 and self.sandbox_env:
-                    # Use sandbox environment for complex scenarios
-                    try:
-                        # Run enhanced experiment with complex motifs
-                        splits = self.sandbox_env.setup_test_environment()
-                        enhanced_results = self.sandbox_env.run_enhanced_experiment(splits)
-                        
-                        # Convert sandbox results to scenario format
-                        entities = [{"id": f"sandbox_entity_{i}", "label": "sandbox_component"} for i in range(10)]
-                        relationships = [
-                            {
-                                "source": f"sandbox_entity_{i}",
-                                "target": f"sandbox_entity_{(i+1)%10}",
-                                "type": "sandbox_relation",
-                                "confidence": enhanced_results.get('global_confidence', 0.7)
-                            }
-                            for i in range(5)
-                        ]
-                        
-                        scenario = {
-                            'name': f"Sandbox Enhanced Experiment {scenario_count + 1}",
-                            'entities': entities,
-                            'relationships': relationships,
-                            'description': f"Sandbox confidence: {enhanced_results.get('global_confidence', 0.0):.3f}"
-                        }
-                    except Exception as e:
-                        print(f"⚠️ Sandbox generation error: {e}")
                         # Fallback to base scenario
                         pass
                 
@@ -909,21 +885,7 @@ class ContinuousLearning:
                             'relationships': physics_scenario.get('relationships', []),
                             'description': f"Advanced physics simulation - {physics_scenario.get('scenario_type', 'dynamic')}"
                         }
-                    except Exception:
-                        # Fallback to base scenario if enhanced fails
-                        pass
-                
-                elif scenario_count % 7 == 0 and self.procedural_gen:
-                    # Original procedural generation (every 7th scenario)
-                    try:
-                        procedural_scenario = self.procedural_gen.generate_scenario()
-                        scenario = {
-                            'name': f"Original Procedural Scenario {scenario_count + 1}",
-                            'entities': procedural_scenario.get('entities', []),
-                            'relationships': procedural_scenario.get('relationships', []),
-                            'description': f"Procedural generation - {procedural_scenario.get('scenario_type', 'dynamic')}"
-                        }
-                    except Exception:
+                    except Exception as e:
                         # Fallback to base scenario if enhanced fails
                         pass
                 
@@ -979,6 +941,7 @@ class ContinuousLearning:
                 with SuppressOutput():
                     step_results = self.agent.active_learning_step(observation)
                 step_time = time.time() - step_start
+                
                 self.session_stats['total_learning_time'] += step_time
                 
                 # Get state after learning
@@ -991,17 +954,17 @@ class ContinuousLearning:
                 total_scenarios_completed = scenario_count + 1
                 learning_rate = total_scenarios_completed / max(self.session_stats['total_learning_time'], 0.001)
                 
-                # Only show progress at significant milestones - no continuous output
-                # Progress bar disabled for completely clean output
+                # Show progress every 30 seconds
+                current_time = time.time()
+                if current_time - last_progress_time >= 30.0:
+                    print(f"� {total_scenarios_completed:,} scenarios | {nodes_after} nodes | {edges_after:,} edges | {learning_rate:.1f}/s | Round {current_round}")
+                    last_progress_time = current_time
                 
-                # Debug disabled for clean output
-                # if scenario_count % 50 == 0:  # Debug every 50 scenarios
-                #     self.debug_node_learning(observation, nodes_before, nodes_after, edges_before, edges_after)
                 
                 # Show detailed update every 2000 edges
                 if self.should_show_detailed_update(edges_after, last_detailed_edges):
                     total_scenarios_completed = scenario_count + 1
-                    print(f"\n📊 Milestone: {edges_after} edges reached!")
+                    print(f"🎯 Milestone: {edges_after} edges reached!")
                     print(f"    Nodes: {nodes_after}, Confidence: {step_results.get('global_confidence', 0):.3f}")
                     print(f"    Scenarios completed: {total_scenarios_completed}, Rate: {learning_rate:.1f}/s")
                     
