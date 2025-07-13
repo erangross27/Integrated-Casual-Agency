@@ -195,7 +195,7 @@ class PhysicsSimulation:
         self.environment_complexity += self.complexity_growth_rate
         
         return {
-            "entities": [{"id": entity, "type": "physics_object"} for entity in scenario_entities],
+            "entities": [{"id": entity, "label": "physics_object"} for entity in scenario_entities],
             "relationships": relationships,
             "state": np.random.normal(0, 0.1, 20),  # Enhanced state representation
             "scenario_type": "physics_simulation",
@@ -252,7 +252,7 @@ class ProceduralScenarioGenerator:
             })
         
         return {
-            "entities": [{"id": device, "type": "smart_device"} for device in scenario_devices],
+            "entities": [{"id": device, "label": "smart_device"} for device in scenario_devices],
             "relationships": relationships,
             "state": np.random.normal(0, 0.1, 15),
             "scenario_type": "smart_home_automation",
@@ -296,7 +296,7 @@ class ProceduralScenarioGenerator:
                     })
         
         return {
-            "entities": [{"id": eq, "type": "industrial_equipment"} for eq in scenario_equipment],
+            "entities": [{"id": eq, "label": "industrial_equipment"} for eq in scenario_equipment],
             "relationships": relationships,
             "state": np.random.normal(0, 0.1, 25),
             "scenario_type": "industrial_robotics",
@@ -329,7 +329,7 @@ class ProceduralScenarioGenerator:
         }]
         
         return {
-            "entities": [{"id": device, "type": "device"} for device in scenario_devices],
+            "entities": [{"id": device, "label": "device"} for device in scenario_devices],
             "relationships": relationships,
             "state": np.random.normal(0, 0.1, 10),
             "scenario_type": "basic_iot"
@@ -685,6 +685,9 @@ class ContinuousLearning:
                 num_relations=10
             )
         
+        # Get base learning scenarios EARLY (before any resumption logic)
+        base_scenarios = self.create_learning_scenarios()
+        
         # Try to load agent from Neo4j on startup and resume session
         if self.database_backend == "neo4j" and HAS_ENHANCED_KG:
             try:
@@ -737,9 +740,6 @@ class ContinuousLearning:
             except Exception as e:
                 print(f"⚠️ Error checking Neo4j data: {e}")
                 print("🆕 Continuing with fresh start")
-        
-        # Get base learning scenarios
-        base_scenarios = self.create_learning_scenarios()
         
         # Initialize enhanced scenario generators
         physics_sim = PhysicsSimulation()

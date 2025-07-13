@@ -1,0 +1,10 @@
+{
+  "backend": "neo4j",
+  "config": {
+    "uri": "neo4j://127.0.0.1:7687",
+    "username": "username",
+    "password": "password",
+    "database": "database_name",
+    "description": "Neo4j graph database for ICA Framework production use"
+  }
+}
