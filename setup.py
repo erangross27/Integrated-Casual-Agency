@@ -100,8 +100,6 @@ setup(
         "console_scripts": [
             "ica-setup=setup:setup_database",
             "ica-learn=examples.learning:main",
-            "ica-monitor=scripts.monitor_continuous_learning:main",
-            "ica-view-graph=scripts.view_knowledge_graph:main",
         ]
     },
 )

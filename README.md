@@ -1,6 +1,18 @@
 # Integrated Causal Agency (ICA) Framework
 
-**A sophisticated AGI framework implementing intrinsic curiosity-driven learning with causal reasoning and hierarchical abstraction.**
+**A sophisticated AGI framework implementing intrinsic curiosity-driven learning ### 📡 Console Commands
+
+After installation, you can use these convenient commands:
+
+```bash
+# Database setup and configuration
+ica-setup
+
+# Run enhanced learning with physics simulation
+ica-learn
+```
+
+**Note**: Legacy monitoring and visualization console commands (`ica-monitor`, `ica-view-graph`) have been removed. Use Neo4j Browser at `http://localhost:7474` for real-time graph exploration.ning and hierarchical abstraction.**
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-1.12+-red.svg)](https://pytorch.org/)
@@ -176,21 +188,15 @@ The framework supports multiple database backends:
 
 ### Monitor Learning Progress
 
-```bash
-# Real-time monitoring dashboard (requires data directory from older JSON-based sessions)
-python scripts/monitor_continuous_learning.py --data-dir data/continuous_learning_data
-```
+**Note**: Legacy monitoring scripts have been removed. Current Neo4j-based sessions store data directly in the database for real-time access.
 
-**Note**: Current Neo4j-based sessions store data directly in the database. Monitoring scripts are available for legacy JSON-based data.
+**Neo4j Browser**: Access your Neo4j instance at `http://localhost:7474` to explore the knowledge graph in real-time.
 
 ### View Knowledge Graph
 
-```bash
-# Visualize knowledge graph from legacy JSON data
-python scripts/view_knowledge_graph.py --data-dir data/continuous_learning_data
-```
+**Note**: Legacy visualization scripts have been removed in favor of Neo4j's built-in tools.
 
-**Note**: For Neo4j-based sessions, use Neo4j Browser or custom visualization tools to explore the graph data.
+**Recommended**: Use Neo4j Browser or custom Cypher queries to visualize and analyze the knowledge graph data stored in your Neo4j database.
 
 ## 📊 What You'll See
 
@@ -267,9 +273,6 @@ ica-framework/
 │   └── enhanced_knowledge_graph.py  # Enhanced KG with database support
 ├── examples/               # Example scripts
 │   └── learning.py         # Enhanced continuous learning with physics simulation
-├── scripts/                # Utility scripts
-│   ├── monitor_continuous_learning.py
-│   └── view_knowledge_graph.py
 ├── docs/                   # Documentation
 │   └── database_backends.md
 ├── requirements/           # Dependency specifications
@@ -286,7 +289,8 @@ ica-framework/
 - ✅ Removed `demo.py` example script
 - ✅ Enhanced `examples/learning.py` with physics simulation and procedural scenarios
 - ✅ Streamlined console commands via entry points
-- ✅ Removed unused script files (`fix_unknown_labels.py`, `test_connection.py`)
+- ✅ Removed unused script files and entire `scripts/` directory (legacy JSON-based tools)
+- ✅ Simplified project structure for Neo4j-first approach
 - ✅ Updated project structure documentation
 
 2. **Install dependencies:**
@@ -544,10 +548,12 @@ After running `python setup.py database`, configuration files are created in:
 
 ### Legacy Features
 
-Some features reference older JSON-based data storage:
-- Monitoring scripts work with `data/continuous_learning_data/` from older sessions
-- Current Neo4j sessions store all data directly in the database
-- Use Neo4j Browser at `http://localhost:7474` to explore current session data
+**Removed Components**: 
+- Scripts directory and monitoring tools (replaced by Neo4j Browser)
+- JSON-based data storage (replaced by Neo4j persistence)
+- File-based visualization tools (use Neo4j's built-in capabilities)
+
+**Current Approach**: All data is stored in Neo4j for real-time access, persistence, and built-in visualization capabilities.
 
 ## 📄 License
 
