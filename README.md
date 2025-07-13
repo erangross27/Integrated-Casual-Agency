@@ -102,11 +102,14 @@ This will show the agent:
 ### 🎯 Run Learning with Different Backends
 
 ```bash
-# Using Neo4j backend (recommended)
-python examples/learning.py --database neo4j
+# Using Neo4j backend (recommended, default)
+python examples/learning.py --backend neo4j
 
 # Using in-memory backend (for testing)
-python examples/learning.py --database memory
+python examples/learning.py --backend memory
+
+# With custom Neo4j configuration
+python examples/learning.py --backend neo4j --neo4j-uri neo4j://localhost:7687 --neo4j-user neo4j --neo4j-password mypassword
 ```
 
 ### � Console Commands
@@ -131,7 +134,7 @@ ica-view-graph
 
 ### Enhanced Learning with Physics Simulation
 
-The ICA Framework now includes realistic physics simulation and procedural scenario generation:
+The ICA Framework includes realistic physics simulation and procedural scenario generation:
 
 ```bash
 # Run enhanced learning with physics simulation
@@ -139,35 +142,42 @@ python examples/learning.py
 ```
 
 **Features:**
-- **Physics Simulation**: 40+ physics entities (particles, forces, fields, constraints)
-- **Procedural Scenarios**: Smart home automation, industrial control systems
-- **Neo4j Backend**: Persistent knowledge storage and retrieval
-- **Real-time Monitoring**: Graph growth and pattern discovery
+- **Physics Simulation**: 40+ physics entities (particles, forces, fields, emergent properties)
+- **Procedural Scenarios**: Smart home automation, industrial robotics, autonomous vehicles
+- **Neo4j Backend**: Persistent knowledge storage and session resumption
+- **Real-time Monitoring**: Graph growth and pattern discovery with milestone tracking
+- **Advanced Learning**: Multi-round scenario variation with complexity progression
+- **Scenario Types**: Every 5th scenario uses physics simulation, every 7th uses procedural generation
+- **Graceful Shutdown**: Ctrl+C saves all progress to database and enables session resumption
 
 ### Database Backends
 
 The framework supports multiple database backends:
 
 1. **Neo4j (Recommended)**: Persistent graph database
-   - Use: `python examples/learning.py --database neo4j`
+   - Use: `python examples/learning.py --backend neo4j` (default)
    - Configure via: `python setup.py database`
 
 2. **Memory**: In-memory for testing
-   - Use: `python examples/learning.py --database memory`
+   - Use: `python examples/learning.py --backend memory`
 
 ### Monitor Learning Progress
 
 ```bash
-# Real-time monitoring dashboard
+# Real-time monitoring dashboard (requires data directory from older JSON-based sessions)
 python scripts/monitor_continuous_learning.py --data-dir data/continuous_learning_data
 ```
+
+**Note**: Current Neo4j-based sessions store data directly in the database. Monitoring scripts are available for legacy JSON-based data.
 
 ### View Knowledge Graph
 
 ```bash
-# Visualize the current knowledge graph
+# Visualize knowledge graph from legacy JSON data
 python scripts/view_knowledge_graph.py --data-dir data/continuous_learning_data
 ```
+
+**Note**: For Neo4j-based sessions, use Neo4j Browser or custom visualization tools to explore the graph data.
 
 ## 📊 What You'll See
 
@@ -188,19 +198,26 @@ During continuous learning, the agent will:
    - Abstractions: Higher-level understanding emerges
    - Utility: Concepts get scored based on usefulness
 
-4. **📈 Improve Performance**
-   - Confidence: Uncertainty decreases with experience
-   - Predictions: Better at predicting outcomes
-   - Intrinsic Rewards: Curiosity drives exploration
+4. **� Progress Tracking**
+   - Milestone-based updates: Progress shown every 2000 edge relationships
+   - Session resumption: Neo4j sessions can resume from previous state
+   - Learning rate: Real-time scenarios processed per second
+   - Database status: Connection health and data persistence verification
 
-## 📁 Output Files
+## 📁 Session Data
 
-Continuous learning saves progress in `data/continuous_learning_data/`:
+When using **Neo4j backend** (recommended), all learning data is automatically persisted in the Neo4j database:
+- **Knowledge graph**: Nodes and edges with confidence scores
+- **Session metadata**: Scenarios completed, learning time, session IDs
+- **Resumption capability**: Sessions can be resumed from where they left off
 
-- `agent_state_YYYYMMDD_HHMMSS.json` - Complete agent state
-- `performance_metrics_YYYYMMDD_HHMMSS.json` - Learning metrics
-- `learning_history_YYYYMMDD_HHMMSS.json` - Step-by-step history
-- `logs/continuous_learning.log` - Detailed logs
+When using **memory backend** (testing only), data is kept in memory and lost when the session ends.
+
+### Database Configuration Files
+
+After running `python setup.py database`, configuration files are created in:
+- `config/database/neo4j.json` - Default Neo4j configuration
+- `config/database/neo4j_sample_configuration.json` - Sample configuration template
 
 ## 🏗️ Project Structure
 
@@ -215,24 +232,28 @@ ica-framework/
 │   ├── sandbox/            # Simulation environments
 │   └── utils/              # Utilities and helpers
 ├── examples/               # Example scripts
-│   ├── learning.py         # Enhanced continuous learning
-│   └── demo.py            # Framework demonstration
+│   └── learning.py         # Enhanced continuous learning with physics simulation
 ├── scripts/                # Utility scripts
 │   ├── monitor_continuous_learning.py
 │   └── view_knowledge_graph.py
-├── config/                 # Configuration files
+├── docs/                   # Documentation
+│   └── database_backends.md
 ├── requirements/           # Dependency specifications
 │   ├── requirements.txt    # Core dependencies  
 │   ├── requirements-dev.txt # Development dependencies
 │   └── REQUIREMENTS_CONSOLIDATION.md # Consolidation documentation
+├── config/                 # Configuration files
+│   └── database/           # Database configurations
 └── setup.py               # Unified setup and database configuration
 ```
 
 **Recent Updates:**
 - ✅ Consolidated `setup_database.py` into `setup.py`
-- ✅ Removed redundant continuous learning scripts
-- ✅ Enhanced `examples/learning.py` with physics simulation
+- ✅ Removed `demo.py` example script
+- ✅ Enhanced `examples/learning.py` with physics simulation and procedural scenarios
 - ✅ Streamlined console commands via entry points
+- ✅ Removed unused script files (`fix_unknown_labels.py`, `test_connection.py`)
+- ✅ Updated project structure documentation
 
 2. **Install dependencies:**
 ```bash
@@ -307,11 +328,13 @@ python examples/learning.py
 ```
 
 This will run a complete learning session including:
-- Physics simulation with 40+ entities and relationships
-- Procedural scenario generation (smart home, industrial automation)
-- Real-time knowledge graph construction with Neo4j persistence
-- Pattern discovery and concept formation
-- Continuous learning with intrinsic motivation
+- **Physics simulation** with 40+ entities and relationships
+- **Procedural scenario generation** (smart home, industrial automation, autonomous vehicles)
+- **Real-time knowledge graph construction** with Neo4j persistence and session resumption
+- **Pattern discovery and concept formation** through hierarchical abstraction
+- **Continuous learning** with intrinsic motivation and curiosity-driven exploration
+- **Progress tracking** with edge milestone updates every 2000 relationships
+- **Scenario variation** across multiple rounds with increasing complexity
 
 ## 📊 Features
 
@@ -460,9 +483,15 @@ pip install plotly seaborn
 ### Database Configuration Files
 
 After running `python setup.py database`, configuration files are created in:
-- `config/database/neo4j.json` - Default Neo4j configuration
-- `config/database/neo4j_custom.json` - Your custom configuration
-- `config/database/memory.json` - In-memory database configuration
+- `config/database/neo4j.json` - Default Neo4j configuration  
+- `config/database/neo4j_sample_configuration.json` - Sample configuration template
+
+### Legacy Features
+
+Some features reference older JSON-based data storage:
+- Monitoring scripts work with `data/continuous_learning_data/` from older sessions
+- Current Neo4j sessions store all data directly in the database
+- Use Neo4j Browser at `http://localhost:7474` to explore current session data
 
 ## 📄 License
 
