@@ -93,15 +93,30 @@ class ProceduralDatasetGenerator:
         
         motifs = []
         
-        # Generate different types of motifs
+        # Original motif types
         motif_types = ["path", "triangle", "star", "clique", "chain"]
         
+        # NEW: Domain-specific complex motifs for AGI training
+        complex_motif_types = [
+            "control_loop", "sensor_network", "hierarchical_system", 
+            "feedback_mechanism", "redundant_system", "cascade_failure",
+            "emergency_response", "optimization_cycle", "learning_pattern"
+        ]
+        
+        # Generate original motifs
         for motif_type in motif_types:
             # Generate multiple instances of each motif type
             for instance in range(3):  # 3 instances of each type
                 motif = self._create_motif(motif_type, num_nodes, instance)
                 if motif:
                     motifs.append(motif)
+        
+        # Generate complex domain motifs
+        for complex_type in complex_motif_types:
+            for instance in range(2):  # 2 instances of each complex type
+                complex_motif = self._create_complex_motif(complex_type, num_nodes, instance)
+                if complex_motif:
+                    motifs.append(complex_motif)
         
         return motifs
     
@@ -212,6 +227,143 @@ class ProceduralDatasetGenerator:
         
         return None
     
+    def _create_complex_motif(self, motif_type: str, num_nodes: int, instance: int) -> Optional[Dict[str, Any]]:
+        """Create complex domain-specific motifs for advanced AGI learning"""
+        
+        available_nodes = list(range(num_nodes))
+        
+        if motif_type == "control_loop":
+            # Sensor -> Controller -> Actuator -> Environment -> Sensor feedback loop
+            if len(available_nodes) < 4:
+                return None
+            
+            loop_nodes = random.sample(available_nodes, 4)
+            sensor, controller, actuator, environment = loop_nodes
+            
+            edges = [
+                (f"node_{sensor}", f"node_{controller}"),
+                (f"node_{controller}", f"node_{actuator}"),
+                (f"node_{actuator}", f"node_{environment}"),
+                (f"node_{environment}", f"node_{sensor}")  # Feedback loop
+            ]
+            
+            return {
+                "type": "control_loop",
+                "instance": instance,
+                "nodes": [f"node_{n}" for n in loop_nodes],
+                "edges": edges,
+                "size": 4,
+                "properties": {
+                    "cyclic": True, 
+                    "control_type": "feedback",
+                    "roles": {
+                        f"node_{sensor}": "sensor",
+                        f"node_{controller}": "controller", 
+                        f"node_{actuator}": "actuator",
+                        f"node_{environment}": "environment"
+                    }
+                }
+            }
+        
+        elif motif_type == "sensor_network":
+            # Multiple sensors feeding into data fusion center
+            network_size = random.randint(5, 8)
+            if len(available_nodes) < network_size:
+                return None
+            
+            network_nodes = random.sample(available_nodes, network_size)
+            fusion_center = network_nodes[0]
+            sensors = network_nodes[1:]
+            
+            edges = [(f"node_{sensor}", f"node_{fusion_center}") for sensor in sensors]
+            
+            return {
+                "type": "sensor_network",
+                "instance": instance,
+                "nodes": [f"node_{n}" for n in network_nodes],
+                "edges": edges,
+                "size": network_size,
+                "properties": {
+                    "fusion_center": f"node_{fusion_center}",
+                    "sensor_count": len(sensors),
+                    "network_topology": "star"
+                }
+            }
+        
+        elif motif_type == "hierarchical_system":
+            # Multi-level hierarchy with management layers
+            if len(available_nodes) < 7:
+                return None
+            
+            hierarchy_nodes = random.sample(available_nodes, 7)
+            top_level = hierarchy_nodes[0]
+            middle_level = hierarchy_nodes[1:3]
+            bottom_level = hierarchy_nodes[3:7]
+            
+            edges = []
+            # Top to middle connections
+            for mid in middle_level:
+                edges.append((f"node_{top_level}", f"node_{mid}"))
+            
+            # Middle to bottom connections
+            for i, mid in enumerate(middle_level):
+                start_idx = i * 2
+                end_idx = start_idx + 2
+                for bottom in bottom_level[start_idx:end_idx]:
+                    edges.append((f"node_{mid}", f"node_{bottom}"))
+            
+            return {
+                "type": "hierarchical_system",
+                "instance": instance,
+                "nodes": [f"node_{n}" for n in hierarchy_nodes],
+                "edges": edges,
+                "size": 7,
+                "properties": {
+                    "levels": 3,
+                    "top_level": f"node_{top_level}",
+                    "management_structure": "tree"
+                }
+            }
+        
+        elif motif_type == "redundant_system":
+            # Primary + backup systems with failover
+            if len(available_nodes) < 6:
+                return None
+            
+            redundant_nodes = random.sample(available_nodes, 6)
+            controller = redundant_nodes[0]
+            primary_sys = redundant_nodes[1:3]
+            backup_sys = redundant_nodes[3:5]
+            monitor = redundant_nodes[5]
+            
+            edges = []
+            # Controller to both systems
+            for system in primary_sys + backup_sys:
+                edges.append((f"node_{controller}", f"node_{system}"))
+            
+            # Monitor watching all systems
+            for system in primary_sys + backup_sys:
+                edges.append((f"node_{monitor}", f"node_{system}"))
+            
+            # Cross-redundancy
+            edges.append((f"node_{primary_sys[0]}", f"node_{backup_sys[0]}"))
+            
+            return {
+                "type": "redundant_system",
+                "instance": instance,
+                "nodes": [f"node_{n}" for n in redundant_nodes],
+                "edges": edges,
+                "size": 6,
+                "properties": {
+                    "redundancy_type": "active_passive",
+                    "primary_nodes": [f"node_{n}" for n in primary_sys],
+                    "backup_nodes": [f"node_{n}" for n in backup_sys],
+                    "monitor_node": f"node_{monitor}"
+                }
+            }
+        
+        return None
+    
     def _embed_motif_in_graph(self, graph: nx.Graph, motif: Dict[str, Any]):
         """Embed a motif into the graph"""
         
@@ -263,6 +415,282 @@ class ProceduralDatasetGenerator:
         self.logger.info(f"Loaded dataset from {filepath}")
         return dataset
 
+
+class MultiDomainScenarioGenerator:
+    """Generate learning scenarios across multiple domains for comprehensive AGI training"""
+    
+    def __init__(self, config: SandboxConfig):
+        self.config = config
+        self.logger = ica_logger
+        self.domain_templates = {
+            'smart_city': self._get_smart_city_template(),
+            'healthcare': self._get_healthcare_template(),
+            'manufacturing': self._get_manufacturing_template(),
+            'energy_grid': self._get_energy_grid_template()
+        }
+        self.scenario_complexity = 1.0
+        
+    def generate_multi_domain_dataset(self, scenarios_per_domain=100, total_domains=4) -> Dict[str, Any]:
+        """Generate comprehensive multi-domain dataset"""
+        
+        selected_domains = list(self.domain_templates.keys())[:total_domains]
+        all_scenarios = []
+        domain_stats = {}
+        
+        for domain in selected_domains:
+            domain_scenarios = self.generate_domain_scenarios(domain, scenarios_per_domain)
+            all_scenarios.extend(domain_scenarios)
+            domain_stats[domain] = len(domain_scenarios)
+            self.logger.info(f"Generated {len(domain_scenarios)} scenarios for {domain}")
+        
+        dataset = {
+            "scenarios": all_scenarios,
+            "domain_stats": domain_stats,
+            "total_scenarios": len(all_scenarios),
+            "domains_covered": selected_domains,
+            "complexity_level": self.scenario_complexity
+        }
+        
+        return dataset
+    
+    def generate_domain_scenarios(self, domain: str, count: int) -> List[Dict[str, Any]]:
+        """Generate scenarios for a specific domain"""
+        
+        template = self.domain_templates.get(domain, {})
+        scenarios = []
+        
+        for i in range(count):
+            scenario = self._create_scenario_from_template(domain, template, i)
+            if scenario:
+                scenarios.append(scenario)
+        
+        return scenarios
+    
+    def _get_smart_city_template(self) -> Dict[str, Any]:
+        """Smart city infrastructure template"""
+        return {
+            "entity_types": [
+                "traffic_sensor", "traffic_controller", "traffic_light",
+                "air_quality_monitor", "emergency_dispatcher", "public_transport"
+            ],
+            "relationship_types": [
+                "monitors", "controls", "coordinates", "alerts", "optimizes"
+            ],
+            "scenario_patterns": [
+                "traffic_optimization", "emergency_response", "environmental_monitoring"
+            ]
+        }
+    
+    def _get_healthcare_template(self) -> Dict[str, Any]:
+        """Healthcare system template"""
+        return {
+            "entity_types": [
+                "patient_monitor", "vital_signs_sensor", "medical_ai",
+                "diagnostic_system", "treatment_device", "ehr_system"
+            ],
+            "relationship_types": [
+                "monitors_patient", "diagnoses", "treats", "alerts_staff", "coordinates_care"
+            ],
+            "scenario_patterns": [
+                "patient_monitoring", "emergency_care", "drug_delivery"
+            ]
+        }
+    
+    def _get_manufacturing_template(self) -> Dict[str, Any]:
+        """Manufacturing system template"""
+        return {
+            "entity_types": [
+                "machine", "sensor", "actuator",
+                "conveyor_belt", "robot_arm", "quality_inspector"
+            ],
+            "relationship_types": [
+                "feeds", "transports", "inspects", "controls", "monitors"
+            ],
+            "scenario_patterns": [
+                "production_line_optimization", "predictive_maintenance", "quality_control"
+            ]
+        }
+    
+    def _get_energy_grid_template(self) -> Dict[str, Any]:
+        """Energy grid management template"""
+        return {
+            "entity_types": [
+                "power_generator", "transformer", "sensor",
+                "controller", "energy_storage", "consumer"
+            ],
+            "relationship_types": [
+                "generates", "transforms", "stores", "supplies", "monitors"
+            ],
+            "scenario_patterns": [
+                "energy_distribution_optimization", "demand_response", "fault_detection"
+            ]
+        }
+    
+    def _create_scenario_from_template(self, domain: str, template: Dict[str, Any], instance_id: int) -> Dict[str, Any]:
+        """Create a scenario based on domain template"""
+        
+        entities = []
+        relationships = []
+        
+        # Create entities
+        for entity_type in template["entity_types"]:
+            entity_id = f"{entity_type}_{instance_id}"
+            entities.append({
+                "id": entity_id,
+                "type": entity_type,
+                "properties": self._generate_entity_properties(entity_type)
+            })
+        
+        # Create relationships
+        for rel_type in template["relationship_types"]:
+            # Randomly connect entities for relationships
+            source, target = random.sample(entities, 2)
+            relationships.append({
+                "source": source["id"],
+                "target": target["id"],
+                "type": rel_type,
+                "properties": self._generate_relationship_properties(rel_type)
+            })
+        
+        # Scenario specific patterns (e.g., traffic flow, patient monitoring)
+        pattern = random.choice(template["scenario_patterns"])
+        self._apply_scenario_pattern(pattern, entities, relationships, instance_id)
+        
+        return {
+            "id": f"scenario_{domain}_{instance_id}",
+            "domain": domain,
+            "entities": entities,
+            "relationships": relationships,
+            "pattern": pattern,
+            "complexity": self.scenario_complexity
+        }
+    
+    def _generate_entity_properties(self, entity_type: str) -> Dict[str, Any]:
+        """Generate random properties for an entity"""
+        
+        # Base properties
+        properties = {
+            "id": f"{entity_type}_{random.randint(1000, 9999)}",
+            "name": f"{entity_type}_instance",
+            "location": f"loc_{random.randint(1, 100)}",
+            "status": random.choice(["active", "inactive", "maintenance"]),
+            "value": np.random.uniform(10, 100)
+        }
+        
+        # Domain-specific properties
+        if entity_type == "traffic_sensor":
+            properties.update({
+                "sensitivity": np.random.uniform(0.1, 1.0),
+                "range": random.randint(10, 50)
+            })
+        elif entity_type == "patient_monitor":
+            properties.update({
+                "patient_id": f"patient_{random.randint(1, 1000)}",
+                "monitoring_interval": random.randint(1, 5)
+            })
+        elif entity_type == "machine":
+            properties.update({
+                "machine_id": f"machine_{random.randint(1, 100)}",
+                "operational_status": random.choice(["operational", "idle", "faulty"])
+            })
+        elif entity_type == "power_generator":
+            properties.update({
+                "capacity_mw": np.random.uniform(1, 100),
+                "fuel_type": random.choice(["solar", "wind", "gas", "coal"])
+            })
+        
+        return properties
+    
+    def _generate_relationship_properties(self, relationship_type: str) -> Dict[str, Any]:
+        """Generate random properties for a relationship"""
+        
+        return {
+            "strength": np.random.uniform(0.1, 1.0),
+            "confidence": np.random.uniform(0.5, 1.0),
+            "frequency": random.randint(1, 10)
+        }
+    
+    def _apply_scenario_pattern(self, pattern: str, entities: List[Dict[str, Any]], relationships: List[Dict[str, Any]], instance_id: int):
+        """Apply specific scenario pattern to shape the entities and relationships"""
+        
+        if pattern == "traffic_optimization":
+            # Adjust properties for traffic optimization scenario
+            for entity in entities:
+                if entity["type"] == "traffic_sensor":
+                    entity["properties"]["sensitivity"] *= 1.5
+                elif entity["type"] == "traffic_controller":
+                    entity["properties"]["cycle_time"] = random.randint(30, 120)
+        
+        elif pattern == "emergency_response":
+            # Configure entities for emergency response scenario
+            for entity in entities:
+                if entity["type"] == "emergency_dispatcher":
+                    entity["properties"]["response_time"] = random.randint(1, 5)
+                elif entity["type"] == "traffic_light":
+                    entity["properties"]["light_duration"] = random.randint(10, 60)
+        
+        elif pattern == "environmental_monitoring":
+            # Set up for environmental monitoring scenario
+            for entity in entities:
+                if entity["type"] == "air_quality_monitor":
+                    entity["properties"]["sensitivity"] = np.random.uniform(0.01, 0.1)
+        
+        elif pattern == "patient_monitoring":
+            # Configure for patient monitoring scenario
+            for entity in entities:
+                if entity["type"] == "patient_monitor":
+                    entity["properties"]["monitoring_interval"] = random.randint(1, 5)
+        
+        elif pattern == "emergency_care":
+            # Set up for emergency care scenario
+            for entity in entities:
+                if entity["type"] == "medical_ai":
+                    entity["properties"]["diagnosis_accuracy"] = np.random.uniform(0.8, 1.0)
+        
+        elif pattern == "drug_delivery":
+            # Configure for drug delivery scenario
+            for entity in entities:
+                if entity["type"] == "treatment_device":
+                    entity["properties"]["delivery_rate"] = np.random.uniform(1, 10)
+        
+        elif pattern == "production_line_optimization":
+            # Adjust entities for production line optimization
+            for entity in entities:
+                if entity["type"] == "machine":
+                    entity["properties"]["operational_status"] = "operational"
+        
+        elif pattern == "predictive_maintenance":
+            # Set up for predictive maintenance scenario
+            for entity in entities:
+                if entity["type"] == "machine":
+                    entity["properties"]["maintenance_due"] = random.randint(1, 10)
+        
+        elif pattern == "quality_control":
+            # Configure for quality control scenario
+            for entity in entities:
+                if entity["type"] == "quality_inspector":
+                    entity["properties"]["inspection_frequency"] = random.randint(1, 10)
+        
+        elif pattern == "energy_distribution_optimization":
+            # Adjust entities for energy distribution optimization
+            for entity in entities:
+                if entity["type"] == "power_generator":
+                    entity["properties"]["capacity_mw"] *= np.random.uniform(0.8, 1.2)
+        
+        elif pattern == "demand_response":
+            # Set up for demand response scenario
+            for entity in entities:
+                if entity["type"] == "consumer":
+                    entity["properties"]["demand_response_sensitivity"] = np.random.uniform(0.1, 1.0)
+        
+        elif pattern == "fault_detection":
+            # Configure for fault detection scenario
+            for entity in entities:
+                if entity["type"] == "sensor":
+                    entity["properties"]["sensitivity"] *= 2.0
+                elif entity["type"] == "controller":
+                    entity["properties"]["fault_tolerance"] = random.randint(1, 5)
+        
 
 class SandboxEnvironment:
     """

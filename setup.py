@@ -100,6 +100,7 @@ setup(
         "console_scripts": [
             "ica-setup=setup:setup_database",
             "ica-learn=examples.learning:main",
+            "ica-evaluate=examples.evaluate_learning:main",
         ]
     },
 )
@@ -110,17 +111,17 @@ def check_neo4j_availability():
     """Check if Neo4j driver is available"""
     try:
         import neo4j
-        print("✅ Neo4j driver is available")
+        print("Neo4j driver is available")
         return True
     except ImportError:
-        print("❌ Neo4j driver not available")
+        print("Neo4j driver not available")
         print("   Install with: pip install ica-framework[database]")
         return False
 
 
 def setup_neo4j_config():
     """Interactive setup for Neo4j configuration"""
-    print("\n🔧 Neo4j Configuration Setup")
+    print("\nNeo4j Configuration Setup")
     print("=" * 40)
     
     config = {}
@@ -147,15 +148,15 @@ def test_neo4j_connection(config):
         with driver.session(database=config['database']) as session:
             result = session.run("RETURN 'Connection successful' AS message")
             message = result.single()['message']
-            print(f"✅ Neo4j connection successful: {message}")
+            print(f"Neo4j connection successful: {message}")
             driver.close()
             return True
             
     except ImportError:
-        print("❌ Neo4j driver not installed")
+        print("Neo4j driver not installed")
         return False
     except Exception as e:
-        print(f"❌ Neo4j connection failed: {e}")
+        print(f"Neo4j connection failed: {e}")
         return False
 
 
@@ -180,24 +181,24 @@ def create_sample_database_config():
     with open(configs_dir / "neo4j.json", 'w') as f:
         json.dump(neo4j_config, f, indent=2)
     
-    print(f"✅ Neo4j configuration created in: {configs_dir}")
-    print("💡 Edit neo4j.json with your actual Neo4j credentials")
+    print(f"Neo4j configuration created in: {configs_dir}")
+    print("Edit neo4j.json with your actual Neo4j credentials")
 
 
 def setup_database():
     """Interactive database setup"""
-    print("🗄️ ICA Framework Database Setup")
+    print("ICA Framework Database Setup")
     print("=" * 50)
     print("This helps you set up database backends for the ICA Framework")
     print()
     
     # Check current setup
-    print("🔍 Checking current setup...")
+    print("Checking current setup...")
     has_neo4j = check_neo4j_availability()
     
     # Main menu
     while True:
-        print("\n📋 Available actions:")
+        print("\nAvailable actions:")
         print("1. Create sample database configurations")
         print("2. Setup Neo4j configuration")
         print("3. Test Neo4j connection")
@@ -219,11 +220,11 @@ def setup_database():
             with open(configs_dir / "neo4j.json", 'w') as f:
                 json.dump({"backend": "neo4j", "config": config}, f, indent=2)
             
-            print(f"💾 Configuration saved to: {configs_dir / 'neo4j.json'}")
+            print(f"Configuration saved to: {configs_dir / 'neo4j.json'}")
         
         elif choice == '3':
             if not has_neo4j:
-                print("❌ Neo4j driver not available. Install with: pip install ica-framework[database]")
+                print("Neo4j driver not available. Install with: pip install ica-framework[database]")
                 continue
             
             # Load configuration
@@ -241,11 +242,11 @@ def setup_database():
             test_neo4j_connection(config)
         
         elif choice == '4':
-            print("👋 Database setup complete!")
+            print("Database setup complete!")
             break
         
         else:
-            print("❌ Invalid choice. Please select 1-4.")
+            print("Invalid choice. Please select 1-4.")
 
 
 if __name__ == "__main__":
@@ -253,7 +254,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "database":
         setup_database()
     else:
-        print("📦 ICA Framework Setup")
+        print("ICA Framework Setup")
         print("=" * 30)
         print("Use: python setup.py database  # for database configuration")
         print("Use: pip install -e .         # for package installation")

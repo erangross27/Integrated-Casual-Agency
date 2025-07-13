@@ -12,7 +12,231 @@ ica-setup
 ica-learn
 ```
 
-**Note**: Legacy monitoring and visualization console commands (`ica-monitor`, `ica-view-graph`) have been removed. Use Neo4j Browser at `http://localhost:7474` for real-time graph exploration.ning and hierarchical abstraction.**
+**Note**: Legacy monitoring and visualization console commands (`ica-monitor`, `ica-view-graph`) have been removed. ## 📈 Performance Metrics
+
+The framework demonstrates significant improvements over baseline approaches:
+
+- **Motif Discovery**: Efficient frequent subgraph mining
+- **Prediction Accuracy**: Bayesian uncertainty improves calibration
+- **Sample Efficiency**: Curiosity-driven exploration reduces data requirements
+- **Abstraction Quality**: Hierarchical concepts improve generalization
+
+## 🎯 Measuring Learning Value
+
+### Knowledge Quality Metrics
+
+After substantial learning (like your 36,677 scenarios), evaluate the AGI brain's capabilities:
+
+#### 1. **Graph Structure Analysis**
+```bash
+# Access Neo4j Browser at http://localhost:7474
+# Run these Cypher queries to analyze your learned knowledge:
+
+# Total knowledge size
+MATCH (n) RETURN count(n) as total_nodes
+MATCH ()-[r]->() RETURN count(r) as total_relationships
+
+# Knowledge density and connectivity
+MATCH (n)
+OPTIONAL MATCH (n)-[r]-()
+RETURN n.label, count(r) as connections
+ORDER BY connections DESC
+
+# Confidence distribution (higher = better learning)
+MATCH ()-[r]->()
+RETURN avg(r.confidence) as avg_confidence, 
+       min(r.confidence) as min_confidence,
+       max(r.confidence) as max_confidence
+```
+
+#### 2. **Pattern Recognition Quality**
+```bash
+# Find learned patterns and abstractions
+MATCH (n)-[r1]->(m)-[r2]->(o)
+WHERE r1.confidence > 0.8 AND r2.confidence > 0.8
+RETURN n.id, r1.type, m.id, r2.type, o.id
+LIMIT 50
+
+# Identify emergent concepts
+MATCH (n)
+WHERE size((n)-[]-()) > 5  # Highly connected entities
+RETURN n.id, n.label, size((n)-[]-()) as connections
+ORDER BY connections DESC
+```
+
+### Real-World Application Tests
+
+#### 3. **Predictive Capability Assessment**
+Create test scenarios to evaluate the agent's learned knowledge:
+
+```python
+# Test the agent's predictive abilities
+def evaluate_prediction_accuracy(agent, test_scenarios):
+    correct_predictions = 0
+    total_predictions = 0
+    
+    for scenario in test_scenarios:
+        # Give partial information
+        partial_obs = {
+            "entities": scenario["entities"][:2],  # Only show some entities
+            "relationships": [],  # No relationships
+            "state": scenario["state"]
+        }
+        
+        # Agent predicts what relationships should exist
+        predictions = agent.predict_relationships(partial_obs)
+        
+        # Compare with actual known relationships
+        for pred in predictions:
+            if pred in scenario["relationships"]:
+                correct_predictions += 1
+            total_predictions += 1
+    
+    return correct_predictions / total_predictions if total_predictions > 0 else 0
+```
+
+#### 4. **Transfer Learning Evaluation**
+Test if the agent can apply learned knowledge to new domains:
+
+```python
+# Introduce completely new scenario types
+new_scenario = {
+    "name": "Medical Diagnosis System",
+    "entities": [
+        {"id": "patient_symptoms", "label": "input"},
+        {"id": "diagnostic_algorithm", "label": "processor"},
+        {"id": "treatment_plan", "label": "output"}
+    ],
+    "relationships": [
+        {"source": "patient_symptoms", "target": "diagnostic_algorithm", "type": "feeds_into", "confidence": 0.9}
+    ]
+}
+
+# See if agent can quickly learn and generalize
+transfer_performance = agent.active_learning_step(new_scenario)
+```
+
+## 🚀 Practical Applications of Your AGI Brain
+
+### 1. **Autonomous System Design**
+Your learned knowledge graph can be used to:
+- **Design smart buildings**: Apply learned HVAC, lighting, and security patterns
+- **Optimize industrial processes**: Use learned automation and control relationships
+- **Create adaptive interfaces**: Apply sensor-controller-actuator patterns to new domains
+
+### 2. **Causal Reasoning Engine**
+```python
+# Query the learned causal knowledge
+def find_causal_chain(agent, start_entity, end_entity):
+    """Find causal pathways between two entities"""
+    # Use graph traversal to find causal chains
+    paths = agent.knowledge_graph.find_paths(start_entity, end_entity)
+    return sorted(paths, key=lambda x: sum([edge.confidence for edge in x]))
+
+# Example: What causes energy consumption to increase?
+energy_causes = find_causal_chain(agent, "motion_detector", "energy_consumption")
+```
+
+### 3. **Intelligent Decision Making**
+```python
+# Use learned knowledge for decision support
+def recommend_action(agent, current_state, goal_state):
+    """Recommend actions based on learned causal relationships"""
+    # Find entities that influence the goal
+    influencers = agent.knowledge_graph.get_predecessors(goal_state)
+    
+    # Rank by confidence and controllability
+    actions = []
+    for entity in influencers:
+        if agent.is_controllable(entity):
+            confidence = agent.get_relationship_confidence(entity, goal_state)
+            actions.append((entity, confidence))
+    
+    return sorted(actions, key=lambda x: x[1], reverse=True)
+
+# Example: How to optimize room temperature?
+temp_actions = recommend_action(agent, current_obs, "room_temperature")
+```
+
+### 4. **Anomaly Detection**
+```python
+# Detect unusual patterns using learned normal behavior
+def detect_anomalies(agent, new_observation):
+    """Detect deviations from learned patterns"""
+    expected_relationships = agent.predict_relationships(new_observation)
+    actual_relationships = new_observation["relationships"]
+    
+    anomalies = []
+    for expected in expected_relationships:
+        if expected not in actual_relationships:
+            anomalies.append(f"Missing: {expected}")
+    
+    for actual in actual_relationships:
+        if actual not in expected_relationships:
+            anomalies.append(f"Unexpected: {actual}")
+    
+    return anomalies
+```
+
+## 🔬 Advanced Evaluation Framework
+
+### Comprehensive AGI Brain Assessment
+
+After substantial learning sessions (like 36,677 scenarios), evaluate your AGI brain's capabilities:
+
+```bash
+# Run comprehensive evaluation of learned knowledge
+python examples/evaluate_learning.py
+
+# With custom Neo4j configuration
+python examples/evaluate_learning.py --neo4j-password your_password
+```
+
+**The evaluation measures:**
+1. **Knowledge Structure**: Size, density, and connectivity of learned knowledge
+2. **Prediction Accuracy**: Ability to predict relationships in new situations  
+3. **Transfer Learning**: Adaptation speed to completely new domains
+4. **Reasoning Capabilities**: Causal inference and logical reasoning
+
+**AGI Readiness Score**: Weighted combination of all capabilities (0.0-1.0)
+- **0.8+**: AGI-Ready - Excellent performance across all capabilities
+- **0.6+**: Advanced - Strong capabilities with room for improvement
+- **0.4+**: Developing - Good foundation, needs more learning
+- **0.2+**: Early Stage - Basic capabilities emerging
+
+### Real-World Applications
+
+Once your AGI brain reaches sufficient capability scores, you can deploy it for:
+
+#### 🏠 **Autonomous Building Management**
+```python
+# Use learned HVAC, lighting, security patterns
+building_optimizer = BuildingController(trained_agent)
+building_optimizer.optimize_energy_efficiency()
+building_optimizer.enhance_occupant_comfort()
+```
+
+#### 🏭 **Industrial Process Optimization**
+```python
+# Apply learned automation and control relationships
+process_optimizer = IndustrialController(trained_agent)
+process_optimizer.predict_maintenance_needs()
+process_optimizer.optimize_production_flow()
+```
+
+#### 🔮 **Predictive System Design**
+```python
+# Design new systems based on learned patterns
+system_designer = AutonomousDesigner(trained_agent)
+new_system = system_designer.design_smart_system(requirements)
+```
+
+#### 🧠 **Causal Decision Engine**
+```python
+# Make decisions based on learned causal relationships
+decision_engine = CausalDecisionMaker(trained_agent)
+action_plan = decision_engine.recommend_actions(current_state, desired_outcome)
+```j Browser at `http://localhost:7474` for real-time graph exploration.ning and hierarchical abstraction.**
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-1.12+-red.svg)](https://pytorch.org/)
@@ -148,11 +372,8 @@ ica-setup
 # Run enhanced learning with physics simulation
 ica-learn
 
-# Monitor learning progress (real-time dashboard)
-ica-monitor
-
-# View knowledge graph visualization
-ica-view-graph
+# Evaluate your AGI brain's capabilities  
+ica-evaluate
 ```
 
 ## 🔄 Continuous Learning
@@ -272,7 +493,8 @@ ica-framework/
 │   ├── __init__.py
 │   └── enhanced_knowledge_graph.py  # Enhanced KG with database support
 ├── examples/               # Example scripts
-│   └── learning.py         # Enhanced continuous learning with physics simulation
+│   ├── learning.py         # Enhanced continuous learning with physics simulation
+│   └── evaluate_learning.py # Comprehensive AGI brain evaluation
 ├── docs/                   # Documentation
 │   └── database_backends.md
 ├── requirements/           # Dependency specifications
