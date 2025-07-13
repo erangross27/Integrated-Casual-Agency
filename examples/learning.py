@@ -61,7 +61,7 @@ os.environ['ICA_LOG_LEVEL'] = 'CRITICAL'  # Try to set framework log level
 os.environ['PYTHONHASHSEED'] = '0'  # Suppress any hash-based randomness
 
 from ica_framework import ICAAgent, Config
-from ica_framework.sandbox import SandboxEnvironment
+from ica_framework.sandbox import SandboxEnvironment, ProceduralDatasetGenerator, MultiDomainScenarioGenerator
 
 # Immediately suppress ICA framework logging after import
 logging.getLogger('ica_framework').disabled = True
@@ -614,7 +614,12 @@ class ContinuousLearning:
         print("=" * 80)
         print("Press Ctrl+C to save progress and exit")
         print()
-        print("📝 Learning Behavior:")
+        print("📝 Enhanced Learning Behavior:")
+        print("   • Enhanced Procedural Dataset: Complex motifs (control_loop, sensor_network, etc.)")
+        print("   • Multi-Domain Scenarios: Smart city, healthcare, manufacturing, energy grid")
+        print("   • Sandbox Experiments: Real-time ablation studies with enhanced agents")
+        print("   • Physics Simulation: 40+ entities with realistic interactions") 
+        print("   • Original Scenarios: IoT and procedural generation for continuity")
         print("   • Nodes represent unique entities (sensors, controllers, etc.)")
         print("   • Edges represent relationships between entities")
         print("   • Node count stabilizes once all entities are discovered")
@@ -704,6 +709,12 @@ class ContinuousLearning:
                         self.session_stats['total_nodes'] = existing_nodes
                         self.session_stats['total_edges'] = existing_edges
                         
+                        # Initialize with estimated scenario count as fallback
+                        estimated_scenarios = max(0, existing_edges // 2)
+                        start_scenario = estimated_scenarios
+                        self.session_stats['scenarios_completed'] = estimated_scenarios
+                        print(f"🔄 Initial estimate: ~{estimated_scenarios} scenarios from {existing_edges} edges")
+                        
                         # Try to load saved session metadata
                         try:
                             if hasattr(self.agent.knowledge_graph, 'get_graph_property'):
@@ -714,22 +725,21 @@ class ContinuousLearning:
                                 if saved_scenarios is not None:
                                     self.session_stats['scenarios_completed'] = int(saved_scenarios)
                                     start_scenario = int(saved_scenarios)
-                                    print(f"📈 Resumed saved session: {start_scenario} scenarios completed")
+                                    print(f"📈 Found saved metadata: {start_scenario} scenarios completed")
                                     
                                 if saved_time is not None:
                                     self.session_stats['total_learning_time'] = float(saved_time)
+                                    print(f"⏱️ Restored learning time: {saved_time:.1f}s")
                                     
                                 if saved_session_id:
                                     print(f"🆔 Continuing session: {saved_session_id}")
-                        except Exception:
-                            # Fallback to estimation if metadata loading fails
-                            estimated_scenarios = max(0, existing_edges // 2)
-                            self.session_stats['scenarios_completed'] = estimated_scenarios
-                            start_scenario = estimated_scenarios
-                            print(f"🔄 Estimated resumption point: ~{estimated_scenarios} scenarios")
+                        except Exception as e:
+                            print(f"⚠️ Metadata loading error: {e}")
+                            print(f"📊 Using estimated scenario count: {start_scenario}")
                         
                         scenario_round = (start_scenario // len(base_scenarios)) + 1
                         print(f"🎯 Continuing from round {scenario_round}")
+                        print(f"📈 Resuming scenario count from: {start_scenario}")
                         
                         # Set the last_detailed_edges to avoid immediate milestone display
                         last_detailed_edges = (existing_edges // 2000) * 2000
@@ -741,13 +751,47 @@ class ContinuousLearning:
                 print(f"⚠️ Error checking Neo4j data: {e}")
                 print("🆕 Continuing with fresh start")
         
-        # Initialize enhanced scenario generators
-        physics_sim = PhysicsSimulation()
-        procedural_gen = ProceduralScenarioGenerator()
-        print("🌟 Enhanced scenario generators initialized (Physics + Procedural)")
+        # Initialize enhanced scenario generators with proper configuration
+        try:
+            from ica_framework.utils.config import SandboxConfig
+            sandbox_config = SandboxConfig()
+            
+            # Enhanced sandbox environment with complex motifs
+            self.sandbox_env = SandboxEnvironment(sandbox_config)
+            self.physics_sim = PhysicsSimulation()
+            self.procedural_gen = ProceduralDatasetGenerator(sandbox_config)
+            
+            # NEW: Multi-domain scenario generator for comprehensive AGI training
+            self.multi_domain_gen = MultiDomainScenarioGenerator(sandbox_config)
+            
+            print("🌟 Enhanced scenario generators initialized:")
+            print("   • Physics Simulation (40+ entities)")
+            print("   • Procedural Dataset Generator (18+ motif types)")
+            print("   • Multi-Domain Scenarios (4 domains: smart_city, healthcare, manufacturing, energy)")
+            print("   • Complex Motifs: control_loop, sensor_network, hierarchical_system, etc.")
+            
+        except Exception as e:
+            print(f"⚠️ Enhanced generators initialization error: {e}")
+            print("🔄 Falling back to basic scenario generation")
+            # Initialize basic fallbacks
+            self.sandbox_env = None
+            self.physics_sim = PhysicsSimulation()
+            self.procedural_gen = None
+            self.multi_domain_gen = None
         
         print("=" * 80)
         print()
+        
+        # Show resumption status clearly
+        if start_scenario > 0:
+            print(f"🔄 RESUMING SESSION: Starting from scenario {start_scenario + 1}")
+            print(f"   Previous scenarios completed: {start_scenario}")
+            print(f"   Current round: {scenario_round}")
+            print(f"   Existing knowledge: {self.session_stats['total_nodes']} nodes, {self.session_stats['total_edges']} edges")
+            print()
+        else:
+            print("🆕 STARTING NEW SESSION")
+            print()
         
         # Infinite continuous learning loop
         scenario_count = start_scenario
@@ -763,12 +807,104 @@ class ContinuousLearning:
                 # Add variation to scenarios each round for continuous learning
                 scenario = base_scenarios[scenario_in_round].copy()
                 
-                # Every 5th scenario, use enhanced physics simulation
-                if scenario_count % 5 == 0:
+                # Enhanced scenario selection with new sandbox capabilities
+                scenario_type = scenario_count % 10
+                
+                if scenario_type == 0 and self.procedural_gen:
+                    # Use enhanced procedural dataset with complex motifs
                     try:
-                        physics_scenario = physics_sim.generate_physics_scenario()
+                        dataset = self.procedural_gen.generate_dataset(num_nodes=50, num_edges=100)
+                        # Convert dataset to scenario format
+                        entities = []
+                        relationships = []
+                        
+                        for node in dataset['graph'].nodes():
+                            node_data = dataset['graph'].nodes[node]
+                            entities.append({
+                                "id": node,
+                                "label": node_data.get('label', 'entity'),
+                                "properties": node_data.get('properties', {})
+                            })
+                        
+                        for edge in dataset['graph'].edges(data=True):
+                            relationships.append({
+                                "source": edge[0],
+                                "target": edge[1],
+                                "type": edge[2].get('relationship', 'related'),
+                                "confidence": edge[2].get('confidence', 0.8),
+                                "motif_type": edge[2].get('motif_type', 'unknown')
+                            })
+                        
                         scenario = {
-                            'name': f"Physics Simulation {scenario_count}",
+                            'name': f"Enhanced Procedural Dataset {scenario_count + 1}",
+                            'entities': entities,
+                            'relationships': relationships,
+                            'description': f"Complex motifs: {', '.join(dataset.get('motif_types', []))}"
+                        }
+                    except Exception as e:
+                        print(f"⚠️ Procedural generation error: {e}")
+                        # Fallback to base scenario
+                        pass
+                
+                elif scenario_type == 1 and self.multi_domain_gen:
+                    # Use multi-domain scenario generation
+                    try:
+                        # Generate scenarios from different domains
+                        domain_scenarios = self.multi_domain_gen.generate_domain_scenarios(
+                            domain=np.random.choice(['smart_city', 'healthcare', 'manufacturing', 'energy_grid']),
+                            count=1
+                        )
+                        
+                        if domain_scenarios:
+                            domain_scenario = domain_scenarios[0]
+                            scenario = {
+                                'name': f"Multi-Domain: {domain_scenario['domain']} - {domain_scenario['pattern']}",
+                                'entities': domain_scenario['entities'],
+                                'relationships': domain_scenario['relationships'],
+                                'description': f"Domain: {domain_scenario['domain']}, Pattern: {domain_scenario['pattern']}"
+                            }
+                    except Exception as e:
+                        print(f"⚠️ Multi-domain generation error: {e}")
+                        # Fallback to base scenario
+                        pass
+                
+                elif scenario_type == 2 and self.sandbox_env:
+                    # Use sandbox environment for complex scenarios
+                    try:
+                        # Run enhanced experiment with complex motifs
+                        splits = self.sandbox_env.setup_test_environment()
+                        enhanced_results = self.sandbox_env.run_enhanced_experiment(splits)
+                        
+                        # Convert sandbox results to scenario format
+                        entities = [{"id": f"sandbox_entity_{i}", "label": "sandbox_component"} for i in range(10)]
+                        relationships = [
+                            {
+                                "source": f"sandbox_entity_{i}",
+                                "target": f"sandbox_entity_{(i+1)%10}",
+                                "type": "sandbox_relation",
+                                "confidence": enhanced_results.get('global_confidence', 0.7)
+                            }
+                            for i in range(5)
+                        ]
+                        
+                        scenario = {
+                            'name': f"Sandbox Enhanced Experiment {scenario_count + 1}",
+                            'entities': entities,
+                            'relationships': relationships,
+                            'description': f"Sandbox confidence: {enhanced_results.get('global_confidence', 0.0):.3f}"
+                        }
+                    except Exception as e:
+                        print(f"⚠️ Sandbox generation error: {e}")
+                        # Fallback to base scenario
+                        pass
+                
+                # Keep original physics simulation and procedural generation for other scenarios
+                elif scenario_count % 5 == 0:
+                    # Physics simulation (every 5th scenario)
+                    try:
+                        physics_scenario = self.physics_sim.generate_physics_scenario()
+                        scenario = {
+                            'name': f"Physics Simulation {scenario_count + 1}",
                             'entities': physics_scenario.get('entities', []),
                             'relationships': physics_scenario.get('relationships', []),
                             'description': f"Advanced physics simulation - {physics_scenario.get('scenario_type', 'dynamic')}"
@@ -777,12 +913,12 @@ class ContinuousLearning:
                         # Fallback to base scenario if enhanced fails
                         pass
                 
-                # Every 7th scenario, use procedural generation
-                elif scenario_count % 7 == 0:
+                elif scenario_count % 7 == 0 and self.procedural_gen:
+                    # Original procedural generation (every 7th scenario)
                     try:
-                        procedural_scenario = procedural_gen.generate_scenario()
+                        procedural_scenario = self.procedural_gen.generate_scenario()
                         scenario = {
-                            'name': f"Procedural Scenario {scenario_count}",
+                            'name': f"Original Procedural Scenario {scenario_count + 1}",
                             'entities': procedural_scenario.get('entities', []),
                             'relationships': procedural_scenario.get('relationships', []),
                             'description': f"Procedural generation - {procedural_scenario.get('scenario_type', 'dynamic')}"
@@ -800,7 +936,12 @@ class ContinuousLearning:
                     for rel in scenario.get('relationships', []):
                         # Slightly modify confidence values for learning
                         noise = np.random.normal(0, 0.05 * current_round)
-                        rel['confidence'] = max(0.1, min(0.95, rel['confidence'] + noise))
+                        # Ensure confidence key exists before modifying
+                        if 'confidence' in rel:
+                            rel['confidence'] = max(0.1, min(0.95, rel['confidence'] + noise))
+                        else:
+                            # Set default confidence if missing
+                            rel['confidence'] = max(0.1, min(0.95, 0.8 + noise))
                 
                 # Create observation with enhanced patterns
                 state = np.random.normal(0, 0.2, 32)
@@ -847,7 +988,8 @@ class ContinuousLearning:
                 # Calculate growth and learning rate
                 node_growth = nodes_after - nodes_before
                 edge_growth = edges_after - edges_before
-                learning_rate = (scenario_count + 1) / max(self.session_stats['total_learning_time'], 0.001)
+                total_scenarios_completed = scenario_count + 1
+                learning_rate = total_scenarios_completed / max(self.session_stats['total_learning_time'], 0.001)
                 
                 # Only show progress at significant milestones - no continuous output
                 # Progress bar disabled for completely clean output
@@ -858,9 +1000,10 @@ class ContinuousLearning:
                 
                 # Show detailed update every 2000 edges
                 if self.should_show_detailed_update(edges_after, last_detailed_edges):
+                    total_scenarios_completed = scenario_count + 1
                     print(f"\n📊 Milestone: {edges_after} edges reached!")
                     print(f"    Nodes: {nodes_after}, Confidence: {step_results.get('global_confidence', 0):.3f}")
-                    print(f"    Scenarios completed: {scenario_count + 1}, Rate: {learning_rate:.1f}/s")
+                    print(f"    Scenarios completed: {total_scenarios_completed}, Rate: {learning_rate:.1f}/s")
                     
                     # Show database backend status
                     if self.database_backend == "neo4j":
@@ -879,11 +1022,12 @@ class ContinuousLearning:
                     last_detailed_edges = edges_after
                 
                 # Update session stats
+                total_scenarios_completed = scenario_count + 1
                 self.session_stats['total_nodes'] = nodes_after
                 self.session_stats['total_edges'] = edges_after
                 self.session_stats['experiments_conducted'] += step_results['experiments_conducted']
                 self.session_stats['confidence_progression'].append(step_results['global_confidence'])
-                self.session_stats['scenarios_completed'] = scenario_count + 1
+                self.session_stats['scenarios_completed'] = total_scenarios_completed
                 self.session_stats['learning_events'].append({
                     'scenario': scenario['name'],
                     'round': current_round,
@@ -901,8 +1045,8 @@ class ContinuousLearning:
                     last_save_time = current_time
                 
                 # Save incremental data every 2000 edges or every 100 scenarios
-                if edges_after % 2000 == 0 or (scenario_count + 1) % 100 == 0:
-                    self.save_incremental_data(scenario_count + 1)
+                if edges_after % 2000 == 0 or total_scenarios_completed % 100 == 0:
+                    self.save_incremental_data(total_scenarios_completed)
                 
                 scenario_count += 1
                 

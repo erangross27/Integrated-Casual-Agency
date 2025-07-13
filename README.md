@@ -1,102 +1,96 @@
-# Integrated Causal Agency (ICA) Framework
+# ICA Framework - AGI Learning System
 
-**A sophisticated AGI framework implementing intrinsic curiosity-driven learning ### 📡 Console Commands
+**Advanced AGI framework with intrinsic curiosity-driven learning and causal knowledge graphs.**
 
-After installation, you can use these convenient commands:
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Neo4j](https://img.shields.io/badge/Neo4j-5.0+-green.svg)](https://neo4j.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## 🚀 Quick Start
+
+### 1. Install the Framework
 ```bash
-# Database setup and configuration
-ica-setup
-
-# Run enhanced learning with physics simulation
-ica-learn
+git clone https://github.com/erangross27/Integrated-Casual-Agency.git
+cd Integrated-Casual-Agency
+pip install -e .
 ```
 
-**Note**: Legacy monitoring and visualization console commands (`ica-monitor`, `ica-view-graph`) have been removed. ## 📈 Performance Metrics
+### 2. Setup Neo4j Database
+**Download and install Neo4j Desktop:**
+- Go to [neo4j.com/download](https://neo4j.com/download/)
+- Install Neo4j Desktop
+- Create a new project and database
+- Set a password and start the database
+- Note the connection URL (usually `neo4j://localhost:7687`)
 
-The framework demonstrates significant improvements over baseline approaches:
-
-- **Motif Discovery**: Efficient frequent subgraph mining
-- **Prediction Accuracy**: Bayesian uncertainty improves calibration
-- **Sample Efficiency**: Curiosity-driven exploration reduces data requirements
-- **Abstraction Quality**: Hierarchical concepts improve generalization
-
-## 🎯 Measuring Learning Value
-
-### Knowledge Quality Metrics
-
-After substantial learning (like your 36,677 scenarios), evaluate the AGI brain's capabilities:
-
-#### 1. **Graph Structure Analysis**
+**Configure the connection:**
 ```bash
-# Access Neo4j Browser at http://localhost:7474
-# Run these Cypher queries to analyze your learned knowledge:
+python setup.py database
+```
 
-# Total knowledge size
+### 3. Start Learning
+```bash
+python examples/learning.py
+```
+
+That's it! The AGI agent will start learning with:
+- ✅ Enhanced sandbox with 18+ motif types
+- ✅ Multi-domain scenarios (smart city, healthcare, manufacturing, energy)
+- ✅ Neo4j knowledge persistence
+- ✅ Real-time progress tracking
+- ✅ Session resumption capabilities
+
+## 🧠 What the Agent Learns
+
+The ICA Framework trains an AGI brain through:
+
+### Core Learning Capabilities
+- **Causal Knowledge Graphs**: Discovers cause-effect relationships
+- **Pattern Recognition**: Finds recurring structural motifs
+- **Concept Formation**: Groups patterns into higher-level concepts
+- **Predictive Modeling**: Learns to predict system behavior
+- **Transfer Learning**: Applies knowledge across domains
+
+### Enhanced Sandbox Training
+The agent learns from complex scenarios including:
+- **Control Systems**: Feedback loops, sensor networks, hierarchical control
+- **Multi-Domain Environments**: Smart cities, healthcare systems, manufacturing, energy grids
+- **Procedural Scenarios**: Dynamically generated learning situations
+- **Physics Simulation**: Realistic entity interactions and emergent properties
+
+## 📊 Measuring AGI Progress
+
+After running learning sessions, evaluate your AGI brain using Neo4j Browser at `http://localhost:7474`:
+
+### Knowledge Size Analysis
+```cypher
+// Total learned knowledge
 MATCH (n) RETURN count(n) as total_nodes
 MATCH ()-[r]->() RETURN count(r) as total_relationships
 
-# Knowledge density and connectivity
-MATCH (n)
-OPTIONAL MATCH (n)-[r]-()
-RETURN n.label, count(r) as connections
-ORDER BY connections DESC
-
-# Confidence distribution (higher = better learning)
+// Knowledge confidence (higher = better learning)
 MATCH ()-[r]->()
-RETURN avg(r.confidence) as avg_confidence, 
-       min(r.confidence) as min_confidence,
-       max(r.confidence) as max_confidence
+RETURN avg(r.confidence) as avg_confidence
 ```
 
-#### 2. **Pattern Recognition Quality**
-```bash
-# Find learned patterns and abstractions
+### Pattern Discovery Assessment  
+```cypher
+// High-confidence learned patterns
 MATCH (n)-[r1]->(m)-[r2]->(o)
 WHERE r1.confidence > 0.8 AND r2.confidence > 0.8
 RETURN n.id, r1.type, m.id, r2.type, o.id
 LIMIT 50
-
-# Identify emergent concepts
-MATCH (n)
-WHERE size((n)-[]-()) > 5  # Highly connected entities
-RETURN n.id, n.label, size((n)-[]-()) as connections
-ORDER BY connections DESC
 ```
 
-### Real-World Application Tests
+### Learning Quality Indicators
+- **Node Count**: 500+ nodes indicates substantial learning
+- **Relationship Confidence**: Average >0.7 shows strong learning
+- **Pattern Complexity**: Multi-step causal chains demonstrate reasoning
+- **Domain Coverage**: Knowledge spans multiple domains
 
-#### 3. **Predictive Capability Assessment**
-Create test scenarios to evaluate the agent's learned knowledge:
+## 🎯 Real-World Applications
 
-```python
-# Test the agent's predictive abilities
-def evaluate_prediction_accuracy(agent, test_scenarios):
-    correct_predictions = 0
-    total_predictions = 0
-    
-    for scenario in test_scenarios:
-        # Give partial information
-        partial_obs = {
-            "entities": scenario["entities"][:2],  # Only show some entities
-            "relationships": [],  # No relationships
-            "state": scenario["state"]
-        }
-        
-        # Agent predicts what relationships should exist
-        predictions = agent.predict_relationships(partial_obs)
-        
-        # Compare with actual known relationships
-        for pred in predictions:
-            if pred in scenario["relationships"]:
-                correct_predictions += 1
-            total_predictions += 1
-    
-    return correct_predictions / total_predictions if total_predictions > 0 else 0
-```
-
-#### 4. **Transfer Learning Evaluation**
-Test if the agent can apply learned knowledge to new domains:
+Once trained, your AGI brain can be used for:
 
 ```python
 # Introduce completely new scenario types
