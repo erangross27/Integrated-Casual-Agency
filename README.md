@@ -109,8 +109,21 @@ python examples/learning.py --backend neo4j
 python examples/learning.py --backend memory
 
 # With custom Neo4j configuration
-python examples/learning.py --backend neo4j --neo4j-uri neo4j://localhost:7687 --neo4j-user neo4j --neo4j-password mypassword
+python examples/learning.py --backend neo4j \
+    --neo4j-uri neo4j://localhost:7687 \
+    --neo4j-user neo4j \
+    --neo4j-password mypassword \
+    --neo4j-database neo4j
 ```
+
+### 🔧 Command Line Options
+
+The learning script supports several configuration options:
+- `--backend` : Choose database backend (`neo4j` or `memory`)
+- `--neo4j-uri` : Neo4j server URI (overrides config file)
+- `--neo4j-user` : Neo4j username (overrides config file)  
+- `--neo4j-password` : Neo4j password (overrides config file)
+- `--neo4j-database` : Neo4j database name (overrides config file)
 
 ### � Console Commands
 
@@ -227,10 +240,31 @@ The ICA Framework has been streamlined for clarity:
 ica-framework/
 ├── ica_framework/           # Core framework code
 │   ├── core/               # Agent and core logic
+│   │   ├── __init__.py
+│   │   └── ica_agent.py
 │   ├── components/         # Modular components
+│   │   ├── __init__.py
+│   │   ├── action_planner.py
+│   │   ├── causal_knowledge_graph.py
+│   │   ├── curiosity_module.py
+│   │   ├── hierarchical_abstraction.py
+│   │   └── world_model.py
 │   ├── database/           # Database adapters
+│   │   ├── __init__.py
+│   │   ├── graph_database.py
+│   │   ├── memory_adapter.py
+│   │   └── neo4j_adapter.py
 │   ├── sandbox/            # Simulation environments
-│   └── utils/              # Utilities and helpers
+│   │   ├── __init__.py
+│   │   └── sandbox_environment.py
+│   ├── utils/              # Utilities and helpers
+│   │   ├── __init__.py
+│   │   ├── config.py
+│   │   ├── logger.py
+│   │   ├── metrics.py
+│   │   └── visualization.py
+│   ├── __init__.py
+│   └── enhanced_knowledge_graph.py  # Enhanced KG with database support
 ├── examples/               # Example scripts
 │   └── learning.py         # Enhanced continuous learning with physics simulation
 ├── scripts/                # Utility scripts
@@ -395,7 +429,29 @@ abstraction:
   utility_decay: 0.95
 ```
 
-## 📈 Performance
+## � Learning Script Features
+
+The `examples/learning.py` script provides a comprehensive continuous learning environment:
+
+### 🌟 Enhanced Scenario Generation
+- **Base IoT Scenarios**: 15 predefined smart home/building automation scenarios
+- **Physics Simulation**: 40+ physics entities including forces, objects, and emergent properties
+- **Procedural Generation**: Smart home, industrial robotics, autonomous vehicles, supply chain, energy management, environmental monitoring
+- **Adaptive Complexity**: Scenarios become more complex over multiple rounds
+
+### 🔄 Learning Modes
+- **Continuous Learning**: Infinite loop with graceful shutdown (Ctrl+C)
+- **Session Resumption**: Automatically resumes from previous Neo4j sessions
+- **Multi-round Progression**: Same scenarios with increasing complexity and variation
+- **Milestone Tracking**: Progress updates every 2000 edge relationships
+
+### 📊 Real-time Feedback
+- **Silent Operation**: Suppresses all logging for clean console output
+- **Progress Milestones**: Shows significant learning achievements
+- **Learning Rate**: Real-time scenarios processed per second
+- **Database Status**: Connection health and persistence verification
+
+## �📈 Performance Metrics
 
 The framework demonstrates significant improvements over baseline approaches:
 
