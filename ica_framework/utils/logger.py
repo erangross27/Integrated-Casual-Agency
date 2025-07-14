@@ -90,20 +90,27 @@ class Logger:
             self.logger.addHandler(file_handler)
     
     def info(self, message: str, **kwargs):
-        """Log info message"""
-        formatted_message = f"[{self.name}] {message}"
-        if self.use_loguru:
-            loguru_logger.info(formatted_message, **kwargs)
-        else:
-            self.logger.info(formatted_message)
+        """Log info message - DISABLED FOR SPAM REDUCTION"""
+        # Completely disable info messages to reduce spam
+        return
+        # formatted_message = f"[{self.name}] {message}"
+        # if self.use_loguru:
+        #     loguru_logger.info(formatted_message, **kwargs)
+        #     
+        # else:
+        #     self.logger.info(formatted_message)
+          
+
     
     def debug(self, message: str, **kwargs):
-        """Log debug message"""
-        formatted_message = f"[{self.name}] {message}"
-        if self.use_loguru:
-            loguru_logger.debug(formatted_message, **kwargs)
-        else:
-            self.logger.debug(formatted_message)
+        """Log debug message - DISABLED FOR SPAM REDUCTION"""
+        # Completely disable debug messages to reduce spam
+        return
+        # formatted_message = f"[{self.name}] {message}"
+        # if self.use_loguru:
+        #     loguru_logger.debug(formatted_message, **kwargs)
+        # else:
+        #     self.logger.debug(formatted_message)
     
     def warning(self, message: str, **kwargs):
         """Log warning message"""

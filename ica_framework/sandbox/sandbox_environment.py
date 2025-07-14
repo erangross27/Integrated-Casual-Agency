@@ -83,8 +83,6 @@ class ProceduralDatasetGenerator:
         }
         
         self.generated_graphs.append(dataset)
-        self.logger.info(f"Generated dataset with {num_nodes} nodes, {graph.number_of_edges()} edges, "
-                        f"and {len(motifs)} ground truth motifs")
         
         return dataset
     

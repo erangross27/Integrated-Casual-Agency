@@ -250,8 +250,7 @@ class WorldModel(nn.Module):
         # Dropout
         self.dropout = nn.Dropout(config.dropout)
         
-        self.logger.info(f"Initialized World Model with {config.num_layers} layers")
-    
+       
     def forward(self, x: torch.Tensor, edge_index: torch.Tensor, 
                 edge_type: torch.Tensor, edge_confidence: torch.Tensor,
                 sample: bool = True) -> Tuple[torch.Tensor, torch.Tensor]:

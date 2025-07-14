@@ -97,7 +97,7 @@ class CuriosityModule:
         self.intrinsic_rewards = []
         self.prober_success_rate = []
         
-        self.logger.info("Initialized Curiosity Module")
+       
     
     def calculate_intrinsic_reward(self, 
                                  prediction_error: torch.Tensor,

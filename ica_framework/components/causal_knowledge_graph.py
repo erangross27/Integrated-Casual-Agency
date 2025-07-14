@@ -78,7 +78,6 @@ class CausalKnowledgeGraph:
         self.beta_alpha = config.beta_prior_alpha
         self.beta_beta = config.beta_prior_beta
         
-        self.logger.info(f"Initialized Causal Knowledge Graph with config: {config}")
     
     def add_node(self, node: Node) -> bool:
         """Add a node to the graph"""

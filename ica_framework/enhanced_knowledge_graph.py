@@ -547,17 +547,39 @@ class EnhancedKnowledgeGraph:
             return GraphInterface(self)
     
     def get_stats(self) -> Dict[str, Any]:
-        """Backward compatibility method for get_statistics"""
-        stats = self.get_statistics()
-        # Return a simplified format that matches expected interface
-        # Handle both 'nodes'/'edges' and 'node_count'/'edge_count' formats
-        db_stats = stats.get('database', {})
-        return {
-            'nodes': db_stats.get('nodes', db_stats.get('node_count', 0)),
-            'edges': db_stats.get('edges', db_stats.get('edge_count', 0)),
-            'backend': self.backend_type,
-            'connected': self.db.connected if hasattr(self.db, 'connected') else True
-        }
+        """Backward compatibility method for get_statistics - returns only Entity nodes"""
+        try:
+            # Get Entity nodes only (not SessionMeta)
+            if hasattr(self.db, '_execute_query'):
+                entity_result = self.db._execute_query("MATCH (n:Entity) RETURN count(n) as count")
+                entity_count = entity_result[0]['count'] if entity_result else 0
+                
+                edge_result = self.db._execute_query("MATCH (n:Entity)-[r]->() RETURN count(r) as count")
+                edge_count = edge_result[0]['count'] if edge_result else 0
+                
+                return {
+                    'nodes': entity_count,
+                    'edges': edge_count,
+                    'backend': self.backend_type,
+                    'connected': self.db.connected if hasattr(self.db, 'connected') else True
+                }
+            else:
+                # Fallback to original method
+                stats = self.get_statistics()
+                db_stats = stats.get('database', {})
+                return {
+                    'nodes': db_stats.get('nodes', db_stats.get('node_count', 0)),
+                    'edges': db_stats.get('edges', db_stats.get('edge_count', 0)),
+                    'backend': self.backend_type,
+                    'connected': self.db.connected if hasattr(self.db, 'connected') else True
+                }
+        except Exception as e:
+            return {
+                'nodes': 0,
+                'edges': 0,
+                'backend': self.backend_type,
+                'connected': False
+            }
     
     def update_edge_confidence(self, edge_id: str, success: bool) -> bool:
         """Update edge confidence based on success/failure"""
@@ -581,3 +603,14 @@ class EnhancedKnowledgeGraph:
     def load(self, file_path: str) -> bool:
         """Load knowledge graph from file (compatibility method)"""
         return self.import_from_file(file_path, 'json')
+    
+    def get_entity_names(self, limit: int = 10) -> List[str]:
+        """Get actual Entity node names for debugging"""
+        try:
+            if hasattr(self.db, '_execute_query'):
+                result = self.db._execute_query(f"MATCH (n:Entity) RETURN n.id as id ORDER BY n.id LIMIT {limit}")
+                return [record['id'] for record in result]
+            else:
+                return []
+        except Exception:
+            return []

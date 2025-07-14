@@ -454,7 +454,7 @@ class HierarchicalAbstraction:
         self.current_embeddings = {}
         self.current_concepts = {}
         
-        self.logger.info("Initialized Hierarchical Abstraction module")
+       
     
     def process_graph(self, graph: nx.Graph) -> Dict[str, Any]:
         """Process graph through full abstraction pipeline"""

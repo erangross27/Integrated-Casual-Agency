@@ -17,6 +17,7 @@ from .components import (
     HierarchicalAbstraction
 )
 from .utils import Config, Logger
+from .learning import ContinuousLearning
 
 __all__ = [
     "ICAAgent",
@@ -26,5 +27,6 @@ __all__ = [
     "ActionPlanner",
     "HierarchicalAbstraction",
     "Config",
-    "Logger"
+    "Logger",
+    "ContinuousLearning"
 ]

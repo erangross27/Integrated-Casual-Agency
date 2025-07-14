@@ -214,7 +214,7 @@ class ActionPlanner:
         self.episode_rewards = []
         self.losses = {'actor': [], 'critic': [], 'alpha': []}
         
-        self.logger.info(f"Initialized Action Planner with SAC")
+        
     
     def select_action(self, state: np.ndarray, evaluate: bool = False) -> np.ndarray:
         """Select action using current policy"""

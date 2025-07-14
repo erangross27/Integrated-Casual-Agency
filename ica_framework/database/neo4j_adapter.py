@@ -57,17 +57,17 @@ class Neo4jAdapter(GraphDatabase):
                 result.single()
             
             self.connected = True
-            print(f"✅ Connected to Neo4j at {self.uri}")
+            # print(f"✅ Connected to Neo4j at {self.uri}")  # DISABLED TO REDUCE SPAM
             return True
             
         except ServiceUnavailable:
-            print(f"❌ Cannot connect to Neo4j at {self.uri}")
+            # print(f"❌ Cannot connect to Neo4j at {self.uri}")  # DISABLED TO REDUCE SPAM
             return False
         except AuthError:
-            print(f"❌ Authentication failed for Neo4j")
+            # print(f"❌ Authentication failed for Neo4j")  # DISABLED TO REDUCE SPAM
             return False
         except Exception as e:
-            print(f"❌ Neo4j connection error: {e}")
+            # print(f"❌ Neo4j connection error: {e}")  # DISABLED TO REDUCE SPAM
             return False
     
     def disconnect(self):
@@ -75,7 +75,7 @@ class Neo4jAdapter(GraphDatabase):
         if self.driver:
             self.driver.close()
             self.connected = False
-            print("🔌 Disconnected from Neo4j")
+            # print("🔌 Disconnected from Neo4j")  # DISABLED TO REDUCE SPAM
     
     def _execute_query(self, query: str, parameters: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """Execute a Cypher query and return results"""
@@ -457,7 +457,7 @@ class Neo4jAdapter(GraphDatabase):
         for query in index_queries:
             try:
                 self._execute_query(query)
-                print(f"✅ Index created: {query}")
+                # print(f"✅ Index created: {query}")  # DISABLED TO REDUCE SPAM
             except Exception as e:
                 print(f"⚠️ Index creation failed: {e}")
     

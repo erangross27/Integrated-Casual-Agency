@@ -73,7 +73,6 @@ class ICAAgent:
         self.alpha = config.abstraction.significance_threshold  # Significance threshold
         self.gamma = config.abstraction.utility_decay  # Utility decay factor
         
-        self.logger.info(f"Initialized ICA Agent with config on device: {self.device}")
     
     def initialize_world_model(self, state_dim: int, action_dim: int, num_relations: int):
         """Initialize world model with known dimensions"""
@@ -100,7 +99,7 @@ class ICAAgent:
             action_dim=action_dim
         )
         
-        self.logger.info(f"Initialized world model with state_dim={state_dim}, action_dim={action_dim}")
+      #  self.logger.info(f"Initialized world model with state_dim={state_dim}, action_dim={action_dim}")
     
     def observe_environment(self, observation: Dict[str, Any]) -> bool:
         """
