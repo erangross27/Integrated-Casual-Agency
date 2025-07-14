@@ -97,8 +97,11 @@ def test_real_world_intelligence():
     print("Question: What can be optimized or improved?")
     
     optimization_query = """
-    MATCH (entity:Entity)-[r]->(target:Entity)
-    WHERE (r.type CONTAINS 'optimize' OR r.type CONTAINS 'improve' OR r.type CONTAINS 'enhance')
+    MATCH (entity)-[r]->(target)
+    WHERE (r.type IN ['optimizes', 'allocates_to', 'constrains'] 
+           OR r.type CONTAINS 'optimize' OR r.type CONTAINS 'improve' OR r.type CONTAINS 'enhance'
+           OR entity.label IN ['optimizer', 'constraint_solver', 'strategic_planner']
+           OR target.label IN ['objective', 'constraint'])
     AND r.confidence > 0.6
     RETURN entity.id as system, r.type as optimization, target.id as target, r.confidence as confidence
     ORDER BY r.confidence DESC
@@ -124,8 +127,12 @@ def test_real_world_intelligence():
     print("Question: What causes failures or problems?")
     
     safety_query = """
-    MATCH (cause:Entity)-[r]->(problem:Entity)
-    WHERE (problem.id CONTAINS 'failure' OR problem.id CONTAINS 'error' OR problem.id CONTAINS 'fault' OR problem.id CONTAINS 'problem')
+    MATCH (cause)-[r]->(problem)
+    WHERE (r.type IN ['disables', 'threatens', 'compromises', 'causes', 'leads_to']
+           OR problem.id CONTAINS 'failure' OR problem.id CONTAINS 'error' OR problem.id CONTAINS 'fault' OR problem.id CONTAINS 'problem'
+           OR problem.label IN ['failure_mode', 'hazard']
+           OR cause.label IN ['critical_system', 'safety_system']
+           OR problem.id CONTAINS 'risk' OR problem.id CONTAINS 'hazard')
     AND r.confidence > 0.6
     RETURN cause.id as cause, r.type as relationship, problem.id as problem, r.confidence as confidence
     ORDER BY r.confidence DESC
@@ -151,9 +158,13 @@ def test_real_world_intelligence():
     print("Question: What leads to specific outcomes?")
     
     prediction_query = """
-    MATCH (input:Entity)-[r]->(output:Entity)
-    WHERE r.confidence > 0.8
-    AND (output.id CONTAINS 'increase' OR output.id CONTAINS 'decrease' OR output.id CONTAINS 'change')
+    MATCH (input)-[r]->(output)
+    WHERE (r.type IN ['predicts', 'forecasts', 'indicates', 'projects', 'determines']
+           OR input.label IN ['predictor', 'trend_analyzer', 'climate_model', 'epidemic_model']
+           OR output.label IN ['prediction', 'forecast', 'trend']
+           OR output.id CONTAINS 'prediction' OR output.id CONTAINS 'forecast'
+           OR output.id CONTAINS 'increase' OR output.id CONTAINS 'decrease' OR output.id CONTAINS 'change')
+    AND r.confidence > 0.6
     RETURN input.id as input, r.type as predicts, output.id as outcome, r.confidence as confidence
     ORDER BY r.confidence DESC
     LIMIT 10

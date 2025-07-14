@@ -4,6 +4,9 @@ This dramatically expands the scenario diversity to solve learning stagnation
 """
 
 from typing import Dict, List, Any
+from .optimization_scenarios import OptimizationScenarioLibrary
+from .safety_scenarios import SafetyCriticalScenarioLibrary
+from .predictive_scenarios import PredictiveIntelligenceScenarioLibrary
 
 
 class ComprehensiveScenarioLibrary:
@@ -248,29 +251,62 @@ class ComprehensiveScenarioLibrary:
     @staticmethod
     def create_manufacturing_scenarios() -> List[Dict[str, Any]]:
         """Create 30 manufacturing scenarios"""
-        # Implementation would continue here...
-        return []
+        # Get optimization scenarios for manufacturing
+        optimization_lib = OptimizationScenarioLibrary()
+        scenarios = optimization_lib.create_constraint_satisfaction_scenarios()
+        
+        # Add safety scenarios for manufacturing
+        safety_lib = SafetyCriticalScenarioLibrary()
+        scenarios.extend(safety_lib.create_failure_analysis_scenarios()[:10])
+        
+        return scenarios
     
     @staticmethod
     def create_energy_scenarios() -> List[Dict[str, Any]]:
         """Create 25 energy grid scenarios"""
-        # Implementation would continue here...
-        return []
+        # Get optimization scenarios for energy
+        optimization_lib = OptimizationScenarioLibrary()
+        scenarios = optimization_lib.create_resource_allocation_scenarios()[:15]
+        
+        # Add predictive scenarios for energy forecasting
+        predictive_lib = PredictiveIntelligenceScenarioLibrary()
+        scenarios.extend(predictive_lib.create_forecasting_scenarios()[:10])
+        
+        return scenarios
     
     @staticmethod
     def create_transportation_scenarios() -> List[Dict[str, Any]]:
         """Create 20 transportation scenarios"""
-        # Implementation would continue here...
-        return []
+        # Get safety scenarios for transportation
+        safety_lib = SafetyCriticalScenarioLibrary()
+        scenarios = safety_lib.create_hazard_prevention_scenarios()
+        
+        # Add optimization scenarios for logistics
+        optimization_lib = OptimizationScenarioLibrary()
+        scenarios.extend(optimization_lib.create_strategic_planning_scenarios())
+        
+        return scenarios
     
     @staticmethod
     def create_environmental_scenarios() -> List[Dict[str, Any]]:
         """Create 20 environmental monitoring scenarios"""
-        # Implementation would continue here...
-        return []
+        # Get predictive scenarios for environmental modeling
+        predictive_lib = PredictiveIntelligenceScenarioLibrary()
+        scenarios = predictive_lib.create_trend_analysis_scenarios()[:20]
+        
+        return scenarios
     
     @staticmethod
     def create_cross_domain_scenarios() -> List[Dict[str, Any]]:
         """Create 24 cross-domain integration scenarios"""
-        # Implementation would continue here...
-        return []
+        # Combine scenarios from all three new libraries for cross-domain learning
+        optimization_lib = OptimizationScenarioLibrary()
+        safety_lib = SafetyCriticalScenarioLibrary()
+        predictive_lib = PredictiveIntelligenceScenarioLibrary()
+        
+        scenarios = []
+        scenarios.extend(optimization_lib.create_resource_allocation_scenarios()[:8])
+        scenarios.extend(safety_lib.create_risk_assessment_scenarios()[:8])
+        scenarios.extend(predictive_lib.create_behavior_prediction_scenarios()[:8])
+        
+        return scenarios
