@@ -17,8 +17,16 @@ from ica_framework.enhanced_knowledge_graph import EnhancedKnowledgeGraph
 def analyze_intelligence_level():
     """Analyze current AGI intelligence sophistication"""
     
-    # Load Neo4j config
-    with open('config/database/neo4j.json', 'r') as f:
+    # Load Neo4j config (handle both direct run and from intelligence_tests folder)
+    config_path = Path('../config/database/neo4j.json')
+    if not config_path.exists():
+        config_path = Path('config/database/neo4j.json')
+    
+    if not config_path.exists():
+        print("❌ Neo4j config not found. Please run 'python setup.py database' first.")
+        return 0
+    
+    with open(config_path, 'r') as f:
         config_data = json.load(f)
         neo4j_config = config_data['config']
     
