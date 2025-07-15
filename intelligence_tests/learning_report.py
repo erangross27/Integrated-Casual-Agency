@@ -52,9 +52,12 @@ def generate_learning_report():
     print("=" * 40)
     
     # Test 1: Novel Domain Intelligence (should be 0 - not trained)
-    novel_domains = ['quantum', 'blockchain', 'neural', 'space', 'synthetic']
+    # Trained domains: smart_city, healthcare, manufacturing, energy_grid
+    # Novel domains: quantum, blockchain, neural, astronomy, synthetic
+    novel_domains = ['quantum', 'blockchain', 'neural', 'astronomy', 'synthetic']
     novel_total = 0
     print(f"🎭 Novel Domain Test:")
+    print("   Testing domains NOT in training (should score 0):")
     
     for domain in novel_domains:
         domain_query = f"""
@@ -73,6 +76,7 @@ def generate_learning_report():
     
     print(f"   Total Novel Score: {novel_total}/500")
     print("   ✅ Expected result - these domains weren't in training")
+    print("   (Training domains: smart_city, healthcare, manufacturing, energy_grid)")
     
     # Test 2: Trained Domain Intelligence
     print(f"\n📈 Trained Domain Test:")
