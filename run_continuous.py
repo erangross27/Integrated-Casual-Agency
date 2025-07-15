@@ -4,8 +4,18 @@ Continuous Learning Runner
 Keeps the ICA Framework learning running indefinitely using the modular system
 """
 
-import time
+# Set encoding for Windows console
 import sys
+import os
+if sys.platform == "win32":
+    # Force UTF-8 encoding for Windows console
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+    # Set console code page to UTF-8
+    os.system('chcp 65001 > nul')
+
+import time
 import signal
 import json
 import logging
@@ -45,7 +55,7 @@ class ContinuousRunner:
                     config_data = json.load(f)
 
                     db_config = config_data['config']
-                    print(f"✅ Loaded Neo4j config from {config_file}")
+                    print(f"[OK] Loaded Neo4j config from {config_file}")
                     print(f"   URI: {db_config['uri']}")
                     print(f"   Database: {db_config['database']}")
                     print(f"   User: {db_config['username']}")
@@ -53,9 +63,9 @@ class ContinuousRunner:
                     return db_config
                 
             except Exception as e:
-                print(f"❌ Failed to load config file: {e}")
+                print(f"[ERROR] Failed to load config file: {e}")
                 
-        print("⚠️ Using default Neo4j configuration")
+        print("[WARNING] Using default Neo4j configuration")
         return {
             'uri': 'neo4j://127.0.0.1:7687',
             'username': 'neo4j',
@@ -65,17 +75,17 @@ class ContinuousRunner:
 
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals gracefully"""
-        print(f"\n🛑 Received signal {signum}, shutting down gracefully...")
+        print(f"\n[STOP] Received signal {signum}, shutting down gracefully...")
         self.running = False
         
         # Explicitly stop learning if it's running
         if self.learning and hasattr(self.learning, 'continuous_manager'):
             try:
-                print("🛑 Stopping workers...")
+                print("[STOP] Stopping workers...")
                 if self.learning.continuous_manager:
                     self.learning.continuous_manager.stop_workers()
             except Exception as e:
-                print(f"⚠️ Error stopping workers: {e}")
+                print(f"[WARNING] Error stopping workers: {e}")
         
         # Force exit if needed
         import os
@@ -88,7 +98,7 @@ class ContinuousRunner:
         logging.disable(logging.INFO)  # Disable INFO level and below
         logging.getLogger().setLevel(logging.WARNING)  # Only show warnings and errors
         
-        print("🔄 Starting continuous learning (spam-free mode)...")
+        print("[START] Starting continuous learning (spam-free mode)...")
         print("   Press Ctrl+C to stop gracefully")
         print()
         
@@ -103,17 +113,17 @@ class ContinuousRunner:
                 continuous_mode=True    # Use TRUE continuous mode
             )
             
-            print("🚀 Starting infinite learning session...")
-            print("📈 Progress will be shown every 30 seconds (no spam)")
-            print("📊 Scenario count should increase constantly...")
-            print("🛑 Press Ctrl+C to stop (will force-kill all workers)")
+            print("[RUN] Starting infinite learning session...")
+            print("[INFO] Progress will be shown every 30 seconds (no spam)")
+            print("[INFO] Scenario count should increase constantly...")
+            print("[STOP] Press Ctrl+C to stop (will force-kill all workers)")
             print()
             
             # Let continuous learning run its own infinite loop
             self.learning.run_continuous_learning()
             
         except KeyboardInterrupt:
-            print("\n🛑 Stopped by user - cleaning up workers...")
+            print("\n[STOP] Stopped by user - cleaning up workers...")
             if self.learning and hasattr(self.learning, 'continuous_manager'):
                 try:
                     if self.learning.continuous_manager:
@@ -126,17 +136,17 @@ class ContinuousRunner:
                 import subprocess
                 subprocess.run(["taskkill", "/F", "/IM", "python.exe"], 
                              capture_output=True, check=False)
-                print("🧹 Forced cleanup of any remaining Python processes")
+                print("[CLEANUP] Forced cleanup of any remaining Python processes")
             except:
                 pass
             return
         except Exception as e:
-            print(f"❌ Critical error: {e}")
+            print(f"[ERROR] Critical error: {e}")
             import traceback
             traceback.print_exc()
             return
         finally:
-            print("🏁 Continuous learning stopped")
+            print("[FINISH] Continuous learning stopped")
 
 if __name__ == "__main__":
     runner = ContinuousRunner()

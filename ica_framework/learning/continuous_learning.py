@@ -85,7 +85,7 @@ class ContinuousLearning:
     
     def run_continuous_learning(self):
         """Main continuous learning loop with enhanced scenario diversity"""
-        print("🧠 ICA Framework Continuous Learning")
+        print("[BRAIN] ICA Framework Continuous Learning")
         print("=" * 80)
         print("Press Ctrl+C to save progress and exit")
         print()
@@ -144,7 +144,7 @@ class ContinuousLearning:
             
             self.session_manager.update_stats(workers_used=workers)
         else:
-            print("   • 🔄 Single-threaded processing")
+            print("   • [SINGLE] Single-threaded processing")
     
     def _initialize_agent_and_components(self):
         """Initialize the main agent and learning components"""
@@ -195,22 +195,22 @@ class ContinuousLearning:
                     
                     # Migrate existing data if any
                     if hasattr(self.agent, 'knowledge_graph') and self.agent.knowledge_graph.graph.number_of_nodes() > 0:
-                        print(f"📊 Migrating {self.agent.knowledge_graph.graph.number_of_nodes()} nodes...")
+                        print(f"[MIGRATE] Migrating {self.agent.knowledge_graph.graph.number_of_nodes()} nodes...")
                         enhanced_kg.import_from_networkx(self.agent.knowledge_graph.graph)
                     
                     # Replace the knowledge graph
                     self.agent.knowledge_graph = enhanced_kg
-                    print(f"🔄 Knowledge graph replaced with {self.database_backend} backend")
+                    print(f"[UPDATE] Knowledge graph replaced with {self.database_backend} backend")
                 else:
-                    print(f"❌ {self.database_backend} connection failed, falling back to memory")
+                    print(f"[ERROR] {self.database_backend} connection failed, falling back to memory")
                     self.database_backend = "memory"
                 
             except Exception as e:
-                print(f"❌ {self.database_backend} initialization failed: {e}")
-                print(f"🔄 Falling back to memory backend")
+                print(f"[ERROR] {self.database_backend} initialization failed: {e}")
+                print(f"[UPDATE] Falling back to memory backend")
                 self.database_backend = "memory"
         elif self.database_backend != "memory":
-            print(f"❌ Enhanced KG not available, falling back to memory")
+            print(f"[ERROR] Enhanced KG not available, falling back to memory")
             self.database_backend = "memory"
     
     def _initialize_scenario_generators(self):
@@ -250,7 +250,7 @@ class ContinuousLearning:
                     existing_edges = db_stats.get('edges', 0)
                     
                     if existing_nodes > 0 or existing_edges > 0:
-                        print(f"📊 Resuming from Neo4j: {existing_nodes} nodes, {existing_edges} edges")
+                        print(f"[RESUME] Resuming from Neo4j: {existing_nodes} nodes, {existing_edges} edges")
                         
                         # Update session stats
                         self.session_manager.update_stats(
@@ -274,7 +274,7 @@ class ContinuousLearning:
                             estimated_scenarios = max(0, existing_edges // 2)
                             start_scenario = estimated_scenarios
                             self.session_manager.update_stats(scenarios_completed=estimated_scenarios)
-                            print(f"🔄 Initial estimate: ~{estimated_scenarios} scenarios from {existing_edges} edges")
+                            print(f"[ESTIMATE] Initial estimate: ~{estimated_scenarios} scenarios from {existing_edges} edges")
                         
                         last_detailed_edges = existing_edges
                         
@@ -291,7 +291,7 @@ class ContinuousLearning:
         comprehensive_scenarios = self._create_comprehensive_scenarios()
         
         print(f"✅ Created {len(comprehensive_scenarios)} comprehensive learning scenarios")
-        print(f"   📊 Expected edge growth: 5-15 edges per scenario (vs previous 1-2)")
+        print(f"   [EXPECT] Expected edge growth: 5-15 edges per scenario (vs previous 1-2)")
         print(f"   🎯 Total potential edges: {len(comprehensive_scenarios) * 10} per round")
         
         return comprehensive_scenarios
@@ -426,7 +426,7 @@ class ContinuousLearning:
         """Run continuous parallel learning loop"""
         print(f"🔥 Beginning CONTINUOUS PARALLEL learning from scenario {start_scenario + 1}...")
         print("⚡ Workers processing scenarios individually and constantly")
-        print("📊 Progress updates every 30 seconds...")
+        print("[PROGRESS] Progress updates every 30 seconds...")
         
         # Initialize continuous parallel manager
         if self.num_workers is None:
@@ -547,8 +547,8 @@ class ContinuousLearning:
         """Run sequential learning loop (single-threaded continuous learning)"""
         print("🔥 Beginning SEQUENTIAL continuous learning...")
         print(f"📈 Starting from scenario {start_scenario + 1}")
-        print("📊 Progress updates every 30 seconds...")
-        print("🔄 Single-threaded processing for debugging")
+        print("[PROGRESS] Progress updates every 30 seconds...")
+        print("[SINGLE] Single-threaded processing for debugging")
         
         scenario_count = start_scenario
         last_save_time = time.time()
@@ -613,7 +613,7 @@ class ContinuousLearning:
                     total_time = current_time - self.session_manager.session_stats['session_start_time']
                     learning_rate = scenario_count / total_time if total_time > 0 else 0
                     
-                    print(f"📊 Progress: Scenario {scenario_count}, Round {current_round}")
+                    print(f"[PROGRESS] Progress: Scenario {scenario_count}, Round {current_round}")
                     print(f"    Nodes: {nodes_after} (+{node_growth}), Edges: {edges_after} (+{edge_growth})")
                     print(f"    Rate: {learning_rate:.1f} scenarios/sec, Confidence: {step_results.get('global_confidence', 0):.3f}")
                     
@@ -697,7 +697,7 @@ class ContinuousLearning:
         
         summary = self.session_manager.get_session_summary()
         print(f"✅ Session complete! {summary['scenarios_completed']:,} scenarios processed")
-        print(f"📊 Final: {summary['total_nodes']} nodes, {summary['total_edges']:,} edges")
+        print(f"[FINAL] Final: {summary['total_nodes']} nodes, {summary['total_edges']:,} edges")
         print(f"⚡ Rate: {summary['learning_rate']:.1f} scenarios/sec")
         print(f"🗄️ All knowledge and session data persisted in {self.database_backend}")
         print(f"▶️ Resume with: python run_continuous.py")

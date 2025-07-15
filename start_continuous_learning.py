@@ -74,24 +74,77 @@ def start_continuous_learning():
             
         print(f"Starting continuous learning script: {script_path}")
         
-        # Try a more direct approach first
+        # Create log file path for output
+        log_dir = Path(__file__).parent / "logs"
+        log_dir.mkdir(exist_ok=True)
+        log_file = log_dir / "continuous_learning.log"
+        
         try:
-            # Method 1: Direct subprocess start
-            process = subprocess.Popen(
-                [sys.executable, str(script_path)],
-                creationflags=subprocess.CREATE_NEW_CONSOLE,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
+            # Method 1: Start with visible console window and log output
+            print(f"Starting process with output logged to: {log_file}")
+            
+            with open(log_file, 'w') as log:
+                process = subprocess.Popen(
+                    [sys.executable, str(script_path)],
+                    stdout=log,
+                    stderr=subprocess.STDOUT,
+                    creationflags=subprocess.CREATE_NEW_CONSOLE,
+                    cwd=str(script_path.parent)
+                )
+            
             print(f"Process started with PID: {process.pid}")
+            print(f"Console window opened - you can see the process running")
+            print(f"Output is also being logged to: {log_file}")
+            
+            # Give the process time to start up
+            time.sleep(3)
+            
+            # Check if process is still running
+            if process.poll() is None:
+                print("[OK] Process is running successfully!")
+                
+                # Show first few lines of output if available
+                if log_file.exists() and log_file.stat().st_size > 0:
+                    print("\n[LOG] Initial output:")
+                    try:
+                        with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+                            lines = f.readlines()
+                            for line in lines[:10]:  # Show first 10 lines
+                                print(f"   {line.rstrip()}")
+                            if len(lines) > 10:
+                                print(f"   ... (and {len(lines) - 10} more lines)")
+                    except Exception as e:
+                        print(f"   Could not read log file: {e}")
+                
+                return True
+            else:
+                print("[ERROR] Process exited immediately!")
+                return_code = process.returncode
+                print(f"   Exit code: {return_code}")
+                
+                # Show any error output
+                if log_file.exists():
+                    print("[LOG] Error output:")
+                    try:
+                        with open(log_file, 'r', encoding='utf-8', errors='ignore') as f:
+                            error_content = f.read()
+                            if error_content.strip():
+                                print(error_content)
+                            else:
+                                print("   (no output in log file)")
+                    except Exception as e:
+                        print(f"   Could not read log file: {e}")
+                
+                return False
             
         except Exception as e:
-            print(f"Direct method failed: {e}")
-            print("Trying PowerShell method...")
+            print(f"Failed to start process: {e}")
+            print("Trying PowerShell method as fallback...")
             
             # Method 2: PowerShell start (fallback)
+            cmd = f"Start-Process -FilePath '{sys.executable}' -ArgumentList '{script_path}' -WorkingDirectory '{script_path.parent}' -PassThru"
             result = subprocess.run(
-                ["powershell", "-Command", f"Start-Process -WindowStyle Hidden '{sys.executable}' -ArgumentList '{script_path}' -PassThru"],
+                ["powershell", "-Command", cmd],
                 capture_output=True,
                 text=True
             )
@@ -101,31 +154,8 @@ def start_continuous_learning():
                 return False
             
             print("PowerShell start successful")
-        
-        print("Continuous learning started in the background.")
-        
-        # Wait a moment for the process to fully start
-        time.sleep(5)
-        
-        # Simple verification - just check if we can find any python process
-        print("Verifying process started...")
-        
-        # Method 1: Simple check for python processes
-        check_result = subprocess.run(
-            ["powershell", "-Command", "Get-Process python -ErrorAction SilentlyContinue"],
-            capture_output=True, 
-            text=True
-        )
-        
-        if check_result.returncode == 0 and check_result.stdout.strip():
-            print("✓ Python processes found running:")
-            print(check_result.stdout)
-            print("✓ Continuous learning process started successfully!")
+            print("[OK] Process started in new window")
             return True
-        else:
-            print("⚠ No Python processes found running.")
-            print("The process may have started and exited quickly, or failed to start.")
-            return False
             
     except Exception as e:
         print(f"Error starting continuous learning: {e}")
@@ -144,13 +174,16 @@ def main():
     success = start_continuous_learning()
     
     if success:
-        print("\n✓ Continuous learning has been started successfully!")
-        print("The process is running in the background.")
-        print("\nTo stop it later, you can use:")
-        print("Get-WmiObject Win32_Process | Where-Object {$_.CommandLine -like '*run_continuous.py*'} | ForEach-Object {Stop-Process -Id $_.ProcessId -Force}")
-        print("Or simply run this script again to restart it.")
+        print("\n[OK] Continuous learning has been started successfully!")
+        print("The process is running in a new console window.")
+        print("[LOG] You can check the log file at: logs/continuous_learning.log")
+        print("\nTo stop it later, you can:")
+        print("1. Close the console window, or")
+        print("2. Use: Get-WmiObject Win32_Process | Where-Object {$_.CommandLine -like '*run_continuous.py*'} | ForEach-Object {Stop-Process -Id $_.ProcessId -Force}")
+        print("3. Or simply run this script again to restart it.")
+        print("\n[MONITOR] To monitor progress, check the log file or console window.")
     else:
-        print("\n✗ Failed to start continuous learning.")
+        print("\n[ERROR] Failed to start continuous learning.")
         sys.exit(1)
 
 if __name__ == "__main__":
