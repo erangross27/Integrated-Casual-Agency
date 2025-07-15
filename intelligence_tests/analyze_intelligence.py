@@ -81,10 +81,13 @@ def analyze_intelligence_level():
         three_hop_chains = result[0]['three_hop_chains'] if result else 0
         print(f"   🔗 3-Hop Reasoning Chains: {three_hop_chains:,}")
         
-        # Cross-domain connections
+        # Cross-domain connections (using id-based domain detection)
         cross_domain_query = """
         MATCH (a:Entity)-[r]->(b:Entity)
-        WHERE a.domain IS NOT NULL AND b.domain IS NOT NULL AND a.domain <> b.domain
+        WHERE (a.id CONTAINS 'energy' OR a.id CONTAINS 'medical') 
+        AND (b.id CONTAINS 'energy' OR b.id CONTAINS 'medical')
+        AND ((a.id CONTAINS 'energy' AND b.id CONTAINS 'medical') 
+             OR (a.id CONTAINS 'medical' AND b.id CONTAINS 'energy'))
         RETURN count(r) as cross_domain_connections
         """
         result = kg.db.execute_query(cross_domain_query, {})
@@ -102,10 +105,12 @@ def analyze_intelligence_level():
         confidence_ratio = (high_confidence / relationships * 100) if relationships > 0 else 0
         print(f"   ✅ High-Confidence Knowledge: {high_confidence:,} ({confidence_ratio:.1f}%)")
         
-        # Complexity indicators
+        # Complexity indicators (corrected syntax)
         complex_patterns_query = """
         MATCH (n:Entity)
-        WITH n, size((n)-[]->()) as out_degree, size((n)<-[]-()) as in_degree
+        OPTIONAL MATCH (n)-[out_rel]->()
+        OPTIONAL MATCH (n)<-[in_rel]-()
+        WITH n, count(DISTINCT out_rel) as out_degree, count(DISTINCT in_rel) as in_degree
         WHERE out_degree >= 5 AND in_degree >= 5
         RETURN count(n) as hub_entities
         """
