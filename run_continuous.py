@@ -97,7 +97,7 @@ class ContinuousRunner:
             self.learning = ContinuousLearning(
                 database_backend="neo4j",
                 database_config=self.database_config,
-                num_workers=10,         # REDUCED FROM 15 TO 10 FOR PARALLEL WORK
+                num_workers=7,         # REDUCED FROM 10 TO 7 FOR PARALLEL WORK
                 batch_size=20,
                 enable_parallel=True,   # ENABLE PARALLEL FOR FULL SPEED
                 continuous_mode=True    # Use TRUE continuous mode

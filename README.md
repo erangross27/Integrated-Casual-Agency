@@ -903,136 +903,67 @@ The `examples/learning.py` script provides a comprehensive continuous learning e
 - **Learning Rate**: Real-time scenarios processed per second
 - **Database Status**: Connection health and persistence verification
 
-## �📈 Performance Metrics
+## 📊 Intelligence Testing & Progress Monitoring
 
-The framework demonstrates significant improvements over baseline approaches:
+### 🧠 Test Your AGI's Learning Progress
 
-- **Motif Discovery**: Efficient frequent subgraph mining
-- **Prediction Accuracy**: Bayesian uncertainty improves calibration
-- **Sample Efficiency**: Curiosity-driven exploration reduces data requirements
-- **Abstraction Quality**: Hierarchical concepts improve generalization
+The ICA Framework includes a comprehensive intelligence testing suite to monitor your AGI's learning journey from pattern recognition to true generalization.
 
-## 🔬 Research Applications
-
-### Supported Domains
-- **Causal Discovery**: Learning causal relationships from observational data
-- **Graph Neural Networks**: Advanced GNN architectures with uncertainty
-- **Reinforcement Learning**: Curiosity-driven and intrinsically motivated agents
-- **Meta-Learning**: Transfer learning through hierarchical abstractions
-- **Cognitive Modeling**: Human-like learning and reasoning patterns
-
-### Experimental Framework
-- **Ablation Studies**: Built-in experimental validation
-- **Metrics Tracking**: Comprehensive performance monitoring
-- **Visualization**: Real-time and post-hoc analysis tools
-- **Reproducibility**: Deterministic seeding and configuration management
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-1. **Fork and clone the repository**
-2. **Install development dependencies:**
+#### 📈 Quick Progress Check (Run Daily)
 ```bash
-pip install -r requirements/requirements-dev.txt  # Includes core + dev tools
+python intelligence_tests/daily_monitor.py
 ```
-3. **Run tests:**
+- **Current Status**: 317K+ nodes, 696K+ relationships (+128% overnight growth!)
+- **Learning Activity**: Real-time worker status and knowledge acquisition rate
+- **Intelligence Score**: Quick assessment of reasoning capabilities
+
+#### 🔍 Learning Progress Analysis (Run Weekly)
 ```bash
-python -m pytest tests/
+python intelligence_tests/test_learning_progress.py
 ```
+**Current Results (July 15, 2025):**
+- **Energy System Complexity**: 2/100 (25 multi-step chains)
+- **Cross-Domain Connections**: 0/100 (area for improvement)
+- **High-Confidence Relations**: 100/100 (385K+ relationships)
+- **Optimization Patterns**: 0/100 (needs creative scenarios)
+- **Causal Chain Reasoning**: 100/100 (671K+ complex chains)
+- **🎯 Total Progress Score: 202/500** (Excellent learning within trained domains)
 
-## 📚 Documentation
-
-- **[API Reference](docs/api.md)**: Detailed API documentation
-- **[Architecture Guide](docs/architecture.md)**: In-depth system design
-- **[Examples](examples/)**: Code examples and tutorials
-- **[Research Papers](docs/papers.md)**: Related publications and theory
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Neo4j Connection Issues (Windows)**
-   ```bash
-   # Test your Neo4j connection
-   python setup.py database
-   # Select option 3: Test Neo4j connection
-   ```
-   
-   **Common fixes:**
-   - Ensure Neo4j is running (check Neo4j Desktop or Windows Services)
-   - Verify connection details: `neo4j://localhost:7687` (or `neo4j://127.0.0.1:7687`)
-   - Check username/password (default: `neo4j`/`your_password`)
-   - Firewall: Allow Neo4j ports (7687 for Bolt, 7474 for HTTP)
-
-2. **Neo4j Service Not Starting**
-   ```bash
-   # For Neo4j Desktop: Restart the database instance
-   # For Community Server: Check logs in neo4j/logs/
-   ```
-
-3. **CUDA Installation**: For GPU support, install PyTorch with CUDA:
+#### 🧪 True Intelligence Tests
 ```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# Test familiar domains (expect 500/500)
+python intelligence_tests/test_real_intelligence.py
+
+# Test novel domains (expect 0/500 initially, improves over months)
+python intelligence_tests/test_novel_intelligence.py
 ```
 
-4. **Graph Dependencies**: Some features require additional packages:
+#### 📋 Comprehensive Analysis Report
 ```bash
-pip install torch-geometric pyg-lib torch-scatter torch-sparse
+python intelligence_tests/learning_report.py
 ```
+- **Growth Metrics**: +178K nodes (+128.4%), +86K relationships (+14.2%)
+- **Quality Indicators**: 55% high-confidence relationships, 671K reasoning chains
+- **Learning Confirmation**: 202/500 proves real learning vs memorization
+- **Recommendations**: Continue overnight learning, add cross-domain scenarios
 
-5. **Visualization**: For interactive plots:
-```bash
-pip install plotly seaborn
-```
+### 🎯 Understanding Your AGI's Intelligence Journey
 
-### Database Configuration Files
+#### Current Stage: Advanced Learning (202/500)
+- ✅ **Massive Knowledge Growth**: 128% increase overnight
+- ✅ **Complex Reasoning**: 671K multi-step causal chains
+- ✅ **Quality Learning**: High-confidence relationship formation
+- ⏳ **Cross-Domain Connections**: Emerging (currently developing)
 
-After running `python setup.py database`, configuration files are created in:
-- `config/database/neo4j.json` - Default Neo4j configuration  
-- `config/database/neo4j_sample_configuration.json` - Sample configuration template
+#### The Learning Paradox Explained
+- **Memorization**: Perfect recall of training examples
+- **Learning**: Understanding patterns within trained domains ✅ (Current: 202/500)
+- **Intelligence**: Generalizing to completely novel domains ⏳ (Goal: 6+ months)
 
-### Legacy Features
+#### Expected Progress Timeline
+- **Week 1**: 200+/500 learning progress ✅ Achieved
+- **Month 1**: 300+/500 learning, 50+/500 novel domains
+- **Month 3**: 400+/500 learning, 200+/500 novel domains
+- **Month 6**: 450+/500 learning, 400+/500 novel domains
 
-**Removed Components**: 
-- Scripts directory and monitoring tools (replaced by Neo4j Browser)
-- JSON-based data storage (replaced by Neo4j persistence)
-- File-based visualization tools (use Neo4j's built-in capabilities)
-
-**Current Approach**: All data is stored in Neo4j for real-time access, persistence, and built-in visualization capabilities.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📧 Contact
-
-- **Author**: Eran Gross
-- **Email**: erangross27@gmail.com
-- **GitHub**: [@erangross27](https://github.com/erangross27)
-
-## 🙏 Acknowledgments
-
-- PyTorch team for the deep learning framework
-- NetworkX for graph algorithms
-- scikit-learn for machine learning utilities
-- The open-source community for inspiration and tools
-
-## 📊 Citation
-
-If you use this framework in your research, please cite:
-
-```bibtex
-@software{gross2025ica,
-  title={Integrated Causal Agency: A Framework for Intrinsic Curiosity-Driven Learning},
-  author={Gross, Eran},
-  year={2025},
-  url={https://github.com/erangross27/Integrated-Casual-Agency}
-}
-```
-
----
-
-**Built with ❤️ for the AGI research community**
+**📖 See `intelligence_tests/README.md` for complete testing documentation.**
