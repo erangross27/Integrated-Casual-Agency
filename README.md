@@ -47,6 +47,75 @@ python run_continuous.py
 python examples/learning.py
 ```
 
+## 🎛️ Management & Operation
+
+### Interactive Management Tool (Recommended)
+
+The easiest way to manage your ICA Framework is through the interactive management script:
+
+```bash
+python scripts/manage_ica.py
+```
+
+This opens an interactive menu with the following options:
+
+```
+🧠 ICA Framework Management
+==================================================
+
+Choose an action:
+  1. 🚀 Start     - Start continuous learning
+  2. 🛑 Stop      - Stop all processes  
+  3. 📊 Status    - Check current status
+  4. 🔄 Restart   - Restart processes
+  5. ❌ Exit      - Exit this menu
+```
+
+### Key Features:
+- ✅ **Smart Start**: Automatically detects if already running, prevents duplicates
+- ✅ **Background Operation**: Runs silently without console windows
+- ✅ **Process Detection**: Uses PowerShell to find active learning processes
+- ✅ **Status Monitoring**: Quick check if learning is active with runtime info
+- ✅ **Log Management**: All output saved to `logs/continuous_learning.log`
+- ✅ **Clean Shutdown**: Safely stops all processes
+- ✅ **Auto-Restart**: Stop + Start in one command
+
+### Command Line Usage
+
+You can also use direct commands:
+
+```bash
+# Start continuous learning
+python scripts/manage_ica.py start
+
+# Check if running
+python scripts/manage_ica.py status
+
+# View recent activity  
+python scripts/manage_ica.py monitor
+
+# Stop all processes
+python scripts/manage_ica.py stop
+
+# Restart (stop + start)
+python scripts/manage_ica.py restart
+```
+
+### How It Works:
+1. **Start**: Launches `run_continuous.py` in background, creates log file
+2. **Status**: Shows running processes, PID numbers, runtime, and log size
+3. **Monitor**: Displays the last 20 lines from the learning log
+4. **Stop**: Uses PowerShell to safely terminate all learning processes
+5. **Restart**: Combines stop + start for clean restarts
+
+### Log Files:
+All learning output is automatically saved to:
+```
+logs/continuous_learning.log
+```
+
+You can view this file anytime or use the "Monitor" option to see recent activity.
+
 ## 🧠 AGI Intelligence Achievements
 
 ### Current Performance Metrics

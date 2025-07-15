@@ -66,7 +66,9 @@ def kill_python_processes():
 def start_continuous_learning():
     """Start run_continuous.py in the background"""
     try:
-        script_path = Path(__file__).parent / "run_continuous.py"
+        # Path to the parent directory (ICA root) and then to run_continuous.py
+        project_root = Path(__file__).parent.parent
+        script_path = project_root / "run_continuous.py"
         
         if not script_path.exists():
             print(f"Error: {script_path} not found!")
@@ -74,8 +76,8 @@ def start_continuous_learning():
             
         print(f"Starting continuous learning script: {script_path}")
         
-        # Create log file path for output
-        log_dir = Path(__file__).parent / "logs"
+        # Create log file path for output in the project root logs folder
+        log_dir = project_root / "logs"
         log_dir.mkdir(exist_ok=True)
         log_file = log_dir / "continuous_learning.log"
         
@@ -89,7 +91,7 @@ def start_continuous_learning():
                     stdout=log,
                     stderr=subprocess.STDOUT,
                     creationflags=subprocess.CREATE_NEW_CONSOLE,
-                    cwd=str(script_path.parent)
+                    cwd=str(project_root)  # Set working directory to project root
                 )
             
             print(f"Process started with PID: {process.pid}")
@@ -142,7 +144,7 @@ def start_continuous_learning():
             print("Trying PowerShell method as fallback...")
             
             # Method 2: PowerShell start (fallback)
-            cmd = f"Start-Process -FilePath '{sys.executable}' -ArgumentList '{script_path}' -WorkingDirectory '{script_path.parent}' -PassThru"
+            cmd = f"Start-Process -FilePath '{sys.executable}' -ArgumentList '{script_path}' -WorkingDirectory '{project_root}' -PassThru"
             result = subprocess.run(
                 ["powershell", "-Command", cmd],
                 capture_output=True,
@@ -182,6 +184,7 @@ def main():
         print("2. Use: Get-WmiObject Win32_Process | Where-Object {$_.CommandLine -like '*run_continuous.py*'} | ForEach-Object {Stop-Process -Id $_.ProcessId -Force}")
         print("3. Or simply run this script again to restart it.")
         print("\n[MONITOR] To monitor progress, check the log file or console window.")
+        print(f"[MONITOR] Or run: python scripts/monitor_continuous_learning.py")
     else:
         print("\n[ERROR] Failed to start continuous learning.")
         sys.exit(1)

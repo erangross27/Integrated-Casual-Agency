@@ -47,8 +47,10 @@ def check_continuous_learning_status():
         print(f"[ERROR] Error checking processes: {e}")
         return False
     
-    # Check log file
-    log_file = Path(__file__).parent / "logs" / "continuous_learning.log"
+    # Check log file - path to parent directory (ICA root) and then to logs
+    project_root = Path(__file__).parent.parent
+    log_file = project_root / "logs" / "continuous_learning.log"
+    
     if log_file.exists():
         print(f"[LOG] Log file found: {log_file}")
         try:
@@ -66,16 +68,18 @@ def check_continuous_learning_status():
         except Exception as e:
             print(f"   [ERROR] Could not read log file: {e}")
     else:
-        print("[ERROR] No log file found at: logs/continuous_learning.log")
+        print(f"[ERROR] No log file found at: {log_file}")
     
     return True
 
 def tail_log_file():
     """Show real-time log output (like tail -f)"""
-    log_file = Path(__file__).parent / "logs" / "continuous_learning.log"
+    project_root = Path(__file__).parent.parent
+    log_file = project_root / "logs" / "continuous_learning.log"
     
     if not log_file.exists():
         print("[ERROR] Log file not found. Make sure continuous learning is running.")
+        print(f"[INFO] Expected location: {log_file}")
         return
     
     print(f"\n[MONITOR] Monitoring log file: {log_file}")
@@ -110,8 +114,8 @@ def main():
         
         if status_ok:
             print("\n[OPTIONS] Available commands:")
-            print("   python monitor_continuous_learning.py --tail    # Monitor real-time output")
-            print("   python start_continuous_learning.py            # Restart if needed")
+            print("   python scripts/monitor_continuous_learning.py --tail    # Monitor real-time output")
+            print("   python scripts/start_continuous_learning.py            # Restart if needed")
 
 if __name__ == "__main__":
     main()
