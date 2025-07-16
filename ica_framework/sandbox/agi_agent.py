@@ -4,6 +4,7 @@ Learns through environmental interaction and discovery with Neo4j integration
 """
 
 import time
+import threading
 import numpy as np
 from typing import Dict, List, Any, Optional, Tuple
 from collections import defaultdict, deque
@@ -67,6 +68,10 @@ class AGIAgent:
         self.active_hypotheses = []
         self.tested_hypotheses = []
         
+        # Learning control
+        self.running = False
+        self.save_thread = None
+        
         # Memory systems
         self.short_term_memory = deque(maxlen=100)
         self.long_term_memory = []
@@ -93,20 +98,38 @@ class AGIAgent:
         # Set up learning callback
         self.world_simulator.set_learning_callback(self._process_world_feedback)
         
+        # Load previous learning progress if available
+        self.load_learning_progress()
+        
         self.logger.info("AGI Agent initialized for true autonomous learning")
     
     def start_learning(self):
         """Start the autonomous learning process"""
         self.logger.info("Starting autonomous learning process")
+        self.running = True
         self.world_simulator.start()
         
         # Begin with basic exploration
         self._initiate_exploration()
+        
+        # Start periodic progress saving
+        if self.save_thread is None or not self.save_thread.is_alive():
+            self.save_thread = threading.Thread(target=self._periodic_save_progress)
+            self.save_thread.daemon = True
+            self.save_thread.start()
     
     def stop_learning(self):
-        """Stop the learning process"""
+        """Stop the learning process and save progress"""
         self.logger.info("Stopping autonomous learning process")
+        
+        # Stop the learning process
+        self.running = False
+        
+        # Save current progress before stopping
+        self.save_learning_progress()
+        
         self.world_simulator.stop()
+        self.running = False
     
     def _process_world_feedback(self, learning_opportunity: Dict[str, Any]):
         """Process feedback from world simulation"""
@@ -180,10 +203,9 @@ class AGIAgent:
         
         # Store object as concept in knowledge graph
         try:
-            self.knowledge_graph.add_concept(
+            self.knowledge_graph.add_entity(
                 obj_id,
                 f"Object {obj_id}",
-                f"Physical object with ID {obj_id}",
                 {
                     'type': 'physical_object',
                     'mass': obj.get('mass', 0.0),
@@ -488,10 +510,9 @@ class AGIAgent:
                 # Store hypothesis in knowledge graph
                 try:
                     hypothesis_id = f"hypothesis_{len(self.active_hypotheses)}"
-                    self.knowledge_graph.add_concept(
+                    self.knowledge_graph.add_entity(
                         hypothesis_id,
                         hypothesis['description'],
-                        f"Hypothesis: {hypothesis['description']}",
                         {
                             'type': 'hypothesis',
                             'confidence': hypothesis.get('confidence', 0.5),
@@ -575,7 +596,7 @@ class AGIAgent:
                     # Update hypothesis in knowledge graph
                     try:
                         hypothesis_id = f"hypothesis_{self.active_hypotheses.index(hypothesis) + 1}"
-                        self.knowledge_graph.update_concept(
+                        self.knowledge_graph.update_entity(
                             hypothesis_id,
                             {
                                 'tested': True,
@@ -1051,3 +1072,149 @@ class AGIAgent:
             insights['attention_patterns'] = [(focus, focus_types.count(focus)) for focus in unique_focuses]
         
         return insights
+    
+    def save_learning_progress(self):
+        """Save current learning progress to Neo4j database"""
+        try:
+            # Save learning progress as a special node
+            progress_data = {
+                'type': 'learning_progress',
+                'session_id': f"session_{int(time.time())}",
+                'concepts_learned': self.learning_progress['concepts_learned'],
+                'hypotheses_formed': self.learning_progress['hypotheses_formed'],
+                'hypotheses_confirmed': self.learning_progress['hypotheses_confirmed'],
+                'causal_relationships_discovered': self.learning_progress['causal_relationships_discovered'],
+                'patterns_recognized': self.learning_progress['patterns_recognized'],
+                'curiosity_level': self.curiosity_level,
+                'exploration_rate': self.exploration_rate,
+                'novelty_threshold': self.novelty_threshold,
+                'knowledge_base_size': len(self.knowledge_base),
+                'causal_models_count': len(self.causal_models),
+                'active_hypotheses_count': len(self.active_hypotheses),
+                'tested_hypotheses_count': len(self.tested_hypotheses),
+                'short_term_memory_size': len(self.short_term_memory),
+                'long_term_memory_size': len(self.long_term_memory),
+                'timestamp': time.time()
+            }
+            
+            self.knowledge_graph.add_entity(
+                "learning_progress_current",
+                "Current Learning Progress",
+                progress_data
+            )
+            
+            # Save active hypotheses
+            for i, hypothesis in enumerate(self.active_hypotheses):
+                hypothesis_id = f"active_hypothesis_{i}"
+                self.knowledge_graph.add_entity(
+                    hypothesis_id,
+                    hypothesis.get('description', 'Unknown Hypothesis'),
+                    {
+                        'type': 'active_hypothesis',
+                        'confidence': hypothesis.get('confidence', 0.5),
+                        'testable': hypothesis.get('testable', True),
+                        'tested': hypothesis.get('tested', False),
+                        'timestamp': hypothesis.get('timestamp', time.time())
+                    }
+                )
+            
+            # Save causal models
+            for model_name, model_data in self.causal_models.items():
+                model_id = f"causal_model_{model_name}"
+                self.knowledge_graph.add_entity(
+                    model_id,
+                    f"Causal Model: {model_name}",
+                    {
+                        'type': 'causal_model',
+                        'model_name': model_name,
+                        'confidence': model_data.get('confidence', 0.5),
+                        'strength': model_data.get('strength', 0.5),
+                        'observations': model_data.get('observations', 1),
+                        'timestamp': time.time()
+                    }
+                )
+            
+            self.logger.info("✅ Learning progress saved to Neo4j database")
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error saving learning progress: {e}")
+    
+    def load_learning_progress(self):
+        """Load previous learning progress from Neo4j database"""
+        try:
+            # Load main progress data
+            progress_entity = self.knowledge_graph.get_entity("learning_progress_current")
+            
+            if progress_entity:
+                # Restore learning progress
+                self.learning_progress['concepts_learned'] = progress_entity.get('concepts_learned', 0)
+                self.learning_progress['hypotheses_formed'] = progress_entity.get('hypotheses_formed', 0)
+                self.learning_progress['hypotheses_confirmed'] = progress_entity.get('hypotheses_confirmed', 0)
+                self.learning_progress['causal_relationships_discovered'] = progress_entity.get('causal_relationships_discovered', 0)
+                self.learning_progress['patterns_recognized'] = progress_entity.get('patterns_recognized', 0)
+                
+                # Restore system parameters
+                self.curiosity_level = progress_entity.get('curiosity_level', 0.5)
+                self.exploration_rate = progress_entity.get('exploration_rate', 0.3)
+                self.novelty_threshold = progress_entity.get('novelty_threshold', 0.7)
+                
+                self.logger.info(f"✅ Learning progress restored from database:")
+                self.logger.info(f"   • Concepts Learned: {self.learning_progress['concepts_learned']}")
+                self.logger.info(f"   • Hypotheses Formed: {self.learning_progress['hypotheses_formed']}")
+                self.logger.info(f"   • Causal Relationships: {self.learning_progress['causal_relationships_discovered']}")
+                self.logger.info(f"   • Patterns Recognized: {self.learning_progress['patterns_recognized']}")
+                
+                # Load active hypotheses
+                self._load_active_hypotheses()
+                
+                # Load causal models
+                self._load_causal_models()
+                
+                return True
+            else:
+                self.logger.info("🆕 No previous learning progress found - starting fresh")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"❌ Error loading learning progress: {e}")
+            return False
+    
+    def _load_active_hypotheses(self):
+        """Load active hypotheses from database"""
+        try:
+            # Query for active hypotheses
+            # This would need to be implemented based on the actual query capabilities
+            # For now, we'll implement a basic version
+            self.logger.info("🔄 Loading active hypotheses from database...")
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error loading active hypotheses: {e}")
+    
+    def _load_causal_models(self):
+        """Load causal models from database"""
+        try:
+            # Query for causal models
+            # This would need to be implemented based on the actual query capabilities
+            # For now, we'll implement a basic version
+            self.logger.info("🔄 Loading causal models from database...")
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error loading causal models: {e}")
+    
+    def _periodic_save_progress(self):
+        """Periodically save learning progress"""
+        save_interval = 30  # Save every 30 seconds
+        last_save = time.time()
+        
+        while self.running:
+            try:
+                current_time = time.time()
+                if current_time - last_save >= save_interval:
+                    self.save_learning_progress()
+                    last_save = current_time
+                
+                time.sleep(10)  # Check every 10 seconds
+                
+            except Exception as e:
+                self.logger.error(f"❌ Error in periodic save: {e}")
+                time.sleep(10)

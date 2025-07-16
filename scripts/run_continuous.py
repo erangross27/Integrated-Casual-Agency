@@ -252,6 +252,16 @@ class TrueAGIContinuousRunner:
             self.agi_agent.set_exploration_rate(0.3)  # Moderate exploration
             self.agi_agent.set_novelty_threshold(0.6)  # Moderate novelty threshold
             
+            # Display learning progress summary
+            progress = self.agi_agent.learning_progress
+            flush_print(f"[INIT] 📊 Learning Progress Summary:")
+            flush_print(f"   • Concepts Learned: {progress['concepts_learned']}")
+            flush_print(f"   • Hypotheses Formed: {progress['hypotheses_formed']}")
+            flush_print(f"   • Hypotheses Confirmed: {progress['hypotheses_confirmed']}")
+            flush_print(f"   • Causal Relationships: {progress['causal_relationships_discovered']}")
+            flush_print(f"   • Patterns Recognized: {progress['patterns_recognized']}")
+            flush_print(f"   • Curiosity Level: {self.agi_agent.curiosity_level:.2f}")
+            
             flush_print("[OK] ✅ TRUE AGI System initialized successfully with Neo4j integration")
             return True
             
@@ -435,6 +445,10 @@ class TrueAGIContinuousRunner:
         # Stop TRUE AGI components
         if self.agi_agent:
             try:
+                # Save final progress before stopping
+                flush_print("[SHUTDOWN] 💾 Saving final learning progress...")
+                self.agi_agent.save_learning_progress()
+                
                 self.agi_agent.stop_learning()
                 flush_print("[SHUTDOWN] ✅ AGI Agent stopped")
             except Exception as e:
