@@ -200,15 +200,15 @@ class TrueAGIContinuousRunner:
         flush_print("[INIT] 📊 Initializing Enhanced Knowledge Graph...")
         
         try:
+            # Initialize Enhanced Knowledge Graph with correct parameters
             self.kg = EnhancedKnowledgeGraph(
-                uri=self.database_config['uri'],
-                username=self.database_config['username'],
-                password=self.database_config['password'],
-                database=self.database_config['database']
+                backend='neo4j',
+                config=self.database_config,
+                auto_connect=True
             )
             
             # Test connection
-            if self.kg.test_connection():
+            if self.kg.connect():
                 flush_print("[OK] ✅ Knowledge graph connection established")
                 return True
             else:
