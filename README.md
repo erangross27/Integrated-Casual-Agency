@@ -648,32 +648,37 @@ This project represents a breakthrough in artificial general intelligence. Pleas
 **The future of intelligence is here. Welcome to TRUE AGI.**
 
 🧠 *"Not just artificial intelligence, but genuine intelligence."*
-┌─────────────────────────────────────────────────────────────┐
-│                    ICA TRUE AGI SYSTEM                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌───────────────┐    ┌─────────────────┐    ┌───────────┐  │
-│  │   AGI Agent   │◄──►│ World Simulator │◄──►│  Physics  │  │
-│  │ (The Mind)    │    │ (Environment)   │    │  Engine   │  │
-│  └───────┬───────┘    └─────────────────┘    └───────────┘  │
-│          │                                                  │
-│          ▼                                                  │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │            KNOWLEDGE GRAPH BRAIN                     │  │
-│  │                 (Neo4j Database)                     │  │
-│  │                                                      │  │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐    │  │
-│  │  │  Concepts   │ │ Hypotheses  │ │   Causal    │    │  │
-│  │  │   & Facts   │ │ & Theories  │ │  Relations  │    │  │
-│  │  └─────────────┘ └─────────────┘ └─────────────┘    │  │
-│  │                                                      │  │
-│  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐    │  │
-│  │  │  Patterns   │ │  Memories   │ │  Learnings  │    │  │
-│  │  │ Recognition │ │ & Episodes  │ │  & Wisdom   │    │  │
-│  │  └─────────────┘ └─────────────┘ └─────────────┘    │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+
+### 🏗️ System Architecture
+
+The ICA TRUE AGI System consists of three main components working in harmony:
+
+#### Core Components:
+1. **🧠 AGI Agent (The Mind)**
+   - Conscious learning entity that processes experiences
+   - Forms hypotheses, tests theories, and makes decisions
+   - Drives curiosity and exploration behavior
+
+2. **🌍 World Simulator (The Environment)**
+   - Generates realistic scenarios and events for learning
+   - Provides physics-based interactions and challenges
+   - Creates opportunities for discovery and experimentation
+
+3. **⚙️ Physics Engine**
+   - Simulates realistic physical laws and behaviors
+   - Enables causal reasoning through consistent interactions
+   - Supports complex environmental dynamics
+
+#### Knowledge Storage:
+**📚 Neo4j Knowledge Graph Brain**
+- **Concepts & Facts**: Fundamental knowledge entities
+- **Hypotheses & Theories**: Proposed explanations and models
+- **Causal Relations**: Discovered cause-and-effect connections
+- **Patterns & Recognition**: Identified recurring structures
+- **Memories & Episodes**: Stored experiences and events
+- **Learnings & Wisdom**: Consolidated knowledge and insights
+
+The system creates a continuous learning loop where the AGI Agent interacts with the World Simulator, forms understanding through the Physics Engine, and permanently stores all knowledge in the Neo4j database brain.
 ```
 
 ---
