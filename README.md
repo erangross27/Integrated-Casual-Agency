@@ -152,24 +152,6 @@ The system is built with a clean, modular architecture that separates concerns a
 | **👁️ AGI Monitor** | `scripts/components/monitoring/` | System monitoring | Performance metrics, learning progress |
 | **🛠️ System Utils** | `scripts/components/system/` | Utilities | Console handling, error management |
 
-### Component Organization
-
-```
-scripts/components/
-├── 🎯 main_runner.py              # System coordinator
-├── ⚡ gpu/                        # GPU Processing Components
-│   ├── gpu_config.py             # Dynamic GPU configuration
-│   ├── gpu_processor.py          # GPU acceleration engine
-│   ├── gpu_worker.py             # Background GPU processing
-│   └── gpu_models.py             # Neural network models
-├── 💾 database/                   # Database Components
-│   └── database_manager.py       # Neo4j storage & progress tracking
-├── 👁️ monitoring/                # Monitoring Components
-│   └── agi_monitor.py            # Learning progress monitoring
-└── 🛠️ system/                    # System Utilities
-    └── system_utils.py           # Console & error handling
-```
-
 #### 🎯 Main Runner (`main_runner.py`)
 The central coordinator that orchestrates all system components:
 - **System Initialization**: Sets up all components in proper order
