@@ -710,38 +710,38 @@ The system creates a continuous learning loop where the AGI Agent interacts with
 ## 🗄️ Where The Brain Lives: The Knowledge Graph Database
 
 ### Neo4j Database Structure
-```
-Neo4j Database (127.0.0.1:7687)
-├── 🧠 Concepts
-│   ├── Physical Objects (mass, position, velocity)
-│   ├── Abstract Concepts (gravity, momentum, force)
-│   ├── Patterns (recurring behaviors, regularities)
-│   └── Categories (object types, relationship types)
-│
-├── 🔗 Relationships
-│   ├── CAUSES (causal relationships)
-│   ├── INFLUENCES (indirect effects)
-│   ├── RELATED_TO (general associations)
-│   └── PART_OF (hierarchical relationships)
-│
-├── 🧪 Hypotheses
-│   ├── Active (being tested)
-│   ├── Confirmed (validated theories)
-│   ├── Rejected (disproven ideas)
-│   └── Pending (awaiting test opportunities)
-│
-├── 📊 Causal Models
-│   ├── Force Models (F=ma discoveries)
-│   ├── Motion Models (kinematic understanding)
-│   ├── Interaction Models (collision dynamics)
-│   └── Conservation Models (energy, momentum)
-│
-└── 🎯 Learning Metrics
-    ├── Concepts Learned
-    ├── Hypotheses Formed & Confirmed
-    ├── Causal Relationships Discovered
-    └── Patterns Recognized
-```
+
+The Neo4j knowledge graph database stores all learning data in a structured format:
+
+#### 🧠 Concepts Storage
+- **Physical Objects**: Mass, position, velocity, and other measurable properties
+- **Abstract Concepts**: Gravity, momentum, force, and theoretical constructs
+- **Patterns**: Recurring behaviors, regularities, and predictable sequences
+- **Categories**: Object types, relationship classifications, and taxonomies
+
+#### 🔗 Relationship Types
+- **CAUSES**: Direct causal relationships between concepts
+- **INFLUENCES**: Indirect effects and secondary impacts
+- **RELATED_TO**: General associations and correlations
+- **PART_OF**: Hierarchical relationships and component structures
+
+#### 🧪 Hypothesis Management
+- **Active**: Currently being tested through experiments
+- **Confirmed**: Validated theories integrated into knowledge base
+- **Rejected**: Disproven ideas archived for future reference
+- **Pending**: Awaiting appropriate test opportunities
+
+#### 📊 Causal Models
+- **Force Models**: F=ma discoveries and force relationship understanding
+- **Motion Models**: Kinematic understanding and movement patterns
+- **Interaction Models**: Collision dynamics and object interactions
+- **Conservation Models**: Energy and momentum conservation principles
+
+#### 🎯 Learning Metrics
+- **Concepts Learned**: Total knowledge entities discovered
+- **Hypotheses Formed & Confirmed**: Theory creation and validation statistics
+- **Causal Relationships Discovered**: Cause-and-effect connections identified
+- **Patterns Recognized**: Recurring structures and behaviors detected
 
 ### Database Configuration
 - **Location**: `config/database/neo4j.json`
