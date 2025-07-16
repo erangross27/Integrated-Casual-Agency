@@ -79,8 +79,15 @@ class SignalHandler:
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals gracefully"""
         print(f"\n[STOP] 🛑 Received signal {signum}, shutting down gracefully...")
+        print(f"[STOP] 💾 Ensuring neural network weights are saved...")
+        
         if self.shutdown_callback:
-            self.shutdown_callback()
+            try:
+                self.shutdown_callback()
+            except Exception as e:
+                print(f"[STOP] ⚠️ Error during shutdown: {e}")
+        
+        print(f"[STOP] ✅ Graceful shutdown complete")
         os._exit(0)
     
     def _setup_windows_console_handler(self):

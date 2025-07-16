@@ -72,6 +72,11 @@ class GPUWorker:
                         # Store learning data to database
                         self.database_manager.store_agi_learning(self.agi_agent)
                 
+                # Save complete learning state every 100 cycles (neural networks + AGI state)
+                if self.worker_cycle % 100 == 0:
+                    self.database_manager.store_learning_state(self.agi_agent, self.gpu_processor)
+                    print(f"💾 [GPU] Saved complete learning state at cycle {self.worker_cycle}")
+                
                 # Adaptive sleep based on GPU utilization
                 sleep_time = self._calculate_sleep_time()
                 time.sleep(sleep_time)

@@ -182,3 +182,43 @@ class GPUProcessor:
                 print(f"⚠️ Error clearing GPU memory: {e}")
                 return False
         return True
+    
+    def get_gpu_stats(self):
+        """Get GPU statistics for monitoring and persistence"""
+        if not self.use_gpu:
+            return {
+                'gpu_enabled': False,
+                'patterns_processed': 0,
+                'hypotheses_generated': 0,
+                'gpu_time': 0.0,
+                'cpu_time': 0.0,
+                'throughput': 0.0,
+                'gpu_utilization': 0.0,
+                'gpu_memory_used': 0.0,
+                'gpu_memory_max': 0.0,
+                'gpu_memory_percent': 0.0
+            }
+        
+        stats = self.gpu_stats.copy()
+        stats['gpu_enabled'] = True
+        
+        # Calculate additional metrics
+        total_processing_time = stats['gpu_time'] + stats['cpu_time']
+        stats['throughput'] = stats['patterns_processed'] / total_processing_time if total_processing_time > 0 else 0
+        stats['gpu_utilization'] = (stats['gpu_time'] / total_processing_time * 100) if total_processing_time > 0 else 0
+        
+        # Add GPU memory info
+        if torch.cuda.is_available():
+            stats['gpu_memory_used'] = torch.cuda.memory_allocated() / 1024**2  # MB
+            stats['gpu_memory_max'] = torch.cuda.max_memory_allocated() / 1024**2  # MB
+            
+            # Get actual GPU memory from config
+            memory_info = self.gpu_config.get_memory_info()
+            actual_gpu_memory_gb = memory_info['gpu_memory_gb']
+            stats['gpu_memory_percent'] = (stats['gpu_memory_used'] / (actual_gpu_memory_gb * 1024)) * 100
+        else:
+            stats['gpu_memory_used'] = 0.0
+            stats['gpu_memory_max'] = 0.0
+            stats['gpu_memory_percent'] = 0.0
+        
+        return stats

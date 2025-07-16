@@ -463,6 +463,21 @@ class AGIAgent:
                 'occurrences': 0,
                 'contexts': []
             }
+        else:
+            # Check if existing entry is a concept, not a pattern
+            existing_entry = self.knowledge_base[pattern]
+            if existing_entry.get('type') == 'concept':
+                # This is a concept, not a pattern - don't process as pattern
+                return
+            
+            # If it's not a proper pattern structure, reinitialize
+            if 'occurrences' not in existing_entry or 'contexts' not in existing_entry:
+                self.knowledge_base[pattern] = {
+                    'type': 'pattern',
+                    'description': f'Discovered pattern: {pattern}',
+                    'occurrences': 0,
+                    'contexts': []
+                }
         
         # Record occurrence
         self.knowledge_base[pattern]['occurrences'] += 1
