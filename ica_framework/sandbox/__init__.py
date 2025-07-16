@@ -1,11 +1,15 @@
 """
-Sandbox module for ICA Framework testing and validation
+True AGI Learning Sandbox - Environment for autonomous discovery and learning
 """
 
-from .sandbox_environment import SandboxEnvironment, ProceduralDatasetGenerator, MultiDomainScenarioGenerator
+from .world_simulator import WorldSimulator
+from .physics_engine import PhysicsEngine
+from .learning_environment import LearningEnvironment
+from .agi_agent import AGIAgent
 
 __all__ = [
-    "SandboxEnvironment",
-    "ProceduralDatasetGenerator",
-    "MultiDomainScenarioGenerator"
+    "WorldSimulator",
+    "PhysicsEngine",
+    "LearningEnvironment",
+    "AGIAgent"
 ]

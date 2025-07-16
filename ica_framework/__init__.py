@@ -1,32 +1,27 @@
 """
-ICA Framework - Integrated Causal Agency
-A framework for Artificial General Intelligence driven by intrinsic curiosity
-and active causal model construction.
+ICA Framework - TRUE AGI System
+A framework for genuine Artificial General Intelligence through autonomous environmental learning.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __author__ = "ICA Development Team"
 __email__ = "ica@example.com"
 
-from .core import ICAAgent
-from .components import (
-    CausalKnowledgeGraph,
-    WorldModel,
-    CuriosityModule,
-    ActionPlanner,
-    HierarchicalAbstraction
-)
-from .utils import Config, Logger
-from .learning import ContinuousLearning
+# TRUE AGI SYSTEM - Core components for genuine autonomous learning
+from .sandbox import WorldSimulator, AGIAgent, PhysicsEngine, LearningEnvironment
+from .enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from .utils import Config, ica_logger as Logger
+from .database import GraphDatabase, Neo4jAdapter, MemoryAdapter
 
 __all__ = [
-    "ICAAgent",
-    "CausalKnowledgeGraph", 
-    "WorldModel",
-    "CuriosityModule",
-    "ActionPlanner",
-    "HierarchicalAbstraction",
+    "WorldSimulator",
+    "AGIAgent", 
+    "PhysicsEngine",
+    "LearningEnvironment",
+    "EnhancedKnowledgeGraph",
     "Config",
     "Logger",
-    "ContinuousLearning"
+    "GraphDatabase",
+    "Neo4jAdapter",
+    "MemoryAdapter"
 ]

@@ -614,3 +614,20 @@ class EnhancedKnowledgeGraph:
                 return []
         except Exception:
             return []
+    
+    def find_patterns(self):
+        """Find common patterns in the knowledge graph"""
+        # Delegate to database backend
+        return self.db.find_patterns() if hasattr(self.db, 'find_patterns') else []
+    
+    def get_high_degree_nodes(self, threshold=10):
+        """Get nodes with high connectivity"""
+        return self.db.get_high_degree_nodes(threshold) if hasattr(self.db, 'get_high_degree_nodes') else []
+    
+    def get_node_properties(self, node_id):
+        """Get properties of a specific node"""
+        return self.db.get_node_properties(node_id) if hasattr(self.db, 'get_node_properties') else {}
+    
+    def find_unexpected_connections(self):
+        """Find unexpected or novel connections"""
+        return self.db.find_unexpected_connections() if hasattr(self.db, 'find_unexpected_connections') else []
