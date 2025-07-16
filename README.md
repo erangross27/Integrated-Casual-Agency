@@ -111,11 +111,16 @@ The ICA (Integrated Casual Agency) Framework creates **genuine artificial genera
 
 ### Learning Pipeline
 
-```
-Environmental Input → Pattern Recognition → Hypothesis Formation → Testing → Knowledge Storage
-       ↓                      ↓                    ↓              ↓             ↓
-   World Events         Curiosity System      Causal Models   Validation    Neo4j Database
-```
+The TRUE AGI learning process follows a sophisticated pipeline:
+
+1. **🌍 Environmental Input**: World simulator generates realistic events and scenarios
+2. **🔍 Pattern Recognition**: AGI agent identifies recurring structures and relationships
+3. **🧪 Hypothesis Formation**: System creates theories about observed phenomena
+4. **✅ Testing & Validation**: Hypotheses are tested through controlled experiments
+5. **💾 Knowledge Storage**: Validated knowledge is permanently stored in Neo4j database
+
+**Key Learning Flow:**
+- **World Events** → **Curiosity System** → **Causal Models** → **Validation** → **Neo4j Database**
 
 ---
 
