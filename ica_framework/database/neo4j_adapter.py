@@ -45,33 +45,45 @@ class Neo4jAdapter(GraphDatabase):
     
     def connect(self) -> bool:
         """Establish connection to Neo4j database"""
+        print(f"🔍 [NEO4J] DEBUG: connect() called")
+        print(f"🔍 [NEO4J] DEBUG: URI: {self.uri}")
+        print(f"🔍 [NEO4J] DEBUG: Username: {self.username}")
+        print(f"🔍 [NEO4J] DEBUG: Database: {self.database}")
+        
         try:
             # Suppress Neo4j warnings
             import logging
             logging.getLogger("neo4j").setLevel(logging.ERROR)
             
+            print(f"🔍 [NEO4J] DEBUG: Creating driver...")
             self.driver = Neo4jGraphDatabase.driver(
                 self.uri, 
                 auth=(self.username, self.password)
             )
+            print(f"🔍 [NEO4J] DEBUG: Driver created: {self.driver}")
             
             # Test connection
+            print(f"🔍 [NEO4J] DEBUG: Testing connection...")
             with self.driver.session(database=self.database) as session:
                 result = session.run("RETURN 'Connection successful' AS message")
-                result.single()
+                test_result = result.single()
+                print(f"🔍 [NEO4J] DEBUG: Connection test result: {test_result}")
             
             self.connected = True
-            # print(f"✅ Connected to Neo4j at {self.uri}")  # DISABLED TO REDUCE SPAM
+            print(f"🔍 [NEO4J] DEBUG: Connection successful")
             return True
             
-        except ServiceUnavailable:
-            # print(f"❌ Cannot connect to Neo4j at {self.uri}")  # DISABLED TO REDUCE SPAM
+        except ServiceUnavailable as e:
+            print(f"🔍 [NEO4J] DEBUG: ServiceUnavailable: {e}")
+            print(f"🔍 [NEO4J] DEBUG: Cannot connect to Neo4j at {self.uri}")
             return False
-        except AuthError:
-            # print(f"❌ Authentication failed for Neo4j")  # DISABLED TO REDUCE SPAM
+        except AuthError as e:
+            print(f"🔍 [NEO4J] DEBUG: AuthError: {e}")
+            print(f"🔍 [NEO4J] DEBUG: Authentication failed for Neo4j")
             return False
         except Exception as e:
-            # print(f"❌ Neo4j connection error: {e}")  # DISABLED TO REDUCE SPAM
+            print(f"🔍 [NEO4J] DEBUG: General connection error: {e}")
+            print(f"🔍 [NEO4J] DEBUG: Error type: {type(e)}")
             return False
     
     def disconnect(self):
@@ -83,15 +95,29 @@ class Neo4jAdapter(GraphDatabase):
     
     def _execute_query(self, query: str, parameters: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """Execute a Cypher query and return results"""
+        print(f"🔍 [NEO4J] DEBUG: _execute_query called")
+        print(f"🔍 [NEO4J] DEBUG: connected status: {self.connected}")
+        print(f"🔍 [NEO4J] DEBUG: driver: {self.driver}")
+        print(f"🔍 [NEO4J] DEBUG: query: {query[:100]}...")
+        
         if not self.connected:
+            print(f"🔍 [NEO4J] DEBUG: Not connected, raising ConnectionError")
             raise ConnectionError("Not connected to Neo4j database")
+        
+        if not self.driver:
+            print(f"🔍 [NEO4J] DEBUG: No driver available, raising ConnectionError")
+            raise ConnectionError("No Neo4j driver available")
         
         start_time = time.time()
         
         try:
+            print(f"🔍 [NEO4J] DEBUG: Creating session with database: {self.database}")
             with self.driver.session(database=self.database) as session:
+                print(f"🔍 [NEO4J] DEBUG: Running query with parameters: {parameters}")
                 result = session.run(query, parameters or {})
+                print(f"🔍 [NEO4J] DEBUG: Query executed, processing records...")
                 records = [record.data() for record in result]
+                print(f"🔍 [NEO4J] DEBUG: Processed {len(records)} records")
                 
                 self.stats['queries_executed'] += 1
                 self.stats['last_operation_time'] = time.time() - start_time
@@ -99,16 +125,48 @@ class Neo4jAdapter(GraphDatabase):
                 return records
                 
         except Exception as e:
-            # Suppress query output for cleaner console
-            # print(f"Query execution error: {e}")
-            # print(f"Query: {query}")
-            # print(f"Parameters: {parameters}")
+            print(f"🔍 [NEO4J] DEBUG: Query execution error: {e}")
+            print(f"🔍 [NEO4J] DEBUG: Error type: {type(e)}")
+            print(f"🔍 [NEO4J] DEBUG: Query: {query}")
+            print(f"🔍 [NEO4J] DEBUG: Parameters: {parameters}")
+            
+            # Try to reconnect if connection was lost
+            if "Connection" in str(e) or "connection" in str(e) or "Connection" in str(type(e)):
+                print(f"🔍 [NEO4J] DEBUG: Detected connection error, trying to reconnect...")
+                self.connected = False
+                if self.connect():
+                    print(f"🔍 [NEO4J] DEBUG: Reconnected successfully, retrying query...")
+                    try:
+                        with self.driver.session(database=self.database) as session:
+                            result = session.run(query, parameters or {})
+                            records = [record.data() for record in result]
+                            print(f"🔍 [NEO4J] DEBUG: Retry successful, got {len(records)} records")
+                            return records
+                    except Exception as retry_e:
+                        print(f"🔍 [NEO4J] DEBUG: Retry failed: {retry_e}")
+                        return []
+                else:
+                    print(f"🔍 [NEO4J] DEBUG: Reconnection failed")
+            
             return []
     
     def add_node(self, node_id: str, properties: Dict[str, Any]) -> bool:
         """Add a node to the Neo4j graph"""
+        print(f"🔍 [NEO4J] DEBUG: add_node called with node_id='{node_id}'")
+        print(f"🔍 [NEO4J] DEBUG: properties keys: {list(properties.keys()) if properties else 'None'}")
+        print(f"🔍 [NEO4J] DEBUG: connected status: {self.connected}")
+        
+        if not self.connected:
+            print(f"🔍 [NEO4J] DEBUG: Not connected, attempting to connect...")
+            if not self.connect():
+                print(f"🔍 [NEO4J] DEBUG: Connection failed")
+                return False
+            print(f"🔍 [NEO4J] DEBUG: Connection successful")
+        
         # Sanitize properties for Neo4j
+        print(f"🔍 [NEO4J] DEBUG: Sanitizing properties...")
         sanitized_props = self._sanitize_properties(properties)
+        print(f"🔍 [NEO4J] DEBUG: Sanitized properties keys: {list(sanitized_props.keys()) if sanitized_props else 'None'}")
         
         query = """
         MERGE (n:Entity {id: $node_id})
@@ -116,15 +174,27 @@ class Neo4jAdapter(GraphDatabase):
         RETURN n.id as id
         """
         
-        result = self._execute_query(query, {
-            'node_id': node_id,
-            'properties': sanitized_props
-        })
+        print(f"🔍 [NEO4J] DEBUG: Executing query: {query}")
+        print(f"🔍 [NEO4J] DEBUG: Query parameters: node_id='{node_id}', properties keys: {list(sanitized_props.keys())}")
         
-        if result:
-            self.stats['nodes_created'] += 1
-            return True
-        return False
+        try:
+            result = self._execute_query(query, {
+                'node_id': node_id,
+                'properties': sanitized_props
+            })
+            print(f"🔍 [NEO4J] DEBUG: Query result: {result}")
+            
+            if result:
+                self.stats['nodes_created'] += 1
+                print(f"🔍 [NEO4J] DEBUG: Node created successfully")
+                return True
+            else:
+                print(f"🔍 [NEO4J] DEBUG: Query returned empty result")
+                return False
+        except Exception as e:
+            print(f"🔍 [NEO4J] DEBUG: Query execution failed: {e}")
+            print(f"🔍 [NEO4J] DEBUG: Exception type: {type(e)}")
+            return False
     
     def add_edge(self, source: str, target: str, relationship_type: str, properties: Dict[str, Any] = None) -> bool:
         """Add an edge between two nodes in Neo4j"""

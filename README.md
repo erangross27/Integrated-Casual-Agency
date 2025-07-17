@@ -1,9 +1,11 @@
 # ICA Framework - Modular TRUE AGI System 🧠⚡
 
-<div align="center">
+<div ali4. **Emergency Save Fallback**: Direct neural network save if regular save fails
+5. **Signal Handler Protection**: Proper handling of all termination signals
+6. **PostgreSQL Persistence**: PyTorch state_dict serialization with binary compression"center">
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![Neo4j](https://img.shields.io/badge/database-Neo4j-4581C3.svg)](https://neo4j.com/)
+[![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL-336791.svg)](https://www.postgresql.org/)
 [![CUDA](https://img.shields.io/badge/GPU-CUDA%20Accelerated-76B900.svg)](https://developer.nvidia.com/cuda-zone)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status: Active](https://img.shields.io/badge/Status-Active%20Learning-brightgreen.svg)](https://github.com/erangross27/Integrated-Casual-Agency)
@@ -24,8 +26,8 @@ The ICA (Integrated Casual Agency) Framework is a **modular TRUE AGI system** th
 - 🛡️ **Neural Network Protection**: Guaranteed weight/bias persistence on manual termination
 - ⚡ **Dynamic GPU Scaling**: Automatic hardware detection and optimization
 - 🔄 **Continuous Learning**: Runs indefinitely with persistent progress
-- 💾 **Neo4j Brain**: Permanent knowledge storage with progress tracking
-- 🎯 **Curiosity-Driven**: Autonomous exploration and discovery
+- 💾 **PostgreSQL Storage**: Efficient neural network weight storage with compression
+- 🎯 **Environmental Learning**: Autonomous learning from surroundings
 - 📊 **Real-time Monitoring**: Live learning statistics and performance metrics
 - 🔧 **Self-Recovery**: Graceful error handling and system resilience
 - 🚀 **Optimal Performance**: ~48% GPU utilization at 1,400+ patterns/sec
@@ -71,10 +73,10 @@ scripts/components/
 │   ├── main_loop_controller.py   # Main loop + periodic saves
 │   └── shutdown_manager.py # Graceful shutdown + weight protection
 ├── gpu/                     # ⚡ GPU acceleration
-├── database/               # 💾 Neo4j persistence
-│   ├── agi_storage/       # 🧠 Modular AGI learning storage
-│   ├── neural_persistence.py  # Neural network weight saving
-│   └── database_manager.py    # Master coordinator
+├── database/               # 💾 PostgreSQL persistence
+│   ├── postgresql_agi_persistence.py  # 🧠 Core PostgreSQL AGI storage
+│   ├── neural_persistence.py          # Neural network weight saving
+│   └── database_manager.py            # PostgreSQL-only coordinator
 ├── monitoring/            # 👁️ System monitoring
 └── system/               # 🛠️ System utilities
 ```
@@ -88,7 +90,7 @@ scripts/components/
 ```bash
 # System Requirements
 - Python 3.13+
-- Neo4j Database (Community or Enterprise)
+- PostgreSQL Database (12+ recommended)
 - NVIDIA GPU with 4GB+ VRAM (RTX 4060 8GB recommended)
 - CUDA Toolkit 11.8+ or 12.x
 - 16GB+ RAM recommended
@@ -108,23 +110,24 @@ scripts/components/
    pip install -r requirements.txt
    ```
 
-3. **Setup Neo4j Database**
+3. **Setup PostgreSQL Database**
    ```bash
-   # Install Neo4j Desktop or Community Edition
-   # Default configuration: localhost:7687
-   # Username: neo4j, Password: password
+   # Download and install PostgreSQL from postgresql.org
+   # Or run the setup script for guided installation
+   python scripts/setup_databases.py
    ```
 
 4. **Configure Database**
    ```json
-   // config/database/neo4j.json
+   // config/database/database_config.json
    {
-     "description": "Neo4j database configuration for TRUE AGI system",
-     "config": {
-       "uri": "neo4j://127.0.0.1:7687",
-       "username": "neo4j",
-       "password": "password",
-       "database": "neo4j"
+     "database": {
+       "type": "postgresql",
+       "host": "localhost",
+       "port": 5432,
+       "database": "ica_neural",
+       "user": "ica_user",
+       "password": "ica_password"
      }
    }
    ```
@@ -139,22 +142,24 @@ scripts/components/
 ```
 🧠 TRUE AGI Continuous Learning System - Modular Edition
 ============================================================
-💾 [DB] ALL COMPONENTS ACTIVE - NO TRAINING LOSS GUARANTEED
+🧠 [DB] PostgreSQL-only Database Manager initialized
+🧠 [DB] Session ID: agi_session_1737099123
+🧠 [DB] Neural networks are the knowledge - no graph database needed
 [INIT] 🔄 Checking for previous learning data...
 [RESTORE] ✅ Previous learning data found!
 [RESTORE] 📊 Database Contents:
-[RESTORE]   • AGI Concepts: 4
-[RESTORE]   • Learning Progress: 1
-[RESTORE]   • Neural Models: 0
-💾 [CONCEPT] ✅ Restored 4 concepts to agent
+[RESTORE]   • Neural Models: 2 (pattern_recognizer, hypothesis_generator)
+[RESTORE]   • Learning Events: 1,247
+[RESTORE]   • Pattern Recognitions: 3,891
+[RESTORE]   • Hypothesis Generations: 1,523
+🧠 [Neural] Restored pattern_recognizer knowledge (4,287,452 parameters)
+🧠 [Neural] Restored hypothesis_generator knowledge (2,144,768 parameters)
 [RESTORE] ✅ Complete learning state restored!
-[RESTORE] 🧠 Neural networks: ✓ Loaded into GPU memory
-[RESTORE] 📚 Knowledge base: ✓ Loaded
-[RESTORE] 🔬 Learning progress: ✓ Loaded
-[RESTORE] 🎯 Resuming with ALL previous learning intact!
-✅ [GPU] GPU Acceleration: ENABLED - 6GB utilization optimized
-[SUCCESS] ✅ TRUE AGI Continuous Learning System running!
-[INFO] 🎯 System learning autonomously through environmental interaction
+🚀 [AGI] TRUE AGI Environmental Learning Started
+🌍 [ENV] Learning from surroundings - pattern recognition active
+💡 [HYPOTHESIS] Generating hypotheses about environmental patterns
+📊 [METRICS] Learning rate: 1,400+ patterns/sec, GPU: 48% utilization
+```
 [INFO] 🛑 Press Ctrl+C to stop gracefully
 [PERIODIC] 💾 Performing periodic save...
 [PERIODIC] 🧠 Saving neural network weights and biases...
