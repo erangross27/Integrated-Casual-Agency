@@ -50,11 +50,10 @@ venv.bak/
 *.swp
 
 # AGI Model files and checkpoints (exclude all large files)
-agi_checkpoints/
-**/agi_checkpoints/
-**/*.h5
-**/*.pth
-**/*_backup_*
+agi_checkpoints/*/models/      # Model files directory
+**/*.h5                        # HDF5 model files
+**/*.pth                       # PyTorch model files  
+**/*_backup_*                  # Backup files
 *.model
 *.checkpoint
 checkpoints/

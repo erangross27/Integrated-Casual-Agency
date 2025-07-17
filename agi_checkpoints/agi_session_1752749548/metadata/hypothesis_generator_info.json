@@ -1,0 +1,9 @@
+{
+  "model_name": "hypothesis_generator",
+  "file_path": "agi_checkpoints\\agi_session_1752749548\\models\\hypothesis_generator_latest.pth",
+  "file_size_bytes": 776247149,
+  "file_size_mb": 740.2869691848755,
+  "parameter_count": 194000786,
+  "saved_at": "2025-07-17T13:59:08.140625",
+  "checksum": "6a572dc856efa9f99a67eeedc50547b1a0c50ef053c8a06e6d0d72d54964cbde"
+}

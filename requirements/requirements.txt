@@ -8,8 +8,8 @@ torch>=1.12.0
 scikit-learn>=1.2.0
 scipy>=1.9.0
 
-# Database connections
-neo4j>=5.0.0           # Neo4j for knowledge graph
+# Database and storage
+h5py>=3.0.0            # HDF5 for neural network backups (file-based storage)
 
 # ML Experiment Tracking (Modern ML Stack)
 wandb>=0.15.0          # Weights & Biases for experiment tracking

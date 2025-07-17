@@ -1,5 +1,5 @@
 """
-ICA Framework - TRUE AGI System
+ICA Framework - TRU    "MemoryAdapter",AGI System
 A framework for genuine Artificial General Intelligence through autonomous environmental learning.
 """
 
@@ -11,7 +11,7 @@ __email__ = "ica@example.com"
 from .sandbox import WorldSimulator, AGIAgent, PhysicsEngine, LearningEnvironment
 from .enhanced_knowledge_graph import EnhancedKnowledgeGraph
 from .utils import Config, ica_logger as Logger
-from .database import GraphDatabase, Neo4jAdapter, MemoryAdapter
+from .database import GraphDatabase, MemoryAdapter
 
 __all__ = [
     "WorldSimulator",

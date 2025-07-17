@@ -80,7 +80,7 @@ class MainLoopController:
                     gpu_stats = self.gpu_processor.get_gpu_stats()
                 
                 # Save session metadata
-                self.database_manager.store_session_state(self.agi_agent, gpu_stats)
+                self.database_manager.store_learning_state(self.agi_agent, gpu_stats)
                 
                 # Log learning metrics to W&B
                 try:

@@ -7,6 +7,7 @@ Tracks inputs/outputs of critical AGI functions for debugging and analysis
 import weave
 import functools
 import time
+import logging
 from typing import Any, Dict, List, Optional, Callable
 import torch
 import json
@@ -22,11 +23,26 @@ class WeaveAGITracer:
         self.traced_functions = []
         
         try:
-            # Initialize Weave with the same project as W&B
+            # Initialize Weave with the same project as W&B (silent mode)
             weave.init(self.project_name)
             self.initialized = True
             print(f"✅ [Weave] Function tracing initialized - Project: {self.project_name}")
-            print(f"🔍 [Weave] All decorated functions will be traced automatically")
+            print(f"🔍 [Weave] Tracing in silent mode - visit dashboard for results")
+            
+            # Suppress verbose call logging completely
+            import logging
+            weave_logger = logging.getLogger('weave')
+            weave_logger.setLevel(logging.ERROR)  # Only show errors
+            
+            # Disable Weave's internal verbose output
+            weave_root_logger = logging.getLogger('weave.trace_server')
+            weave_root_logger.setLevel(logging.ERROR)
+            
+            # Suppress additional weave loggers
+            for logger_name in ['weave.client', 'weave.api', 'weave.trace', 'weave.call_logger']:
+                logger = logging.getLogger(logger_name)
+                logger.setLevel(logging.ERROR)
+                logger.disabled = True
         except Exception as e:
             print(f"⚠️ [Weave] Failed to initialize: {e}")
             self.initialized = False
@@ -40,14 +56,14 @@ class WeaveAGITracer:
             # Use weave.op() decorator for automatic tracing
             traced_func = weave.op()(func)
             
-            # Track this function
+            # Track this function (silently)
             function_info = {
                 'name': func_name or func.__name__,
                 'module': func.__module__,
                 'traced_at': time.time()
             }
             self.traced_functions.append(function_info)
-            print(f"🐝 [Weave] Now tracing function: {function_info['name']}")
+            # Remove verbose tracing message to reduce spam
             
             return traced_func
         return decorator

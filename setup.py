@@ -66,8 +66,8 @@ setup(
             "transformers>=4.20.0",
         ],
         "database": [
-            "neo4j>=5.0.0",
-            "py2neo>=2021.2.0",
+            # Neo4j removed - now using file-based storage
+            "h5py>=3.0.0",           # For HDF5 neural network backups
         ],
         "monitoring": [
             "tqdm>=4.60.0",
@@ -98,9 +98,8 @@ setup(
             "scikit-learn>=1.3.0",
             "torch-geometric>=2.0.0",
             "transformers>=4.20.0",
-            # Database
-            "neo4j>=5.0.0",
-            "py2neo>=2021.2.0",
+            # Database - File-based storage only
+            "h5py>=3.0.0",
             # Monitoring
             "psutil>=5.9.0",
             "python-dotenv>=1.0.0",
@@ -118,57 +117,55 @@ setup(
 )
 
 
-# Database setup functionality integrated into setup.py
-def check_neo4j_availability():
-    """Check if Neo4j driver is available"""
+# Modern ML setup functionality integrated into setup.py
+def check_wandb_availability():
+    """Check if W&B is available and configured"""
     try:
-        import neo4j
-        print("Neo4j driver is available")
-        return True
-    except ImportError:
-        print("Neo4j driver not available")
-        print("   Install with: pip install ica-framework[database]")
-        return False
-
-
-def setup_neo4j_config():
-    """Interactive setup for Neo4j configuration"""
-    print("\nNeo4j Configuration Setup")
-    print("=" * 40)
-    
-    config = {}
-    
-    # Get connection details
-    config['uri'] = input("Neo4j URI (default: neo4j://127.0.0.1:7687): ").strip() or "neo4j://127.0.0.1:7687"
-    config['username'] = input("Username (default: neo4j): ").strip() or "neo4j"
-    config['password'] = input("Password: ").strip() or "password"
-    config['database'] = input("Database name (default: neo4j): ").strip() or "neo4j"
-    
-    return config
-
-
-def test_neo4j_connection(config):
-    """Test Neo4j connection with given configuration"""
-    try:
-        from neo4j import GraphDatabase
+        import wandb
+        print("✅ W&B (Weights & Biases) is available")
         
-        driver = GraphDatabase.driver(
-            config['uri'],
-            auth=(config['username'], config['password'])
-        )
-        
-        with driver.session(database=config['database']) as session:
-            result = session.run("RETURN 'Connection successful' AS message")
-            message = result.single()['message']
-            print(f"Neo4j connection successful: {message}")
-            driver.close()
+        # Check if user is logged in
+        try:
+            api = wandb.Api()
+            user = api.user()
+            print(f"✅ Logged in as: {user.username}")
             return True
+        except Exception:
+            print("⚠️ Not logged in to W&B. Run: wandb login")
+            return False
             
     except ImportError:
-        print("Neo4j driver not installed")
+        print("❌ W&B not available")
+        print("   Install with: pip install wandb weave")
         return False
-    except Exception as e:
-        print(f"Neo4j connection failed: {e}")
+
+
+def setup_modern_ml():
+    """Setup modern ML stack (W&B + Weave)"""
+    print("\n🚀 Modern ML Stack Setup")
+    print("=" * 40)
+    
+    print("Setting up Weights & Biases for experiment tracking...")
+    
+    try:
+        import wandb
+        
+        # Check if already logged in
+        try:
+            api = wandb.Api()
+            user = api.user()
+            print(f"✅ Already logged in as: {user.username}")
+        except:
+            print("Please login to W&B:")
+            wandb.login()
+        
+        print("✅ Modern ML stack configured!")
+        print("🌐 Dashboard: https://wandb.ai/your-username/TRUE-AGI-System")
+        return True
+        
+    except ImportError:
+        print("❌ Please install dependencies first:")
+        print("   pip install wandb weave")
         return False
 
 

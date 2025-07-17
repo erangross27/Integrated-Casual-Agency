@@ -29,18 +29,18 @@ class AGIAgent:
         self.logger = ica_logger
         self.world_simulator = world_simulator
         
-        # Initialize Enhanced Knowledge Graph with Neo4j backend
+        # Initialize Enhanced Knowledge Graph with memory backend
         if knowledge_graph:
             self.knowledge_graph = knowledge_graph
         else:
-            # Use default Neo4j connection (if available)
+            # Use memory backend for lightweight operation
             # Modern architecture primarily uses file-based storage + W&B analytics
             try:
-                self.knowledge_graph = EnhancedKnowledgeGraph(backend='neo4j')
+                self.knowledge_graph = EnhancedKnowledgeGraph(backend='memory')
                 if self.knowledge_graph.connect():
-                    self.logger.info("✅ AGI Agent connected to Neo4j knowledge graph")
+                    self.logger.info("✅ AGI Agent initialized with memory-based knowledge storage")
                 else:
-                    self.logger.warning("⚠️ Neo4j connection failed, falling back to memory")
+                    self.logger.warning("⚠️ Knowledge graph initialization failed")
                     self.knowledge_graph = EnhancedKnowledgeGraph(backend='memory')
             except Exception as e:
                 self.logger.error(f"❌ Error initializing knowledge graph: {e}")
@@ -147,29 +147,80 @@ class AGIAgent:
     def _process_sensory_input(self, sensory_input: Dict[str, Any]):
         """Process multi-modal sensory input"""
         
-        # Visual processing
-        if 'visual' in sensory_input:
-            self._process_visual_input(sensory_input['visual'])
+        # Get processed sensors data
+        processed_sensors = sensory_input.get('processed_sensors', {})
         
-        # Proprioceptive processing
+        # Get raw physics data for complete object information
+        raw_physics = sensory_input.get('raw_physics', {})
+        
+        # Visual processing - use raw physics for complete object data
+        if 'vision' in processed_sensors and 'objects' in raw_physics:
+            self._process_visual_input_with_physics(processed_sensors['vision'], raw_physics['objects'])
+        
+        # Position processing (for learning about object positions)
+        if 'position' in processed_sensors:
+            self._process_position_input(processed_sensors['position'])
+        
+        # Velocity processing (for learning about motion)
+        if 'velocity' in processed_sensors:
+            self._process_velocity_input(processed_sensors['velocity'])
+        
+        # Proprioceptive processing (legacy)
         if 'proprioceptive' in sensory_input:
             self._process_proprioceptive_input(sensory_input['proprioceptive'])
         
-        # Temporal processing
+        # Temporal processing (legacy)
         if 'temporal' in sensory_input:
             self._process_temporal_input(sensory_input['temporal'])
     
+    def _process_visual_input_with_physics(self, visual_data: Dict[str, Any], physics_objects: Dict[str, Any]):
+        """Process visual sensory input with complete physics data"""
+        
+        # Combine visual and physics data for each object
+        for obj_id in visual_data.keys():
+            if obj_id in physics_objects:
+                # Merge visual and physics data
+                complete_obj_data = {
+                    'id': obj_id,
+                    **visual_data[obj_id],
+                    **physics_objects[obj_id]
+                }
+                
+                # Learn about object properties
+                self._learn_object_properties(complete_obj_data)
+                
+                # Track object behavior
+                self._track_object_behavior(complete_obj_data)
+    
     def _process_visual_input(self, visual_data: Dict[str, Any]):
-        """Process visual sensory input"""
+        """Process visual sensory input (fallback method)"""
         
-        objects = visual_data.get('objects', [])
-        
-        for obj in objects:
+        # Visual data is a dict with object_id as keys, not a list
+        for obj_id, obj_data in visual_data.items():
+            # Add ID to object data for processing
+            obj_data['id'] = obj_id
+            
             # Learn about object properties
-            self._learn_object_properties(obj)
+            self._learn_object_properties(obj_data)
             
             # Track object behavior
-            self._track_object_behavior(obj)
+            self._track_object_behavior(obj_data)
+    
+    def _process_position_input(self, position_data: Dict[str, Any]):
+        """Process position sensory input"""
+        for obj_id, pos_info in position_data.items():
+            # Learn about position concepts
+            if 'position' in pos_info:
+                self._learn_position_concept(obj_id, np.array(pos_info['position']))
+    
+    def _process_velocity_input(self, velocity_data: Dict[str, Any]):
+        """Process velocity sensory input"""
+        for obj_id, vel_info in velocity_data.items():
+            # Learn about motion concepts
+            if 'velocity' in vel_info:
+                self._learn_velocity_concept(obj_id, np.array(vel_info['velocity']))
+            if vel_info.get('moving', False):
+                self._learn_motion_concept(obj_id)
     
     def _learn_object_properties(self, obj: Dict[str, Any]):
         """Learn properties of objects and store in knowledge graph"""
@@ -237,20 +288,29 @@ class AGIAgent:
             'timestamp': time.time()
         })
     
+    def _safe_tolist(self, data):
+        """Safely convert data to list, handling both numpy arrays and lists"""
+        if hasattr(data, 'tolist'):
+            return data.tolist()
+        elif isinstance(data, (list, tuple)):
+            return list(data)
+        else:
+            return data
+    
     def _learn_position_concept(self, obj_id: str, position: np.ndarray):
         """Learn the concept of position"""
         
         obj_knowledge = self.knowledge_base[obj_id]
         
         # Store position
-        obj_knowledge['properties']['current_position'] = position.tolist()
+        obj_knowledge['properties']['current_position'] = self._safe_tolist(position)
         
         # Track position history
         if 'position_history' not in obj_knowledge:
             obj_knowledge['position_history'] = []
         
         obj_knowledge['position_history'].append({
-            'position': position.tolist(),
+            'position': self._safe_tolist(position),
             'timestamp': time.time()
         })
         
@@ -284,7 +344,7 @@ class AGIAgent:
         # Add evidence
         self.knowledge_base['objects_can_move']['evidence'].append({
             'object': obj_id,
-            'movement': movement.tolist(),
+            'movement': self._safe_tolist(movement),
             'timestamp': time.time()
         })
         
@@ -297,14 +357,14 @@ class AGIAgent:
         obj_knowledge = self.knowledge_base[obj_id]
         
         # Store velocity
-        obj_knowledge['properties']['current_velocity'] = velocity.tolist()
+        obj_knowledge['properties']['current_velocity'] = self._safe_tolist(velocity)
         
         # Track velocity history
         if 'velocity_history' not in obj_knowledge:
             obj_knowledge['velocity_history'] = []
         
         obj_knowledge['velocity_history'].append({
-            'velocity': velocity.tolist(),
+            'velocity': self._safe_tolist(velocity),
             'timestamp': time.time()
         })
         
@@ -320,7 +380,7 @@ class AGIAgent:
         # Add evidence
         self.knowledge_base['velocity_affects_position']['evidence'].append({
             'object': obj_id,
-            'velocity': velocity.tolist(),
+            'velocity': self._safe_tolist(velocity),
             'timestamp': time.time()
         })
         
@@ -392,8 +452,8 @@ class AGIAgent:
             # Add evidence
             self.knowledge_base['falling_concept']['evidence'].append({
                 'object': obj_id,
-                'position': position.tolist(),
-                'velocity': velocity.tolist(),
+                'position': self._safe_tolist(position),
+                'velocity': self._safe_tolist(velocity),
                 'timestamp': time.time()
             })
             

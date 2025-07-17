@@ -132,6 +132,31 @@ class WandBAGILogger:
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log model save: {e}")
     
+    def log_learning_event(self, event_type: str, environment_state: Dict, action: Dict, outcome: str):
+        """Log learning events for tracking AGI progress"""
+        if not self.initialized:
+            return
+            
+        try:
+            event_data = {
+                "event_type": event_type,
+                "outcome": outcome,
+                "timestamp": time.time(),
+                "step": self.step
+            }
+            
+            # Add environment state if available
+            if environment_state:
+                event_data.update({f"env_{k}": v for k, v in environment_state.items() if isinstance(v, (int, float, str, bool))})
+            
+            # Add action if available  
+            if action:
+                event_data.update({f"action_{k}": v for k, v in action.items() if isinstance(v, (int, float, str, bool))})
+            
+            wandb.log(event_data)
+        except Exception as e:
+            print(f"⚠️ [W&B] Failed to log learning event: {e}")
+    
     def increment_step(self):
         """Increment the global step counter"""
         self.step += 1

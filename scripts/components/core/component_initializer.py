@@ -107,7 +107,7 @@ class ComponentInitializer:
         
         # Initialize world simulator and AGI agent
         self.world_simulator = WorldSimulator()
-        self.agi_agent = AGIAgent(self.world_simulator, self.database_manager)
+        self.agi_agent = AGIAgent(self.world_simulator, knowledge_graph=None)
         
         # Configure for continuous learning
         self.world_simulator.set_simulation_speed(0.1)

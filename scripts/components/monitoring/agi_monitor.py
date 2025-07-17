@@ -94,7 +94,7 @@ class AGIMonitor:
                 time.sleep(30)
     
     def _display_progress(self, world_stats, agent_summary):
-        """Display AGI learning progress"""
+        """Display enhanced AGI learning progress with trend analysis"""
         # World simulation stats
         sim_stats = world_stats.get('simulation', {})
         
@@ -106,22 +106,61 @@ class AGIMonitor:
         hypotheses_confirmed = progress.get('hypotheses_confirmed', 0)
         causal_relationships = progress.get('causal_relationships_discovered', 0)
         
-        # Database readiness indicator
-        database_ready = hypotheses_formed > 0 or causal_relationships > 0 or concepts_learned > 15
-        db_status = "🔴 Basic learning phase" if not database_ready else "🟢 Database storage ready"
+        # Track learning velocity (concepts per cycle)
+        if not hasattr(self, 'prev_concepts'):
+            self.prev_concepts = concepts_learned
+            self.learning_velocity = 0
+        else:
+            self.learning_velocity = concepts_learned - self.prev_concepts
+            self.prev_concepts = concepts_learned
+        
+        # Database readiness indicator with improved thresholds
+        basic_learning = concepts_learned < 100
+        intermediate_learning = 100 <= concepts_learned < 1000
+        advanced_learning = concepts_learned >= 1000
+        
+        if basic_learning:
+            db_status = "🔴 Basic learning phase"
+            phase_icon = "🌱"
+        elif intermediate_learning:
+            db_status = "🟡 Concept formation active"
+            phase_icon = "🌿"
+        else:
+            db_status = "🟢 Advanced learning phase"
+            phase_icon = "🌳"
         
         print(f"\n[AGI] 📊 TRUE AGI Learning Progress (Cycle {self.cycle_count}) - {db_status}")
         print(f"[AGI] 🌍 Simulation: {sim_stats.get('steps', 0)} steps, {sim_stats.get('steps_per_second', 0):.1f} steps/sec")
-        print(f"[AGI] 🧠 Concepts: {concepts_learned} | Hypotheses: {hypotheses_formed} formed, {hypotheses_confirmed} confirmed | Causal: {causal_relationships}")
+        
+        # Enhanced concept learning display
+        velocity_trend = f"(+{self.learning_velocity}/cycle)" if self.learning_velocity > 0 else ""
+        print(f"[AGI] 🧠 Concepts: {concepts_learned} {velocity_trend} | Hypotheses: {hypotheses_formed} formed, {hypotheses_confirmed} confirmed | Causal: {causal_relationships}")
         
         # Memory usage and curiosity
         memory = agent_summary.get('memory_usage', {})
         print(f"[AGI] 💾 Memory: ST={memory.get('short_term', 0)}, LT={memory.get('long_term', 0)} | Curiosity: {agent_summary.get('curiosity_level', 0):.2f}")
         
-        # Knowledge base size
+        # Knowledge base size with learning efficiency
         kb_size = agent_summary.get('knowledge_base_size', 0)
         causal_models = agent_summary.get('causal_models', 0)
+        
+        # Calculate learning efficiency (concepts per simulation step)
+        total_steps = sim_stats.get('steps', 1)
+        learning_efficiency = concepts_learned / max(total_steps, 1) * 100  # concepts per 100 steps
+        
         print(f"[AGI] 📚 Knowledge Base: {kb_size} concepts, {causal_models} causal models")
+        
+        # Add learning phase indicator and efficiency
+        if self.cycle_count % 5 == 0:  # Show detailed stats every 5 cycles
+            print(f"[AGI] {phase_icon} Learning Phase: {db_status.split(' - ')[0]} | Efficiency: {learning_efficiency:.2f} concepts/100 steps")
+            
+            # Show learning milestones
+            if concepts_learned >= 1000 and not hasattr(self, 'milestone_1000'):
+                print(f"[AGI] 🎉 MILESTONE: 1,000 concepts learned! Advanced cognitive development achieved.")
+                self.milestone_1000 = True
+            elif concepts_learned >= 5000 and not hasattr(self, 'milestone_5000'):
+                print(f"[AGI] 🎉 MILESTONE: 5,000 concepts learned! Expert-level pattern recognition achieved.")
+                self.milestone_5000 = True
     
     def _inject_learning_challenges(self):
         """Inject learning challenges to stimulate AGI growth"""

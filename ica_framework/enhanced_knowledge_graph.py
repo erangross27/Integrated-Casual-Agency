@@ -20,11 +20,8 @@ try:
 except ImportError:
     CAUSAL_CLASSES_AVAILABLE = False
 
-try:
-    from .database.neo4j_adapter import Neo4jAdapter
-    NEO4J_AVAILABLE = True
-except ImportError:
-    NEO4J_AVAILABLE = False
+# Neo4j support removed - using memory adapter for compatibility
+NEO4J_AVAILABLE = False
 
 
 class EnhancedKnowledgeGraph:
@@ -72,10 +69,8 @@ class EnhancedKnowledgeGraph:
             return MemoryAdapter(config)
         
         elif backend == 'neo4j':
-            if not NEO4J_AVAILABLE:
-                print("⚠️ Neo4j not available, falling back to memory adapter")
-                return MemoryAdapter(config)
-            return Neo4jAdapter(config)
+            print("⚠️ Neo4j support has been removed, falling back to memory adapter")
+            return MemoryAdapter(config)
         
         else:
             raise ValueError(f"Unsupported backend: {backend}")
@@ -285,27 +280,9 @@ class EnhancedKnowledgeGraph:
         # Export current graph
         current_data = self.db.export_graph('json')
         
-        # Create new Neo4j adapter
-        neo4j_db = Neo4jAdapter(neo4j_config)
-        
-        if not neo4j_db.connect():
-            print("❌ Failed to connect to Neo4j")
-            return False
-        
-        # Import data into Neo4j
-        success = neo4j_db.import_graph(current_data, 'json')
-        
-        if success:
-            # Switch to Neo4j backend
-            self.db.disconnect()
-            self.db = neo4j_db
-            self.backend_type = 'neo4j'
-            print("✅ Successfully migrated to Neo4j")
-        else:
-            neo4j_db.disconnect()
-            print("❌ Migration to Neo4j failed")
-        
-        return success
+        # Neo4j support has been removed
+        print("❌ Neo4j support has been removed. Use file-based storage instead.")
+        return False
     
     def switch_backend(self, backend: str, config: Dict[str, Any] = None) -> bool:
         """Switch to a different database backend"""

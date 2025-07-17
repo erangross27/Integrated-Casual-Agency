@@ -54,7 +54,7 @@ class ShutdownManager:
                     gpu_stats = self.gpu_processor.get_gpu_stats()
                 
                 # Save session metadata
-                self.database_manager.store_session_state(self.agi_agent, gpu_stats)
+                self.database_manager.store_learning_state(self.agi_agent, gpu_stats)
                 
                 # Trigger final pattern save
                 if hasattr(self.database_manager, 'shutdown'):
