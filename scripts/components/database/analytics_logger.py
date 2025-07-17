@@ -13,12 +13,12 @@ from pathlib import Path
 
 
 class WandBAGILogger:
-    """Weights & Biases logger for TRUE AGI experiments with continuous epoch-based tracking"""
+    """Weights & Biases logger for TRUE AGI experiments with epoch-based tracking"""
     
     def __init__(self, project_name: str = "TRUE-AGI-System", resume_mode: bool = True):
         self.project_name = project_name
-        self.step = 0
         self.epoch = 0
+        self.learning_cycles = 0  # Internal counter for learning cycles within epoch
         self.initialized = False
         self.resume_mode = resume_mode
         self.run_name = "TRUE_AGI_Continuous_Learning"
@@ -42,7 +42,7 @@ class WandBAGILogger:
             self.initialized = True
             print(f"✅ [W&B] Analytics initialized - Project: {self.project_name}")
             print(f"🌐 [W&B] Dashboard: https://wandb.ai/your-username/{self.project_name}")
-            print(f"📊 [W&B] Continuous Learning | Epoch: {self.epoch} | Step: {self.step}")
+            print(f"📊 [W&B] Epoch-Based Learning | Current Epoch: {self.epoch}")
         except Exception as e:
             print(f"⚠️ [W&B] Failed to initialize: {e}")
             self.initialized = False
@@ -52,24 +52,21 @@ class WandBAGILogger:
         try:
             if self.epoch_file.exists():
                 with open(self.epoch_file, 'r') as f:
-                    data = f.read().strip().split(',')
-                    self.epoch = int(data[0]) if data[0] else 0
-                    self.step = int(data[1]) if len(data) > 1 and data[1] else 0
-                print(f"📊 [W&B] Resuming from Epoch {self.epoch}, Step {self.step}")
+                    data = f.read().strip()
+                    self.epoch = int(data) if data else 0
+                print(f"📊 [W&B] Resuming from Epoch {self.epoch}")
             else:
                 self.epoch = 0
-                self.step = 0
                 print(f"📊 [W&B] Starting fresh - Epoch 0")
         except Exception as e:
             print(f"⚠️ [W&B] Could not load epoch data: {e}")
             self.epoch = 0
-            self.step = 0
     
     def _save_epoch_data(self):
-        """Save current epoch and step to persistent storage"""
+        """Save current epoch to persistent storage"""
         try:
             with open(self.epoch_file, 'w') as f:
-                f.write(f"{self.epoch},{self.step}")
+                f.write(f"{self.epoch}")
         except Exception as e:
             print(f"⚠️ [W&B] Could not save epoch data: {e}")
     
@@ -98,17 +95,14 @@ class WandBAGILogger:
             # Get current epoch from W&B if resuming
             if wandb.run.resumed:
                 wandb_epoch = wandb.run.summary.get("current_epoch", 0)
-                wandb_step = wandb.run.summary.get("global_step", 0)
                 # Use the higher value between file and W&B
                 self.epoch = max(self.epoch, wandb_epoch)
-                self.step = max(self.step, wandb_step)
-                print(f"🔄 [W&B] Resumed existing run at epoch {self.epoch}, step {self.step}")
+                print(f"🔄 [W&B] Resumed existing run at epoch {self.epoch}")
             else:
                 print(f"🆕 [W&B] Created new continuous learning session")
             
-            # Set the current step in W&B
+            # Set the current epoch in W&B
             wandb.run.summary["current_epoch"] = self.epoch
-            wandb.run.summary["global_step"] = self.step
             
         except Exception as e:
             # Fallback to new session
@@ -130,48 +124,47 @@ class WandBAGILogger:
         )
     
     def start_new_epoch(self):
-        """Start a new epoch and log it"""
+        """Start a new epoch - the primary learning progression measure"""
         self.epoch += 1
-        self.step = 0
+        self.step = 0  # Reset internal counter
         self._save_epoch_data()
         
         if self.initialized:
-            wandb.log({"epoch": self.epoch}, step=self.step)
+            wandb.log({"epoch": self.epoch, "learning_phase": f"Epoch_{self.epoch}"}, step=self.epoch)
             wandb.run.summary["current_epoch"] = self.epoch
-            print(f"🔄 [W&B] Started Epoch {self.epoch}")
+            print(f"🎯 [W&B] Started Epoch {self.epoch} - New Learning Phase")
     
-    def increment_step(self):
-        """Increment step counter within current epoch"""
-        self.step += 1
-        
-        # Auto-advance to next epoch every 50 steps (continuous learning cycles)
-        if self.step >= 50:
-            self.complete_epoch()
-    
-    def complete_epoch(self):
-        """Complete current epoch and advance to the next one"""
-        # Log epoch completion
+    def advance_epoch(self):
+        """Advance to next epoch - this is the main progression method"""
+        # Complete current epoch
         if self.initialized:
             wandb.log({
                 "epoch_completed": self.epoch,
-                "steps_in_epoch": self.step,
                 "learning_cycle": "completed"
-            }, step=(self.epoch * 50) + self.step)
+            }, step=self.epoch)
         
         # Advance to next epoch
         self.epoch += 1
-        self.step = 0
+        self.learning_cycles = 0  # Reset internal cycle counter
         self._save_epoch_data()
         
         if self.initialized:
-            wandb.log({"epoch": self.epoch, "new_epoch_started": True}, step=self.epoch * 50)
+            wandb.log({"epoch": self.epoch, "new_epoch_started": True}, step=self.epoch)
             wandb.run.summary["current_epoch"] = self.epoch
-            print(f"🎯 [W&B] ✅ Epoch {self.epoch - 1} completed → Started Epoch {self.epoch}")
+            print(f"🎯 [W&B] ✅ Epoch {self.epoch - 1} completed → Epoch {self.epoch} started")
         
         return self.epoch
     
+    def increment_learning_cycle(self):
+        """Internal learning cycle counter - triggers epoch advancement"""
+        self.learning_cycles += 1
+        
+        # Auto-advance epoch every 50 learning cycles (one complete epoch)
+        if self.learning_cycles >= 50:
+            self.advance_epoch()
+    
     def log_learning_episode(self, episode_data: Dict[str, Any]):
-        """Log a learning episode with epoch tracking"""
+        """Log a learning episode with epoch-only tracking"""
         if not self.initialized:
             return
         
@@ -180,17 +173,17 @@ class WandBAGILogger:
             episode_data_with_epoch = {
                 **episode_data,
                 "epoch": self.epoch,
-                "global_step": self.step,
+                "learning_phase": f"Epoch_{self.epoch}",
                 "timestamp": time.time()
             }
             
-            wandb.log(episode_data_with_epoch, step=self.step)
+            wandb.log(episode_data_with_epoch, step=self.epoch)  # Use epoch as x-axis
             
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log episode: {e}")
     
     def log_learning_metrics(self, metrics: Dict[str, Any]):
-        """Log learning metrics with epoch tracking"""
+        """Log learning metrics with epoch-only tracking"""
         if not self.initialized:
             return
         
@@ -199,16 +192,16 @@ class WandBAGILogger:
             metrics_with_epoch = {
                 **metrics,
                 "epoch": self.epoch,
-                "global_step": self.step
+                "learning_phase": f"Epoch_{self.epoch}"
             }
             
-            wandb.log(metrics_with_epoch, step=self.step)
+            wandb.log(metrics_with_epoch, step=self.epoch)  # Use epoch as x-axis
             
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log metrics: {e}")
     
     def log_gpu_performance(self):
-        """Log GPU performance metrics with epoch tracking"""
+        """Log GPU performance metrics with epoch-only tracking"""
         if not self.initialized:
             return
         
@@ -223,10 +216,10 @@ class WandBAGILogger:
                     "gpu_memory_percent": (gpu.memoryUsed / gpu.memoryTotal) * 100,
                     "gpu_temperature": gpu.temperature,
                     "epoch": self.epoch,
-                    "global_step": self.step
+                    "learning_phase": f"Epoch_{self.epoch}"
                 }
                 
-                wandb.log(gpu_metrics, step=self.step)
+                wandb.log(gpu_metrics, step=self.epoch)  # Use epoch as x-axis
                 
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log GPU metrics: {e}")
@@ -349,16 +342,15 @@ class WandBAGILogger:
                 # Save final state
                 self._save_epoch_data()
                 wandb.run.summary["final_epoch"] = self.epoch
-                wandb.run.summary["final_step"] = self.step
                 wandb.finish()
-                print(f"✅ [W&B] Session finished at Epoch {self.epoch}, Step {self.step}")
+                print(f"✅ [W&B] Session finished at Epoch {self.epoch}")
             except Exception as e:
                 print(f"⚠️ [W&B] Error finishing session: {e}")
 
 
-# Test the logger if run directly
+# Test the epoch-only logger if run directly
 if __name__ == "__main__":
-    print("🧪 Testing Epoch-Based Learning Progress Tracking")
+    print("🧪 Testing Pure Epoch-Based Learning Progress Tracking")
     
     logger = WandBAGILogger()
     
@@ -372,14 +364,14 @@ if __name__ == "__main__":
         
         logger.log_epoch_progress(concepts, patterns, efficiency, memory)
         
-        # Simulate steps within epoch
-        for step in range(50):
-            logger.increment_step()
-            if step % 10 == 0:
+        # Simulate learning cycles within epoch
+        for cycle in range(50):
+            logger.increment_learning_cycle()
+            if cycle % 10 == 0:
                 logger.log_learning_metrics({
-                    "step_learning_rate": 0.8 + (step * 0.01),
-                    "neural_activity": 75 + (step * 2)
+                    "cycle_learning_rate": 0.8 + (cycle * 0.01),
+                    "neural_activity": 75 + (cycle * 2)
                 })
     
-    print(f"🎯 Final State: Epoch {logger.epoch}, Step {logger.step}")
+    print(f"🎯 Final State: Epoch {logger.epoch}")
     logger.finish()

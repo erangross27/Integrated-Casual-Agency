@@ -45,8 +45,7 @@ class MainLoopController:
                 sim_stats = world_stats.get('simulation', {})
                 
                 if sim_stats.get('steps', 0) > 0:
-                    status_msg = f"[STATUS] ✅ TRUE AGI Learning Active - {sim_stats.get('steps', 0)} steps"
-                    flush_print(status_msg)
+                    # Simple health check without confusing step counts
                     return True
                 else:
                     flush_print("[STATUS] ⚠️ TRUE AGI Learning appears inactive")

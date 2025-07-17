@@ -212,7 +212,7 @@ class ModernDatabaseManager:
         if self.analytics_available:
             try:
                 self.analytics_logger.log_learning_episode(episode_data)
-                self.analytics_logger.increment_step()
+                self.analytics_logger.increment_learning_cycle()
             except Exception as e:
                 print(f"⚠️ [Modern] Episode logging failed: {e}")
     
