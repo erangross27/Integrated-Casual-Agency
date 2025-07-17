@@ -23,6 +23,16 @@ class SensoryProcessor:
     def process_sensory_input(self, sensory_input: Dict[str, Any]) -> Dict[str, Any]:
         """Process multi-modal sensory input"""
         
+        # Handle case where sensory_input is not a dictionary
+        if not isinstance(sensory_input, dict):
+            return {
+                'objects': {},
+                'motion_events': [],
+                'collision_events': [],
+                'environmental_changes': [],
+                'events': []
+            }
+        
         processed_data = {
             'objects': {},
             'motion_events': [],
@@ -51,7 +61,15 @@ class SensoryProcessor:
         
         processed_objects = {}
         
+        # Handle case where visual_data is not a dictionary
+        if not isinstance(visual_data, dict):
+            return processed_objects
+        
         for obj_id, obj_data in visual_data.items():
+            # Skip if obj_data is not a dictionary
+            if not isinstance(obj_data, dict):
+                continue
+                
             processed_objects[obj_id] = {
                 'id': obj_id,
                 'position': obj_data.get('position', [0, 0, 0]),
@@ -83,6 +101,10 @@ class SensoryProcessor:
         """Extract properties from object data"""
         
         properties = {}
+        
+        # Handle case where obj_data is not a dictionary
+        if not isinstance(obj_data, dict):
+            return properties
         
         # Extract basic properties
         if 'mass' in obj_data:

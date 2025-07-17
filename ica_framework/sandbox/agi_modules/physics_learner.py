@@ -52,6 +52,10 @@ class PhysicsLearner:
         
         # Look for falling objects
         for obj_id, obj_data in objects.items():
+            # Skip if obj_data is not a dictionary
+            if not isinstance(obj_data, dict):
+                continue
+                
             velocity = obj_data.get('velocity', [0, 0, 0])
             position = obj_data.get('position', [0, 0, 0])
             
