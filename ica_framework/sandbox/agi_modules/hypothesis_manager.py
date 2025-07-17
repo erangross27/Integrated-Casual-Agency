@@ -175,6 +175,17 @@ class HypothesisManager:
         """Get confirmed hypotheses"""
         return self.confirmed_hypotheses.copy()
     
+    def get_hypothesis_summary(self) -> Dict[str, Any]:
+        """Get comprehensive hypothesis summary"""
+        stats = self.get_hypothesis_stats()
+        return {
+            'stats': stats,
+            'active_hypotheses': list(self.active_hypotheses.keys()),
+            'confirmed_count': stats['confirmed'],
+            'confidence_scores': {hid: h.get('confidence', 0.0) 
+                                for hid, h in self.active_hypotheses.items()}
+        }
+    
     def get_hypothesis_stats(self) -> Dict[str, int]:
         """Get hypothesis statistics"""
         return {

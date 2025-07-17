@@ -85,6 +85,16 @@ class MemorySystem:
             'retrievals': self.memory_stats['retrievals']
         }
     
+    def store_experience(self, experience: Dict[str, Any]):
+        """Store an experience in appropriate memory system"""
+        # Add to short-term memory first
+        self.store_memory('short_term', experience)
+        
+        # If high importance, also add to episodic memory
+        importance = experience.get('importance', 0.5)
+        if importance > 0.7:
+            self.store_memory('episodic', experience)
+    
     def clear_memories(self):
         """Clear all memories"""
         self.short_term_memory.clear()

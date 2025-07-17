@@ -94,6 +94,31 @@ class LearningProgress:
         """Get current learning progress"""
         return self.progress.copy()
     
+    def get_progress_summary(self) -> Dict[str, Any]:
+        """Get comprehensive progress summary for monitoring"""
+        session_time = time.time() - self.session_start_time
+        return {
+            'progress': self.progress.copy(),
+            'learning_rate': self.get_learning_rate(),
+            'session_time': session_time,
+            'total_events': len(self.learning_events),
+            'last_update': self.last_update_time,
+            'session_start': self.session_start_time
+        }
+    
+    def update_metrics(self, metrics_update: Dict[str, Any]):
+        """Update learning progress metrics"""
+        for key, value in metrics_update.items():
+            if key in self.progress:
+                if isinstance(value, (int, float)):
+                    self.progress[key] += value
+                else:
+                    self.progress[key] = value
+        
+        # Record the update
+        self.record_learning_event(f"Metrics updated: {list(metrics_update.keys())}")
+        self.last_update_time = time.time()
+    
     def get_learning_rate(self) -> float:
         """Calculate current learning rate"""
         session_time = time.time() - self.session_start_time
