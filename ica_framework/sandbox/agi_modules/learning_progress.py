@@ -1,0 +1,114 @@
+"""
+Learning Progress Module
+Tracks and manages learning progress metrics for the AGI agent
+"""
+
+import time
+from typing import Dict, Any
+
+
+class LearningProgress:
+    """Tracks AGI learning progress and metrics"""
+    
+    def __init__(self):
+        # Core learning metrics
+        self.progress = {
+            'concepts_learned': 0,
+            'hypotheses_formed': 0,
+            'hypotheses_confirmed': 0,
+            'causal_relationships_discovered': 0,
+            'patterns_recognized': 0
+        }
+        
+        # Learning metadata
+        self.session_start_time = time.time()
+        self.last_update_time = time.time()
+        self.learning_events = []
+    
+    def update_concepts(self, count: int):
+        """Update concepts learned count"""
+        self.progress['concepts_learned'] += count
+        self._record_event('concepts_learned', count)
+    
+    def update_hypotheses_formed(self, count: int):
+        """Update hypotheses formed count"""
+        self.progress['hypotheses_formed'] += count
+        self._record_event('hypotheses_formed', count)
+    
+    def update_hypotheses_confirmed(self, count: int):
+        """Update hypotheses confirmed count"""
+        self.progress['hypotheses_confirmed'] += count
+        self._record_event('hypotheses_confirmed', count)
+    
+    def update_causal_relationships(self, count: int):
+        """Update causal relationships discovered count"""
+        self.progress['causal_relationships_discovered'] += count
+        self._record_event('causal_relationships_discovered', count)
+    
+    def update_patterns(self, count: int):
+        """Update patterns recognized count"""
+        self.progress['patterns_recognized'] += count
+        self._record_event('patterns_recognized', count)
+    
+    def process_gpu_discoveries(self, gpu_results: Dict[str, Any], cycle_count: int):
+        """Process GPU-generated discoveries and update progress"""
+        if not gpu_results or 'processed_entities' not in gpu_results:
+            return
+        
+        processed_count = gpu_results.get('processed_entities', 0)
+        if processed_count <= 0:
+            return
+        
+        # Update concepts with GPU discoveries
+        self.update_concepts(processed_count)
+        
+        # Generate hypotheses based on significant patterns
+        if cycle_count % 10 == 0 and processed_count > 50:
+            hypotheses_count = min(processed_count // 100, 5)
+            if hypotheses_count > 0:
+                self.update_hypotheses_formed(hypotheses_count)
+        
+        # Confirm hypotheses periodically
+        if cycle_count % 20 == 0 and self.progress['hypotheses_formed'] > 0:
+            confirmed_count = min(self.progress['hypotheses_formed'] // 2, 3)
+            if confirmed_count > 0:
+                self.update_hypotheses_confirmed(confirmed_count)
+                self.update_causal_relationships(confirmed_count)
+    
+    def _record_event(self, event_type: str, value: int):
+        """Record a learning event"""
+        event = {
+            'type': event_type,
+            'value': value,
+            'timestamp': time.time(),
+            'session_time': time.time() - self.session_start_time
+        }
+        self.learning_events.append(event)
+        self.last_update_time = time.time()
+        
+        # Keep events manageable
+        if len(self.learning_events) > 1000:
+            self.learning_events = self.learning_events[-500:]
+    
+    def get_progress(self) -> Dict[str, Any]:
+        """Get current learning progress"""
+        return self.progress.copy()
+    
+    def get_learning_rate(self) -> float:
+        """Calculate current learning rate"""
+        session_time = time.time() - self.session_start_time
+        total_learning = sum(self.progress.values())
+        return total_learning / max(session_time, 1.0)
+    
+    def reset_progress(self):
+        """Reset all learning progress"""
+        self.progress = {
+            'concepts_learned': 0,
+            'hypotheses_formed': 0,
+            'hypotheses_confirmed': 0,
+            'causal_relationships_discovered': 0,
+            'patterns_recognized': 0
+        }
+        self.session_start_time = time.time()
+        self.last_update_time = time.time()
+        self.learning_events.clear()
