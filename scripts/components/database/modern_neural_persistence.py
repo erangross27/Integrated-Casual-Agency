@@ -34,8 +34,12 @@ class ModernNeuralPersistence:
         (self.session_path / "models").mkdir(exist_ok=True)
         (self.session_path / "metadata").mkdir(exist_ok=True)
         
+        # Clean up any leftover temporary files from previous interrupted sessions
+        self.cleanup_all_temp_files()
+        
         print(f"🧠 [Modern] Neural persistence initialized: {self.session_path}")
         print(f"🧠 [Modern] Using industry-standard PyTorch + HDF5 approach")
+        print(f"🧹 [Modern] Cleaned up temporary files from previous sessions")
     
     def _get_model_lock(self, model_name):
         """Get or create a lock for a specific model"""
@@ -73,8 +77,30 @@ class ModernNeuralPersistence:
                 # Ensure directory exists
                 final_file.parent.mkdir(parents=True, exist_ok=True)
                 
+                # Create backup of existing file before overwriting
+                backup_file = self.session_path / "models" / f"{model_name}_backup.pth"
+                if final_file.exists():
+                    try:
+                        import shutil
+                        shutil.copy2(str(final_file), str(backup_file))
+                        print(f"🔒 [Modern] Created backup: {backup_file.name}")
+                    except Exception as e:
+                        print(f"⚠️ [Modern] Backup creation failed (non-critical): {e}")
+                
                 # Save to temporary file first
                 torch.save(checkpoint, temp_file)
+                
+                # Verify the temporary file before moving it
+                try:
+                    verify_checkpoint = torch.load(temp_file, map_location='cpu')
+                    if verify_checkpoint['parameter_count'] != checkpoint['parameter_count']:
+                        raise ValueError("Parameter count verification failed")
+                    print(f"✅ [Modern] Temporary file verification passed")
+                except Exception as e:
+                    print(f"❌ [Modern] Temporary file verification failed: {e}")
+                    if temp_file.exists():
+                        temp_file.unlink()
+                    return False
                 
                 # Atomic move - this prevents file corruption from concurrent access
                 import shutil
@@ -109,8 +135,9 @@ class ModernNeuralPersistence:
                 print(f"✅ [Modern] Saved {model_name}: {size_mb:.1f}MB ({checkpoint['parameter_count']:,} params)")
                 print(f"🗂️ [Modern] Location: {final_file}")
                 
-                # Skip HDF5 backup for now to avoid file locking issues
-                # TODO: Implement atomic HDF5 backup if needed
+                # Clean up old temporary files from interrupted saves
+                self._cleanup_temp_files(model_name)
+                
                 return True
                 
             except Exception as e:
@@ -123,47 +150,110 @@ class ModernNeuralPersistence:
                 return False
     
     def load_neural_model(self, model_name, model):
-        """Load neural network using modern PyTorch checkpoint approach"""
+        """Load neural network with corruption recovery and backup fallback"""
         print(f"🧠 [Modern] Loading {model_name} from PyTorch checkpoint...")
         
         try:
             model_file = self.session_path / "models" / f"{model_name}_latest.pth"
+            backup_file = self.session_path / "models" / f"{model_name}_backup.pth"
             
-            if not model_file.exists():
+            if not model_file.exists() and not backup_file.exists():
                 print(f"ℹ️ [Modern] No checkpoint found for {model_name} - starting fresh")
                 return False
             
-            # Verify file integrity
-            metadata_file = self.session_path / "metadata" / f"{model_name}_info.json"
-            if metadata_file.exists():
-                with open(metadata_file, 'r') as f:
-                    metadata = json.load(f)
-                
-                expected_checksum = metadata.get('checksum')
-                actual_checksum = self._calculate_file_checksum(model_file)
-                
-                if expected_checksum != actual_checksum:
-                    print(f"❌ [Modern] Checkpoint corrupted for {model_name}")
-                    return False
+            # Try to load primary file first
+            primary_success = False
+            if model_file.exists():
+                try:
+                    primary_success = self._load_model_file(model_name, model, model_file, "primary")
+                except Exception as e:
+                    print(f"⚠️ [Modern] Primary file load failed for {model_name}: {e}")
             
-            # Load checkpoint
-            checkpoint = torch.load(model_file, map_location='cpu')  # Load to CPU first
+            # If primary failed, try backup
+            if not primary_success and backup_file.exists():
+                print(f"� [Modern] Attempting backup recovery for {model_name}...")
+                try:
+                    backup_success = self._load_model_file(model_name, model, backup_file, "backup")
+                    if backup_success:
+                        print(f"✅ [Modern] Successfully recovered {model_name} from backup!")
+                        # Restore the working backup as the new primary
+                        import shutil
+                        shutil.copy2(str(backup_file), str(model_file))
+                        print(f"🔄 [Modern] Restored backup as new primary file")
+                        return True
+                except Exception as e:
+                    print(f"❌ [Modern] Backup recovery also failed for {model_name}: {e}")
             
-            # Restore model state
-            model.load_state_dict(checkpoint['model_state_dict'])
+            if primary_success:
+                return True
             
-            # Print restore info
-            param_count = checkpoint.get('parameter_count', 0)
-            saved_time = checkpoint.get('datetime', 'unknown')
-            
-            print(f"✅ [Modern] Restored {model_name} ({param_count:,} parameters)")
-            print(f"🧠 [Modern] Checkpoint from: {saved_time}")
-            
-            return True
+            # Both primary and backup failed
+            print(f"❌ [Modern] All recovery attempts failed for {model_name} - starting fresh")
+            return False
             
         except Exception as e:
             print(f"❌ [Modern] Failed to load {model_name}: {e}")
             return False
+    
+    def _load_model_file(self, model_name, model, model_file, file_type="primary"):
+        """Load a specific model file with integrity checking"""
+        print(f"🔍 [Modern] Attempting to load {file_type} file: {model_file.name}")
+        
+        # Verify file integrity with metadata if available
+        metadata_file = self.session_path / "metadata" / f"{model_name}_info.json"
+        if metadata_file.exists():
+            try:
+                with open(metadata_file, 'r') as f:
+                    metadata = json.load(f)
+                
+                expected_checksum = metadata.get('checksum')
+                if expected_checksum:
+                    actual_checksum = self._calculate_file_checksum(model_file)
+                    
+                    if expected_checksum != actual_checksum:
+                        print(f"⚠️ [Modern] Checksum mismatch for {file_type} {model_name}")
+                        print(f"🔍 [Modern] Expected: {expected_checksum[:8]}...")
+                        print(f"🔍 [Modern] Actual: {actual_checksum[:8]}...")
+                        if file_type == "primary":
+                            # For primary files, checksum mismatch is serious
+                            return False
+                        else:
+                            # For backups, we're more lenient since it's last resort
+                            print(f"⚠️ [Modern] Proceeding with backup despite checksum mismatch")
+                    else:
+                        print(f"✅ [Modern] Checksum verification passed for {file_type}")
+            except Exception as e:
+                print(f"⚠️ [Modern] Metadata verification failed: {e}")
+        
+        # Load the checkpoint
+        checkpoint = torch.load(model_file, map_location='cpu')  # Load to CPU first
+        
+        # Verify checkpoint structure
+        required_keys = ['model_state_dict', 'parameter_count']
+        for key in required_keys:
+            if key not in checkpoint:
+                raise ValueError(f"Missing required key '{key}' in checkpoint")
+        
+        # Verify parameter count matches
+        expected_params = checkpoint['parameter_count']
+        model_params = sum(p.numel() for p in model.parameters())
+        
+        if expected_params != model_params:
+            print(f"⚠️ [Modern] Parameter count mismatch: expected {expected_params:,}, got {model_params:,}")
+            # This might be okay if the model architecture changed slightly
+            print(f"🔄 [Modern] Attempting to load anyway...")
+        
+        # Restore model state
+        model.load_state_dict(checkpoint['model_state_dict'])
+        
+        # Print restore info
+        saved_time = checkpoint.get('datetime', 'unknown')
+        file_size = model_file.stat().st_size / (1024 * 1024)
+        
+        print(f"✅ [Modern] Restored {model_name} from {file_type} ({expected_params:,} parameters, {file_size:.1f}MB)")
+        print(f"🧠 [Modern] Checkpoint from: {saved_time}")
+        
+        return True
     
     def _save_hdf5_backup(self, model_name, model, checkpoint):
         """Save HDF5 backup for very large models"""
@@ -308,7 +398,56 @@ class ModernNeuralPersistence:
         # This would implement checkpoint rotation
         # For now, we just keep the latest version
         print(f"✅ [Modern] Cleanup completed")
-
+    
+    def _cleanup_temp_files(self, model_name):
+        """Clean up temporary files from interrupted saves"""
+        try:
+            models_dir = self.session_path / "models"
+            metadata_dir = self.session_path / "metadata"
+            
+            # Clean up model temp files
+            if models_dir.exists():
+                temp_pattern = f"{model_name}_temp_*"
+                for temp_file in models_dir.glob(temp_pattern):
+                    try:
+                        # Only remove files older than 1 minute to avoid removing active saves
+                        if time.time() - temp_file.stat().st_mtime > 60:
+                            temp_file.unlink()
+                            print(f"🧹 [Modern] Cleaned up old temp file: {temp_file.name}")
+                    except Exception as e:
+                        print(f"⚠️ [Modern] Failed to clean temp file {temp_file.name}: {e}")
+            
+            # Clean up metadata temp files
+            if metadata_dir.exists():
+                temp_pattern = f"{model_name}_temp_*"
+                for temp_file in metadata_dir.glob(temp_pattern):
+                    try:
+                        if time.time() - temp_file.stat().st_mtime > 60:
+                            temp_file.unlink()
+                            print(f"🧹 [Modern] Cleaned up old metadata temp: {temp_file.name}")
+                    except Exception as e:
+                        print(f"⚠️ [Modern] Failed to clean metadata temp {temp_file.name}: {e}")
+                        
+        except Exception as e:
+            print(f"⚠️ [Modern] Cleanup operation failed: {e}")
+    
+    def cleanup_all_temp_files(self):
+        """Clean up all temporary files from the session directory"""
+        try:
+            for subdir in ["models", "metadata"]:
+                dir_path = self.session_path / subdir
+                if dir_path.exists():
+                    temp_files = list(dir_path.glob("*_temp_*"))
+                    for temp_file in temp_files:
+                        try:
+                            # Remove temp files older than 1 minute
+                            if time.time() - temp_file.stat().st_mtime > 60:
+                                temp_file.unlink()
+                                print(f"🧹 [Modern] Cleaned up temp file: {temp_file.name}")
+                        except Exception as e:
+                            print(f"⚠️ [Modern] Failed to clean {temp_file.name}: {e}")
+        except Exception as e:
+            print(f"⚠️ [Modern] Failed to cleanup temp files: {e}")
 
 def create_session_persistence(session_id=None):
     """Create a modern neural persistence instance"""

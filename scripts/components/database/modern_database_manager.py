@@ -35,6 +35,13 @@ class ModernDatabaseManager:
         print(f"🗂️ [Modern] Neural networks: File-based storage (PyTorch + HDF5)")
         print(f"📊 [Modern] Analytics: {'W&B Dashboard' if self.analytics_available else 'Local files'}")
     
+    def set_restore_session(self, session_id):
+        """Configure to restore from a specific session"""
+        self.session_id = session_id
+        self.neural_persistence = ModernNeuralPersistence(session_id)
+        print(f"🧠 [Modern] Switched to restoration session: {session_id}")
+        print(f"🧠 [Modern] Neural persistence now pointing to: agi_checkpoints/{session_id}")
+    
     def store_learning_state(self, agi_agent, gpu_processor=None):
         """Store COMPLETE learning state using modern approach"""
         print("🧠 [Modern] Storing complete AGI learning state...")
@@ -208,6 +215,17 @@ class ModernDatabaseManager:
                 self.analytics_logger.increment_step()
             except Exception as e:
                 print(f"⚠️ [Modern] Episode logging failed: {e}")
+    
+    def log_learning_event(self, event_type, environment_state, agi_action, reward=None, outcome=None):
+        """Log AGI learning event (compatibility method)"""
+        episode_data = {
+            'event_type': event_type,
+            'environment_state': str(environment_state)[:200],
+            'agi_action': str(agi_action)[:200],
+            'reward': reward,
+            'outcome': outcome
+        }
+        self.log_learning_episode(episode_data)
     
     def log_learning_metrics(self, metrics: dict):
         """Log learning metrics to W&B analytics"""
