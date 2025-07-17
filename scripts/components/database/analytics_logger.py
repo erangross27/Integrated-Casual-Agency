@@ -145,8 +145,12 @@ class WandBAGILogger:
         self.step += 1
         self._save_epoch_data()
         
+        # Start new epoch every 100 steps for continuous learning progression
+        if self.step > 0 and self.step % 100 == 0:
+            self.start_new_epoch()
+        
         # Save checkpoint every 50 steps
-        if self.step % 50 == 0:
+        elif self.step % 50 == 0:
             if self.initialized:
                 wandb.run.summary["global_step"] = self.step
                 print(f"💾 [W&B] Checkpoint saved at Step {self.step}, Epoch {self.epoch}")
