@@ -88,12 +88,26 @@ class MemorySystem:
     def store_experience(self, experience: Dict[str, Any]):
         """Store an experience in appropriate memory system"""
         # Add to short-term memory first
-        self.store_memory('short_term', experience)
+        self.store_short_term(experience)
         
         # If high importance, also add to episodic memory
         importance = experience.get('importance', 0.5)
         if importance > 0.7:
-            self.store_memory('episodic', experience)
+            self.store_episodic(experience)
+    
+    def recall_by_type(self, memory_type: str) -> List[Dict[str, Any]]:
+        """Recall memories by type"""
+        return self.search_memories(memory_type)
+    
+    def get_memory_summary(self) -> Dict[str, Any]:
+        """Get comprehensive memory summary"""
+        usage = self.get_memory_usage()
+        return {
+            'usage': usage,
+            'total_memories': sum(usage.values()),
+            'recent_memories_count': len(self.get_recent_memories()),
+            'memory_stats': self.memory_stats.copy()
+        }
     
     def clear_memories(self):
         """Clear all memories"""
