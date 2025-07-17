@@ -48,6 +48,19 @@ venv.bak/
 .vscode/
 .idea/
 *.swp
+
+# AGI Model files and checkpoints (exclude all large files)
+agi_checkpoints/
+scripts/agi_checkpoints/
+**/agi_checkpoints/
+**/*.h5
+**/*.pth
+**/*_backup_*
+*.model
+*.checkpoint
+checkpoints/
+models/
+weights/
 *.swo
 *~
 
