@@ -17,6 +17,10 @@ class DatabaseManager:
         # Use existing session ID for restoration, or create new one
         self.session_id = restore_session_id or f"agi_session_{int(time.time())}"
         
+        # Auto-cleanup old sessions if creating a new session (not restoring)
+        if not restore_session_id:
+            self._cleanup_old_sessions()
+        
         # Initialize modern file-based neural persistence
         self.neural_persistence = ModernNeuralPersistence(self.session_id)
         
@@ -297,3 +301,43 @@ class DatabaseManager:
         except Exception as e:
             print(f"❌ [DB] Session restore error: {e}")
             return False
+    
+    def _cleanup_old_sessions(self):
+        """Keep only the most recent session and delete all others"""
+        try:
+            import shutil
+            from pathlib import Path
+            
+            checkpoints_dir = Path("agi_checkpoints")
+            if not checkpoints_dir.exists():
+                return
+            
+            # Find all AGI session directories
+            session_dirs = []
+            for item in checkpoints_dir.iterdir():
+                if item.is_dir() and item.name.startswith("agi_session_"):
+                    try:
+                        timestamp_str = item.name.replace("agi_session_", "")
+                        timestamp = int(timestamp_str)
+                        session_dirs.append((timestamp, item))
+                    except ValueError:
+                        continue
+            
+            # Keep only the most recent session (if any)
+            if len(session_dirs) > 1:
+                session_dirs.sort(key=lambda x: x[0], reverse=True)
+                dirs_to_delete = session_dirs[1:]  # All except newest
+                
+                deleted_count = 0
+                for timestamp, dir_path in dirs_to_delete:
+                    try:
+                        shutil.rmtree(dir_path)
+                        deleted_count += 1
+                    except Exception as e:
+                        print(f"⚠️ [DB] Could not delete old session {dir_path.name}: {e}")
+                
+                if deleted_count > 0:
+                    print(f"🧹 [DB] Auto-cleanup: Deleted {deleted_count} old session directories")
+                    
+        except Exception as e:
+            print(f"⚠️ [DB] Session cleanup error: {e}")
