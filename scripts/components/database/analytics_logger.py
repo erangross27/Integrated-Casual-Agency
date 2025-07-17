@@ -92,6 +92,16 @@ class WandBAGILogger:
                 }
             )
             
+            # Define custom metrics to use epoch as x-axis (instead of default step)
+            if not wandb.run.resumed:
+                wandb.define_metric("epoch")
+                wandb.define_metric("concepts_learned", step_metric="epoch")
+                wandb.define_metric("patterns_discovered", step_metric="epoch")
+                wandb.define_metric("learning_efficiency", step_metric="epoch")
+                wandb.define_metric("memory_capacity_used", step_metric="epoch")
+                wandb.define_metric("gpu_utilization", step_metric="epoch")
+                wandb.define_metric("neural_activity", step_metric="epoch")
+            
             # Get current epoch from W&B if resuming
             if wandb.run.resumed:
                 wandb_epoch = wandb.run.summary.get("current_epoch", 0)
@@ -122,26 +132,15 @@ class WandBAGILogger:
                 "backup_session": True
             }
         )
-    
-    def start_new_epoch(self):
-        """Start a new epoch - the primary learning progression measure"""
-        self.epoch += 1
-        self.step = 0  # Reset internal counter
-        self._save_epoch_data()
-        
-        if self.initialized:
-            wandb.log({"epoch": self.epoch, "learning_phase": f"Epoch_{self.epoch}"}, step=self.epoch)
-            wandb.run.summary["current_epoch"] = self.epoch
-            print(f"🎯 [W&B] Started Epoch {self.epoch} - New Learning Phase")
-    
     def advance_epoch(self):
         """Advance to next epoch - this is the main progression method"""
         # Complete current epoch
         if self.initialized:
             wandb.log({
                 "epoch_completed": self.epoch,
-                "learning_cycle": "completed"
-            }, step=self.epoch)
+                "learning_cycle": "completed",
+                "epoch": self.epoch
+            })
         
         # Advance to next epoch
         self.epoch += 1
@@ -149,7 +148,11 @@ class WandBAGILogger:
         self._save_epoch_data()
         
         if self.initialized:
-            wandb.log({"epoch": self.epoch, "new_epoch_started": True}, step=self.epoch)
+            wandb.log({
+                "new_epoch_started": True,
+                "epoch": self.epoch,
+                "learning_phase": f"Epoch_{self.epoch}"
+            })
             wandb.run.summary["current_epoch"] = self.epoch
             print(f"🎯 [W&B] ✅ Epoch {self.epoch - 1} completed → Epoch {self.epoch} started")
         
@@ -177,7 +180,8 @@ class WandBAGILogger:
                 "timestamp": time.time()
             }
             
-            wandb.log(episode_data_with_epoch, step=self.epoch)  # Use epoch as x-axis
+            wandb.log(episode_data_with_epoch, commit=False)
+            wandb.log({"epoch": self.epoch})  # This will be the x-axis
             
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log episode: {e}")
@@ -195,7 +199,8 @@ class WandBAGILogger:
                 "learning_phase": f"Epoch_{self.epoch}"
             }
             
-            wandb.log(metrics_with_epoch, step=self.epoch)  # Use epoch as x-axis
+            wandb.log(metrics_with_epoch, commit=False)
+            wandb.log({"epoch": self.epoch})  # This will be the x-axis
             
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log metrics: {e}")
@@ -219,7 +224,7 @@ class WandBAGILogger:
                     "learning_phase": f"Epoch_{self.epoch}"
                 }
                 
-                wandb.log(gpu_metrics, step=self.epoch)  # Use epoch as x-axis
+                wandb.log(gpu_metrics)  # Use our custom epoch metric
                 
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log GPU metrics: {e}")
@@ -291,11 +296,10 @@ class WandBAGILogger:
                 f"{model_name}_trainable_parameters": trainable_params,
                 f"{model_name}_model_size_mb": total_params * 4 / (1024 * 1024),  # Assuming float32
                 "epoch": self.epoch,
-                "global_step": self.step,
                 "model_type": model_name
             }
             
-            wandb.log(network_info, step=self.step)
+            wandb.log(network_info)
             print(f"🧠 [W&B] Logged {model_name} info: {total_params:,} parameters at Epoch {self.epoch}")
             
         except Exception as e:
@@ -329,7 +333,7 @@ class WandBAGILogger:
                 "patterns_per_epoch": patterns_discovered / max(1, self.epoch),
             }
             
-            wandb.log(epoch_progress, step=self.epoch)  # Use epoch as x-axis for learning curves
+            wandb.log(epoch_progress)  # This will use our custom epoch metric
             print(f"📈 [W&B] Epoch {self.epoch} Progress: {concepts_learned:,} concepts, {patterns_discovered:,} patterns")
             
         except Exception as e:
