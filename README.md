@@ -32,23 +32,37 @@ The ICA (Integrated Casual Agency) Framework is a **modular TRUE AGI system** th
 - 🔧 **Self-Recovery**: Graceful error handling and system resilience
 - 🚀 **Optimal Performance**: ~48% GPU utilization at 1,400+ patterns/sec
 
-### 🏗️ PostgreSQL-Only Architecture
+### 🏗️ Modern Hybrid Architecture ⭐ **UPDATED**
 
-**Philosophy**: *"Neural networks ARE the knowledge - no graph database needed"*
+**Philosophy**: *"Neural networks ARE the knowledge - stored efficiently with modern approaches"*
 
-The TRUE AGI system uses a **single PostgreSQL database** that recognizes neural networks themselves contain the learned knowledge through their weights and biases. This eliminates the complexity of graph databases while providing:
+The TRUE AGI system now uses a **modern hybrid storage approach** that combines industry-standard practices:
 
-- **🧠 Neural Network Storage**: Multi-GB model weights with binary compression
-- **🌍 Environmental Learning**: Interactions, patterns, and hypotheses from surroundings  
-- **📊 Learning Metrics**: Training progress, performance data, and session tracking
-- **🔄 Version Management**: Model versioning with automatic cleanup
-- **⚡ High Performance**: Optimized for large binary data with BYTEA columns
+- **🧠 Neural Networks**: File-based storage using PyTorch native `.pth` format (same as OpenAI, Google)
+- **📊 Learning Events**: PostgreSQL for environmental interactions and analytics
+- **📋 Metadata**: JSON files with model info, checksums, and timestamps  
+- **�️ Large Model Backup**: HDF5 format for models >1GB with efficient compression
 
-**Why PostgreSQL-Only?**
-- ✅ **Simplicity**: Single database to maintain and configure
-- ✅ **Efficiency**: Native binary storage optimized for neural networks
-- ✅ **Reliability**: ACID compliance and enterprise-grade stability
-- ✅ **Focus**: Environmental learning without graph database overhead
+**Why Hybrid Storage?**
+- ✅ **No Memory Issues**: Files eliminate 3GB+ model compression problems
+- ✅ **Industry Standard**: PyTorch `.pth` format used by major AI companies
+- ✅ **Performance**: Faster saves/loads with native PyTorch I/O
+- ✅ **Reliability**: File checksums + PostgreSQL ACID compliance
+- ✅ **Scalable**: Files can be moved to cloud storage, PostgreSQL for queries
+
+### 📁 Storage Structure
+
+```
+./agi_checkpoints/
+├── session_12345/
+│   ├── models/
+│   │   ├── pattern_recognizer_latest.pth      # 3.2GB PyTorch model
+│   │   ├── hypothesis_generator_latest.pth    # 2.8GB PyTorch model  
+│   │   └── pattern_recognizer_backup.h5       # HDF5 backup (compressed)
+│   └── metadata/
+│       ├── pattern_recognizer_info.json       # Model metadata & checksum
+│       └── hypothesis_generator_info.json     # Model metadata & checksum
+```
 
 ---
 
@@ -91,10 +105,12 @@ scripts/components/
 │   ├── main_loop_controller.py       # Main loop + periodic saves
 │   ├── shutdown_manager.py           # Graceful shutdown + weight protection
 │   └── neural_persistence_safeguards.py # Neural network protection
-├── database/                          # 💾 PostgreSQL-only persistence
-│   ├── postgresql_agi_persistence.py # 🧠 Core PostgreSQL AGI storage
-│   ├── neural_persistence.py         # Neural network weight saving
-│   ├── database_manager.py           # PostgreSQL-only coordinator
+├── database/                          # 💾 Modern hybrid persistence
+│   ├── modern_neural_persistence.py  # 🧠⭐ Modern file-based neural storage
+│   ├── modern_database_manager.py    # 🔄⭐ Hybrid database manager
+│   ├── postgresql_agi_persistence.py # 📊 PostgreSQL learning events
+│   ├── neural_persistence.py         # 🔧 Legacy neural persistence
+│   ├── database_manager.py           # 🔧 Legacy database manager
 │   └── README.md                     # Database documentation
 ├── gpu/                              # ⚡ GPU acceleration
 │   ├── gpu_config.py                # GPU configuration
@@ -166,20 +182,20 @@ ICA/                                  # 🏠 Project root
    pip install -r requirements.txt
    ```
 
-3. **Setup PostgreSQL Database**
+3. **Setup Modern Storage** (Automatic)
    ```bash
-   # Download and install PostgreSQL from postgresql.org
-   # Or run the setup script for guided installation
-   python scripts/setup_databases.py
+   # Neural networks stored in files (automatic setup)
+   # Optional PostgreSQL for learning events
+   python scripts/setup_databases.py  # Optional for PostgreSQL events
    ```
 
-4. **Configure Database**
+4. **Configure Storage** (Optional PostgreSQL)
    ```json
-   // config/database/database_config.json
+   // config/database/database_config.json (optional)
    {
      "database": {
        "type": "postgresql",
-       "host": "localhost",
+       "host": "localhost", 
        "port": 5432,
        "database": "ica_neural",
        "user": "ica_user",
@@ -187,8 +203,9 @@ ICA/                                  # 🏠 Project root
      }
    }
    ```
+   **Note**: Neural networks save to files automatically. PostgreSQL is optional for learning event analytics.
 
-5. **Start the Modular TRUE AGI System**
+5. **Start the Modern TRUE AGI System**
    ```bash
    python scripts/run_continuous_modular.py
    ```
@@ -198,18 +215,18 @@ ICA/                                  # 🏠 Project root
 ```
 🧠 TRUE AGI Continuous Learning System - Modular Edition
 ============================================================
-🧠 [DB] PostgreSQL-only Database Manager initialized
-🧠 [DB] Session ID: agi_session_1737099123
-🧠 [DB] Neural networks are the knowledge - no graph database needed
+🧠 [Modern] Neural persistence initialized: ./agi_checkpoints/agi_session_1737099123
+🧠 [Modern] Using industry-standard PyTorch + HDF5 approach
+✅ [Modern] PostgreSQL available for event logging
+🧠 [Modern] Database manager initialized
+🗂️ [Modern] Neural networks: File-based storage (PyTorch + HDF5)
+📊 [Modern] Events & metadata: PostgreSQL
 [INIT] 🔄 Checking for previous learning data...
 [RESTORE] ✅ Previous learning data found!
-[RESTORE] 📊 Database Contents:
-[RESTORE]   • Neural Models: 2 (pattern_recognizer, hypothesis_generator)
-[RESTORE]   • Learning Events: 1,247
-[RESTORE]   • Pattern Recognitions: 3,891
-[RESTORE]   • Hypothesis Generations: 1,523
-🧠 [Neural] Restored pattern_recognizer knowledge (4,287,452 parameters)
-🧠 [Neural] Restored hypothesis_generator knowledge (2,144,768 parameters)
+🧠 [Modern] Restoring neural network models from files...
+✅ [Modern] Restored pattern_recognizer (821,063,204 parameters)
+✅ [Modern] Restored hypothesis_generator (412,844,732 parameters)
+🧠 [Modern] Checkpoint from: 2025-07-17T10:54:32.123456
 [RESTORE] ✅ Complete learning state restored!
 🚀 [AGI] TRUE AGI Environmental Learning Started
 🌍 [ENV] Learning from surroundings - pattern recognition active
@@ -218,7 +235,9 @@ ICA/                                  # 🏠 Project root
 ```
 [INFO] 🛑 Press Ctrl+C to stop gracefully
 [PERIODIC] 💾 Performing periodic save...
-[PERIODIC] 🧠 Saving neural network weights and biases...
+🧠 [Modern] Saving neural network models to files...
+✅ [Modern] Saved pattern_recognizer: 3184.2MB (821,063,204 params)
+🗂️ [Modern] Location: ./agi_checkpoints/session_123/models/pattern_recognizer_latest.pth
 [PERIODIC] ✅ Neural network weights and biases saved!
 ```
 

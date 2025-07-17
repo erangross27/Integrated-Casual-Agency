@@ -16,12 +16,12 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from ..system import SystemUtils
 from ..gpu import GPUProcessor
 from ..database import DatabaseManager
+from ..database.modern_database_manager import create_modern_database_manager
 from ..monitoring import AGIMonitor
 from ..gpu import GPUWorker
 
 # Import TRUE AGI Framework
 from ica_framework.sandbox import WorldSimulator, AGIAgent
-from ica_framework.enhanced_knowledge_graph import EnhancedKnowledgeGraph
 
 # Setup utilities
 flush_print = SystemUtils.flush_print
@@ -68,45 +68,56 @@ class ComponentInitializer:
             return True  # Still continue with CPU
     
     def initialize_knowledge_graph(self):
-        """Initialize knowledge graph connection"""
-        flush_print("[INIT] 🔧 Initializing knowledge graph...")
+        """Initialize PostgreSQL database (knowledge stored in neural networks)"""
+        flush_print("[INIT] 🔧 Initializing PostgreSQL database...")
         
-        self.knowledge_graph = EnhancedKnowledgeGraph(
-            backend='neo4j',
-            config=self.database_config,
-            auto_connect=True
-        )
-        
-        if self.knowledge_graph.connect():
-            flush_print("[OK] ✅ Knowledge graph connection established")
+        # For PostgreSQL-only architecture, we don't need a separate knowledge graph
+        # The neural networks ARE the knowledge storage
+        try:
+            # Test PostgreSQL connection
+            import psycopg2
+            conn = psycopg2.connect(
+                host=self.database_config['host'],
+                port=self.database_config['port'],
+                database=self.database_config['database'],
+                user=self.database_config['user'],
+                password=self.database_config['password']
+            )
+            conn.close()
+            flush_print("[OK] ✅ PostgreSQL connection established")
+            flush_print("[OK] 🧠 Neural networks will store the knowledge")
+            
+            # Create a simple placeholder for compatibility
+            self.knowledge_graph = None  # No separate knowledge graph needed
             return True
-        else:
-            flush_print("[ERROR] ❌ Knowledge graph connection failed")
+            
+        except Exception as e:
+            flush_print(f"[ERROR] ❌ PostgreSQL connection failed: {e}")
             return False
     
     def initialize_database_manager(self):
-        """Initialize database manager"""
-        flush_print("[INIT] 🔧 Initializing database manager...")
+        """Initialize modern file-based database manager"""
+        flush_print("[INIT] 🔧 Initializing modern database manager...")
         
-        if not self.knowledge_graph:
-            flush_print("[ERROR] ❌ Cannot initialize database manager - no knowledge graph")
-            return False
+        # Use modern file-based neural storage + PostgreSQL events
+        session_id = f"agi_session_{int(__import__('time').time())}"
+        self.database_manager = create_modern_database_manager(session_id)
         
-        self.database_manager = DatabaseManager(self.knowledge_graph)
-        flush_print("[OK] ✅ Database manager initialized")
+        flush_print("[OK] ✅ Modern database manager initialized")
+        flush_print("[OK] 🧠 Neural networks: File storage (PyTorch + HDF5)")
+        flush_print("[OK] 📊 Events: PostgreSQL (if available)")
         return True
     
     def initialize_simulators(self):
         """Initialize world simulator and AGI agent"""
         flush_print("[INIT] 🔧 Initializing simulators...")
         
-        if not self.knowledge_graph:
-            flush_print("[ERROR] ❌ Cannot initialize simulators - no knowledge graph")
-            return False
+        # For PostgreSQL-only architecture, we don't need a knowledge graph
+        # The neural networks and database manager handle knowledge storage
         
         # Initialize world simulator and AGI agent
         self.world_simulator = WorldSimulator()
-        self.agi_agent = AGIAgent(self.world_simulator, self.knowledge_graph)
+        self.agi_agent = AGIAgent(self.world_simulator, self.database_manager)
         
         # Configure for continuous learning
         self.world_simulator.set_simulation_speed(0.1)
@@ -115,6 +126,7 @@ class ComponentInitializer:
         self.agi_agent.set_novelty_threshold(0.6)
         
         flush_print("[OK] ✅ Simulators initialized")
+        flush_print("[OK] 🧠 AGI agent will learn from environment")
         return True
     
     def initialize_monitoring_components(self):

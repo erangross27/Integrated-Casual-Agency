@@ -34,29 +34,30 @@ class SystemUtils:
     
     @staticmethod
     def load_database_config(project_root):
-        """Load Neo4j configuration from config file"""
-        config_file = project_root / "config/database/neo4j.json"
+        """Load PostgreSQL configuration from config file"""
+        config_file = project_root / "config/database/database_config.json"
         if config_file.exists():
             try:
                 with open(config_file, 'r') as f:
                     config_data = json.load(f)
-                    db_config = config_data['config']
-                    print(f"[OK] Loaded Neo4j config from {config_file}")
-                    print(f"   URI: {db_config['uri']}")
+                    db_config = config_data['database']
+                    print(f"[OK] Loaded PostgreSQL config from {config_file}")
+                    print(f"   Host: {db_config['host']}:{db_config['port']}")
                     print(f"   Database: {db_config['database']}")
-                    print(f"   User: {db_config['username']}")
+                    print(f"   User: {db_config['user']}")
                     print()
                     return db_config
                     
             except Exception as e:
                 print(f"[ERROR] Failed to load config file: {e}")
                 
-        print("[WARNING] Using default Neo4j configuration")
+        print("[WARNING] Using default PostgreSQL configuration")
         return {
-            'uri': 'neo4j://127.0.0.1:7687',
-            'username': 'neo4j',
-            'password': 'password',
-            'database': 'neo4j'
+            'host': 'localhost',
+            'port': 5432,
+            'database': 'ica_neural',
+            'user': 'ica_user',
+            'password': 'ica_password'
         }
 
 

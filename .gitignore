@@ -92,3 +92,4 @@ datasets/
 conda-meta/
 check_neo4j.py
 config/database/neo4j_custom.json
+agi_checkpoints/agi_session_1752739943/models/pattern_recognizer_backup.h5

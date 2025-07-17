@@ -179,7 +179,7 @@ class PostgreSQLAGIPersistence:
             self.connection.rollback()
     
     def save_neural_model(self, model_name, model, metadata=None):
-        """Save neural network model (the AGI's learned knowledge)"""
+        """Save neural network model (the AGI's learned knowledge) with memory-efficient processing"""
         print(f"🧠 [AGI] Saving {model_name} neural knowledge...")
         
         try:
@@ -188,19 +188,39 @@ class PostgreSQLAGIPersistence:
             model_bytes = pickle.dumps(state_dict)
             original_size = len(model_bytes)
             
-            # Compress the neural data
-            compressed_data = gzip.compress(model_bytes, compresslevel=6)
-            compressed_size = len(compressed_data)
-            compression_ratio = original_size / compressed_size if compressed_size > 0 else 1.0
-            
-            # Calculate checksum for integrity
-            checksum = hashlib.sha256(compressed_data).hexdigest()
-            
             # Count parameters
             parameter_count = sum(p.numel() for p in model.parameters())
             
-            print(f"🧠 [AGI] Compressed {original_size:,} bytes → {compressed_size:,} bytes ({compression_ratio:.2f}x)")
+            print(f"🧠 [AGI] Model serialized: {original_size:,} bytes")
             print(f"🧠 [AGI] Model has {parameter_count:,} learnable parameters")
+            
+            # Determine compression strategy based on size
+            if original_size > 2_000_000_000:  # >2GB - skip compression to avoid memory issues
+                print(f"🧠 [AGI] Large model detected - storing without compression to avoid memory issues")
+                final_data = model_bytes
+                compressed = False
+                compression_ratio = 1.0
+            else:
+                # Use compression for smaller models
+                try:
+                    print(f"🧠 [AGI] Compressing neural data...")
+                    compressed_data = gzip.compress(model_bytes, compresslevel=3)  # Lower compression level
+                    compressed_size = len(compressed_data)
+                    compression_ratio = original_size / compressed_size if compressed_size > 0 else 1.0
+                    
+                    print(f"🧠 [AGI] Compressed {original_size:,} bytes → {compressed_size:,} bytes ({compression_ratio:.2f}x)")
+                    
+                    final_data = compressed_data
+                    compressed = True
+                    
+                except MemoryError:
+                    print(f"⚠️ [AGI] Compression failed due to memory - storing uncompressed")
+                    final_data = model_bytes
+                    compressed = False
+                    compression_ratio = 1.0
+            
+            # Calculate checksum for integrity
+            checksum = hashlib.sha256(final_data).hexdigest()
             
             with self.connection.cursor() as cursor:
                 # Mark previous versions as not current
@@ -224,15 +244,18 @@ class PostgreSQLAGIPersistence:
                 
                 model_id = cursor.fetchone()[0]
                 
-                # Insert compressed weights
+                # Insert weights data
                 cursor.execute("""
                     INSERT INTO neural_weights 
                     (model_id, weights_data, checksum, compressed)
                     VALUES (%s, %s, %s, %s)
-                """, (model_id, compressed_data, checksum, True))
+                """, (model_id, final_data, checksum, compressed))
                 
                 self.connection.commit()
-                print(f"✅ [AGI] Saved {model_name} knowledge (ID: {model_id})")
+                
+                size_mb = len(final_data) / (1024 * 1024)
+                comp_status = "compressed" if compressed else "uncompressed"
+                print(f"✅ [AGI] Saved {model_name} knowledge ({size_mb:.1f}MB {comp_status}, ID: {model_id})")
                 return True
                 
         except Exception as e:
@@ -269,9 +292,16 @@ class PostgreSQLAGIPersistence:
                     print(f"❌ [AGI] Neural knowledge corrupted for {model_name}")
                     return False
                 
-                # Decompress and deserialize
+                # Decompress if needed and deserialize
                 if result[10]:  # compressed column
-                    weights_data = gzip.decompress(weights_data)
+                    print(f"🧠 [AGI] Decompressing neural data...")
+                    try:
+                        weights_data = gzip.decompress(weights_data)
+                    except Exception as e:
+                        print(f"❌ [AGI] Decompression failed: {e}")
+                        return False
+                else:
+                    print(f"🧠 [AGI] Loading uncompressed neural data...")
                 
                 state_dict = pickle.loads(weights_data)
                 model.load_state_dict(state_dict)

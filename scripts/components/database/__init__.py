@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
 """
-Database Module
-Comprehensive database management for TRUE learning persistence
-NO TRAINING LOSS - GUARANTEED CONTINUOUS LEARNING PRESERVATION
+Database Module - PostgreSQL-Only TRUE AGI Storage
+Neural networks ARE the knowledge - no graph database needed
 """
 
 from .database_manager import DatabaseManager
 from .neural_persistence import NeuralPersistence
-from .learning_state_persistence import LearningStatePersistence
-from .pattern_storage import PatternStorage
-from .session_manager import SessionManager
-from .agi_learning_storage import AGILearningStorage
+from .postgresql_agi_persistence import PostgreSQLAGIPersistence
 
 __all__ = [
     'DatabaseManager',
     'NeuralPersistence',
-    'LearningStatePersistence', 
-    'PatternStorage',
-    'SessionManager',
-    'AGILearningStorage'
+    'PostgreSQLAGIPersistence'
 ]

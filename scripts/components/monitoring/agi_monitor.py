@@ -20,6 +20,8 @@ class AGIMonitor:
         
         self.running = False
         self.cycle_count = 0
+        self.save_counter = 0
+        self.save_interval = 20  # Save every 20 cycles (approximately every 30-40 seconds)
         self.monitor_thread = None
     
     def start_monitoring(self):
@@ -41,6 +43,7 @@ class AGIMonitor:
         while self.running:
             try:
                 self.cycle_count += 1
+                self.save_counter += 1
                 
                 # GPU-accelerated learning processing
                 if self.gpu_processor.use_gpu and self.cycle_count % 1 == 0:
@@ -54,9 +57,10 @@ class AGIMonitor:
                     # Process AGI learning with GPU
                     results = self.gpu_processor.process_agi_learning(observation_data)
                     
-                    # Store AGI learning to database
-                    if results:
-                        self.database_manager.store_agi_learning(self.agi_agent)
+                    # Store AGI learning to database only periodically
+                    if results and self.save_counter >= self.save_interval:
+                        self.database_manager.store_learning_state(self.agi_agent, self.gpu_processor)
+                        self.save_counter = 0
                 
                 # Get learning statistics
                 world_stats = self.world_simulator.get_learning_statistics()

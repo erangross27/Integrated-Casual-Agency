@@ -20,6 +20,8 @@ class GPUWorker:
         self.running = False
         self.worker_thread = None
         self.worker_cycle = 0
+        self.save_counter = 0
+        self.save_interval = 50  # Save every 50 batches instead of every batch
     
     def start_worker(self):
         """Start the GPU worker thread"""
@@ -68,9 +70,12 @@ class GPUWorker:
                     results = self.gpu_processor.process_agi_learning(batch_observation)
                     if results:
                         batch_results.append(results)
+                        self.save_counter += 1
                         
-                        # Store learning data to database
-                        self.database_manager.store_agi_learning(self.agi_agent)
+                        # Store learning data to database only periodically
+                        if self.save_counter >= self.save_interval:
+                            self.database_manager.store_learning_state(self.agi_agent, self.gpu_processor)
+                            self.save_counter = 0
                 
                 # Save complete learning state every 100 cycles (neural networks + AGI state)
                 if self.worker_cycle % 100 == 0:

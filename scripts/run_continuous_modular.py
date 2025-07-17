@@ -13,15 +13,38 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import the modular TRUE AGI system
-from components.main_runner import TrueAGIRunner
+from components.core import AGIRunner
 
 # Setup Windows encoding
 if sys.platform == "win32":
     import codecs
-    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
-    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+    import locale
+    
+    # Set console code page to UTF-8
     os.system('chcp 65001 > nul')
+    
+    # Configure Python environment
     os.environ['PYTHONUNBUFFERED'] = '1'
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    
+    # Set locale
+    try:
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+    except:
+        try:
+            locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+        except:
+            pass  # Use system default
+    
+    # Only reconfigure stdout/stderr if they haven't been detached
+    try:
+        if hasattr(sys.stdout, 'detach'):
+            sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+        if hasattr(sys.stderr, 'detach'):
+            sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+    except ValueError:
+        # Streams already detached or configured
+        pass
 
 
 def main():
@@ -30,7 +53,7 @@ def main():
     print("=" * 60)
     
     # Create and run the TRUE AGI system
-    runner = TrueAGIRunner()
+    runner = AGIRunner()
     runner.run()
 
 

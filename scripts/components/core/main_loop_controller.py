@@ -31,7 +31,7 @@ class MainLoopController:
         
         # Periodic save configuration
         self.save_counter = 0
-        self.save_interval = 4  # Save every 4 iterations (2 minutes)
+        self.save_interval = 8  # Save every 8 iterations (4 minutes)
     
     def set_running(self, running):
         """Set the running state"""
