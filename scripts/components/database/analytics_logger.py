@@ -141,19 +141,34 @@ class WandBAGILogger:
             print(f"🔄 [W&B] Started Epoch {self.epoch}")
     
     def increment_step(self):
-        """Increment step counter and save if it's a milestone"""
+        """Increment step counter within current epoch"""
         self.step += 1
+        
+        # Auto-advance to next epoch every 50 steps (continuous learning cycles)
+        if self.step >= 50:
+            self.complete_epoch()
+    
+    def complete_epoch(self):
+        """Complete current epoch and advance to the next one"""
+        # Log epoch completion
+        if self.initialized:
+            wandb.log({
+                "epoch_completed": self.epoch,
+                "steps_in_epoch": self.step,
+                "learning_cycle": "completed"
+            }, step=(self.epoch * 50) + self.step)
+        
+        # Advance to next epoch
+        self.epoch += 1
+        self.step = 0
         self._save_epoch_data()
         
-        # Start new epoch every 100 steps for continuous learning progression
-        if self.step > 0 and self.step % 100 == 0:
-            self.start_new_epoch()
+        if self.initialized:
+            wandb.log({"epoch": self.epoch, "new_epoch_started": True}, step=self.epoch * 50)
+            wandb.run.summary["current_epoch"] = self.epoch
+            print(f"🎯 [W&B] ✅ Epoch {self.epoch - 1} completed → Started Epoch {self.epoch}")
         
-        # Save checkpoint every 50 steps
-        elif self.step % 50 == 0:
-            if self.initialized:
-                wandb.run.summary["global_step"] = self.step
-                print(f"💾 [W&B] Checkpoint saved at Step {self.step}, Epoch {self.epoch}")
+        return self.epoch
     
     def log_learning_episode(self, episode_data: Dict[str, Any]):
         """Log a learning episode with epoch tracking"""
@@ -293,6 +308,40 @@ class WandBAGILogger:
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log network info: {e}")
     
+    def log_epoch_progress(self, concepts_learned: int, patterns_discovered: int, 
+                          learning_efficiency: float, memory_capacity: float):
+        """Log epoch-based learning progress - the main learning curve data"""
+        if not self.initialized:
+            return
+            
+        try:
+            epoch_progress = {
+                # Primary Learning Metrics (for learning curves)
+                "concepts_learned": concepts_learned,
+                "patterns_discovered": patterns_discovered,
+                "learning_efficiency": learning_efficiency,
+                "memory_capacity_used": memory_capacity,
+                
+                # Cumulative Progress
+                "total_concepts": concepts_learned,  # This will accumulate over epochs
+                "total_patterns": patterns_discovered,  # This will accumulate over epochs
+                
+                # Epoch Information
+                "epoch": self.epoch,
+                "learning_phase": f"Epoch_{self.epoch}",
+                "progress_timestamp": time.time(),
+                
+                # Learning Rate (concepts per epoch)
+                "concepts_per_epoch": concepts_learned / max(1, self.epoch),
+                "patterns_per_epoch": patterns_discovered / max(1, self.epoch),
+            }
+            
+            wandb.log(epoch_progress, step=self.epoch)  # Use epoch as x-axis for learning curves
+            print(f"📈 [W&B] Epoch {self.epoch} Progress: {concepts_learned:,} concepts, {patterns_discovered:,} patterns")
+            
+        except Exception as e:
+            print(f"⚠️ [W&B] Failed to log epoch progress: {e}")
+    
     def finish(self):
         """Finish the W&B run"""
         if self.initialized:
@@ -309,8 +358,28 @@ class WandBAGILogger:
 
 # Test the logger if run directly
 if __name__ == "__main__":
+    print("🧪 Testing Epoch-Based Learning Progress Tracking")
+    
     logger = WandBAGILogger()
-    logger.start_new_epoch()
-    logger.increment_step()
-    logger.log_learning_metrics({"test_metric": 42})
+    
+    # Simulate learning progress over multiple epochs
+    for epoch_num in range(5):
+        # Each epoch learns more concepts (showing improvement)
+        concepts = 1000 + (epoch_num * 500)  # 1000, 1500, 2000, 2500, 3000
+        patterns = 5000 + (epoch_num * 1000)  # 5000, 6000, 7000, 8000, 9000
+        efficiency = 0.7 + (epoch_num * 0.05)  # Improving efficiency
+        memory = 0.3 + (epoch_num * 0.1)  # Increasing memory usage
+        
+        logger.log_epoch_progress(concepts, patterns, efficiency, memory)
+        
+        # Simulate steps within epoch
+        for step in range(50):
+            logger.increment_step()
+            if step % 10 == 0:
+                logger.log_learning_metrics({
+                    "step_learning_rate": 0.8 + (step * 0.01),
+                    "neural_activity": 75 + (step * 2)
+                })
+    
+    print(f"🎯 Final State: Epoch {logger.epoch}, Step {logger.step}")
     logger.finish()
