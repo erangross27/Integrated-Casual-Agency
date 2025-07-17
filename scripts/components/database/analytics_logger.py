@@ -260,6 +260,35 @@ class WandBAGILogger:
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log learning event: {e}")
     
+    def log_neural_network_info(self, model_name: str, model: Any):
+        """Log neural network architecture and parameters with epoch tracking"""
+        if not self.initialized:
+            return
+            
+        try:
+            # Count parameters if it's a PyTorch model
+            if hasattr(model, 'parameters'):
+                total_params = sum(p.numel() for p in model.parameters())
+                trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+            else:
+                total_params = 0
+                trainable_params = 0
+            
+            network_info = {
+                f"{model_name}_total_parameters": total_params,
+                f"{model_name}_trainable_parameters": trainable_params,
+                f"{model_name}_model_size_mb": total_params * 4 / (1024 * 1024),  # Assuming float32
+                "epoch": self.epoch,
+                "global_step": self.step,
+                "model_type": model_name
+            }
+            
+            wandb.log(network_info, step=self.step)
+            print(f"🧠 [W&B] Logged {model_name} info: {total_params:,} parameters at Epoch {self.epoch}")
+            
+        except Exception as e:
+            print(f"⚠️ [W&B] Failed to log network info: {e}")
+    
     def finish(self):
         """Finish the W&B run"""
         if self.initialized:
