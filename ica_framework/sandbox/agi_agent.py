@@ -268,3 +268,36 @@ class AGIAgent:
     def get_learning_metrics(self) -> Dict[str, Any]:
         """Get current learning metrics"""
         return self.learning_progress.get_progress_summary()
+    
+    # Simple delegation methods (keep AGI agent thin)
+    def set_exploration_rate(self, rate: float):
+        """Delegate to exploration controller"""
+        self.exploration_controller.exploration_radius = rate * 10.0
+        self.curiosity_engine.question_generation_rate = rate
+        self.logger.info(f"✅ Exploration rate set to {rate}")
+    
+    def set_novelty_threshold(self, threshold: float):
+        """Delegate to curiosity engine"""
+        self.curiosity_engine.novelty_threshold = threshold
+        self.attention_system.relevance_threshold = threshold * 0.5
+        self.logger.info(f"✅ Novelty threshold set to {threshold}")
+    
+    def process_gpu_discoveries(self, gpu_results: Dict[str, Any], cycle_count: int):
+        """Delegate to learning progress"""
+        self.learning_progress.process_gpu_discoveries(gpu_results, cycle_count)
+    
+    def get_learning_summary(self) -> Dict[str, Any]:
+        """Delegate to comprehensive progress"""
+        return self.get_comprehensive_progress()
+    
+    def inject_curiosity(self, curiosity_boost: float):
+        """Delegate to curiosity engine and exploration controller"""
+        self.curiosity_engine.novelty_threshold = max(0.1, self.curiosity_engine.novelty_threshold - curiosity_boost)
+        exploration_goal = {
+            'description': f'Curiosity boost: {curiosity_boost}',
+            'position': [5 + curiosity_boost * 10, 0, 5 + curiosity_boost * 10],
+            'priority': 0.9,
+            'estimated_duration': 3.0
+        }
+        self.exploration_controller.add_goal(exploration_goal)
+        self.logger.info(f"✅ Curiosity injected: {curiosity_boost}")
