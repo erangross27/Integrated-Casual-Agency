@@ -32,6 +32,24 @@ The ICA (Integrated Casual Agency) Framework is a **modular TRUE AGI system** th
 - 🔧 **Self-Recovery**: Graceful error handling and system resilience
 - 🚀 **Optimal Performance**: ~48% GPU utilization at 1,400+ patterns/sec
 
+### 🏗️ PostgreSQL-Only Architecture
+
+**Philosophy**: *"Neural networks ARE the knowledge - no graph database needed"*
+
+The TRUE AGI system uses a **single PostgreSQL database** that recognizes neural networks themselves contain the learned knowledge through their weights and biases. This eliminates the complexity of graph databases while providing:
+
+- **🧠 Neural Network Storage**: Multi-GB model weights with binary compression
+- **🌍 Environmental Learning**: Interactions, patterns, and hypotheses from surroundings  
+- **📊 Learning Metrics**: Training progress, performance data, and session tracking
+- **🔄 Version Management**: Model versioning with automatic cleanup
+- **⚡ High Performance**: Optimized for large binary data with BYTEA columns
+
+**Why PostgreSQL-Only?**
+- ✅ **Simplicity**: Single database to maintain and configure
+- ✅ **Efficiency**: Native binary storage optimized for neural networks
+- ✅ **Reliability**: ACID compliance and enterprise-grade stability
+- ✅ **Focus**: Environmental learning without graph database overhead
+
 ---
 
 ## 🏗️ Modular Architecture
@@ -59,26 +77,64 @@ The heart of the system - clean, modular components that replaced the monolithic
 2. **Manual Termination Protection**: Ctrl+C triggers graceful shutdown with weight saving
 3. **Emergency Save Fallback**: Direct neural network save if regular save fails
 4. **Signal Handler Protection**: Proper handling of all termination signals
-5. **Database Persistence**: PyTorch state_dict serialization in Neo4j
+5. **PostgreSQL Persistence**: PyTorch state_dict serialization with binary compression
 
 ### 📁 Component Organization
 
 ```
 scripts/components/
-├── core/                    # 🎯 Main system coordination (NEW)
-│   ├── agi_runner.py       # Main system coordinator
-│   ├── component_initializer.py  # System initialization
-│   ├── session_manager.py  # Session persistence
-│   ├── learning_coordinator.py   # Learning control
-│   ├── main_loop_controller.py   # Main loop + periodic saves
-│   └── shutdown_manager.py # Graceful shutdown + weight protection
-├── gpu/                     # ⚡ GPU acceleration
-├── database/               # 💾 PostgreSQL persistence
-│   ├── postgresql_agi_persistence.py  # 🧠 Core PostgreSQL AGI storage
-│   ├── neural_persistence.py          # Neural network weight saving
-│   └── database_manager.py            # PostgreSQL-only coordinator
-├── monitoring/            # 👁️ System monitoring
-└── system/               # 🛠️ System utilities
+├── core/                              # 🎯 Main system coordination
+│   ├── agi_runner.py                 # Main system coordinator
+│   ├── component_initializer.py      # System initialization
+│   ├── session_manager.py            # Session persistence
+│   ├── learning_coordinator.py       # Learning control
+│   ├── main_loop_controller.py       # Main loop + periodic saves
+│   ├── shutdown_manager.py           # Graceful shutdown + weight protection
+│   └── neural_persistence_safeguards.py # Neural network protection
+├── database/                          # 💾 PostgreSQL-only persistence
+│   ├── postgresql_agi_persistence.py # 🧠 Core PostgreSQL AGI storage
+│   ├── neural_persistence.py         # Neural network weight saving
+│   ├── database_manager.py           # PostgreSQL-only coordinator
+│   └── README.md                     # Database documentation
+├── gpu/                              # ⚡ GPU acceleration
+│   ├── gpu_config.py                # GPU configuration
+│   ├── gpu_models.py                # Neural network models
+│   ├── gpu_processor.py             # GPU processing
+│   └── gpu_worker.py                # GPU worker threads
+├── monitoring/                       # 👁️ System monitoring
+│   └── agi_monitor.py               # AGI system monitoring
+├── system/                          # 🛠️ System utilities
+│   └── system_utils.py              # System utility functions
+└── main_runner.py                   # 🚀 Main system runner
+```
+
+### 📂 Complete Project Structure
+
+```
+ICA/                                  # 🏠 Project root
+├── config/                          # ⚙️ Configuration files
+│   └── database/
+│       └── database_config.json    # PostgreSQL configuration
+├── docs/                           # 📚 Documentation
+│   ├── AGI_Development_Progress_Summary.md
+│   └── database_backends.md
+├── examples/                       # 🧪 Example usage
+│   └── demo.py                     # Quick demo script
+├── ica_framework/                  # 🧠 Core framework
+│   ├── enhanced_knowledge_graph.py
+│   ├── database/                   # Framework database adapters
+│   ├── learning/                   # Learning algorithms
+│   ├── sandbox/                    # AGI sandbox environment
+│   └── utils/                      # Framework utilities
+├── requirements/                   # 📋 Dependencies
+│   ├── requirements.txt           # Main dependencies
+│   └── requirements-dev.txt       # Development dependencies
+├── scripts/                        # 🚀 Main execution scripts
+│   ├── components/                 # (detailed above)
+│   ├── run_continuous_modular.py  # Main TRUE AGI runner
+│   └── setup_databases.py         # Database setup script
+├── setup.py                       # 📦 Package setup
+└── README.md                      # 📖 This file
 ```
 
 ---
