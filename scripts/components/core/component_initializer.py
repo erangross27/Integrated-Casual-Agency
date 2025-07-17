@@ -15,7 +15,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 # Import component modules
 from ..system import SystemUtils
 from ..gpu import GPUProcessor
-from ..database import DatabaseManager
 from ..database.modern_database_manager import create_modern_database_manager
 from ..monitoring import AGIMonitor
 from ..gpu import GPUWorker
@@ -30,8 +29,8 @@ flush_print = SystemUtils.flush_print
 class ComponentInitializer:
     """Handles initialization of all system components"""
     
-    def __init__(self, database_config):
-        self.database_config = database_config
+    def __init__(self):
+        # No database config needed - using W&B analytics and file storage
         
         # Core components
         self.world_simulator = None
@@ -68,23 +67,14 @@ class ComponentInitializer:
             return True  # Still continue with CPU
     
     def initialize_knowledge_graph(self):
-        """Initialize PostgreSQL database (knowledge stored in neural networks)"""
-        flush_print("[INIT] 🔧 Initializing PostgreSQL database...")
+        """Initialize knowledge storage (neural networks + W&B analytics)"""
+        flush_print("[INIT] 🔧 Initializing knowledge storage...")
         
-        # For PostgreSQL-only architecture, we don't need a separate knowledge graph
-        # The neural networks ARE the knowledge storage
+        # Modern architecture: knowledge stored in neural networks, analytics in W&B
+        # No separate database required
         try:
-            # Test PostgreSQL connection
-            import psycopg2
-            conn = psycopg2.connect(
-                host=self.database_config['host'],
-                port=self.database_config['port'],
-                database=self.database_config['database'],
-                user=self.database_config['user'],
-                password=self.database_config['password']
-            )
-            conn.close()
-            flush_print("[OK] ✅ PostgreSQL connection established")
+            flush_print("[OK] ✅ Knowledge storage: Neural networks (file-based)")
+            flush_print("[OK] 📊 Analytics: W&B dashboard")
             flush_print("[OK] 🧠 Neural networks will store the knowledge")
             
             # Create a simple placeholder for compatibility
@@ -92,28 +82,28 @@ class ComponentInitializer:
             return True
             
         except Exception as e:
-            flush_print(f"[ERROR] ❌ PostgreSQL connection failed: {e}")
+            flush_print(f"[ERROR] ❌ Knowledge storage initialization failed: {e}")
             return False
     
     def initialize_database_manager(self):
-        """Initialize modern file-based database manager"""
+        """Initialize modern file-based database manager with W&B analytics"""
         flush_print("[INIT] 🔧 Initializing modern database manager...")
         
-        # Use modern file-based neural storage + PostgreSQL events
+        # Use modern file-based neural storage + W&B analytics
         session_id = f"agi_session_{int(__import__('time').time())}"
         self.database_manager = create_modern_database_manager(session_id)
         
         flush_print("[OK] ✅ Modern database manager initialized")
         flush_print("[OK] 🧠 Neural networks: File storage (PyTorch + HDF5)")
-        flush_print("[OK] 📊 Events: PostgreSQL (if available)")
+        flush_print("[OK] 📊 Analytics: W&B dashboard")
         return True
     
     def initialize_simulators(self):
         """Initialize world simulator and AGI agent"""
         flush_print("[INIT] 🔧 Initializing simulators...")
         
-        # For PostgreSQL-only architecture, we don't need a knowledge graph
-        # The neural networks and database manager handle knowledge storage
+        # For modern ML architecture, we don't need a separate knowledge graph
+        # The neural networks and W&B analytics handle knowledge storage
         
         # Initialize world simulator and AGI agent
         self.world_simulator = WorldSimulator()
@@ -174,8 +164,28 @@ class ComponentInitializer:
         if not self.initialize_monitoring_components():
             return False
         
+        # Initialize Weave function tracing
+        self.initialize_weave_tracing()
+        
         flush_print("[INIT] ✅ All components initialized successfully")
         return True
+    
+    def initialize_weave_tracing(self):
+        """Initialize Weave function tracing for AGI components"""
+        try:
+            from ..database.weave_tracer import integrate_weave_with_agi_components
+            
+            flush_print("[INIT] 🐝 Initializing Weave function tracing...")
+            integrate_weave_with_agi_components(
+                self.agi_agent,
+                self.gpu_processor, 
+                self.world_simulator
+            )
+            flush_print("[OK] ✅ Weave tracing initialized")
+            
+        except Exception as e:
+            flush_print(f"[INIT] ⚠️ Weave tracing failed: {e}")
+            flush_print("[INIT] ℹ️ Continuing without function tracing...")
     
     def get_components(self):
         """Get all initialized components"""

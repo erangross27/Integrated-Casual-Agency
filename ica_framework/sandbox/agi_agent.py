@@ -33,31 +33,15 @@ class AGIAgent:
         if knowledge_graph:
             self.knowledge_graph = knowledge_graph
         else:
-            # Try to load Neo4j configuration
+            # Use default Neo4j connection (if available)
+            # Modern architecture primarily uses file-based storage + W&B analytics
             try:
-                import json
-                from pathlib import Path
-                config_file = Path(__file__).parent.parent.parent / "config/database/neo4j.json"
-                
-                if config_file.exists():
-                    with open(config_file, 'r') as f:
-                        config_data = json.load(f)
-                    
-                    # Initialize with Neo4j backend
-                    self.knowledge_graph = EnhancedKnowledgeGraph(
-                        backend='neo4j',
-                        config=config_data['config']
-                    )
-                    
-                    if self.knowledge_graph.connect():
-                        self.logger.info("✅ AGI Agent connected to Neo4j knowledge graph")
-                    else:
-                        self.logger.warning("⚠️ Neo4j connection failed, falling back to memory")
-                        self.knowledge_graph = EnhancedKnowledgeGraph(backend='memory')
+                self.knowledge_graph = EnhancedKnowledgeGraph(backend='neo4j')
+                if self.knowledge_graph.connect():
+                    self.logger.info("✅ AGI Agent connected to Neo4j knowledge graph")
                 else:
-                    self.logger.warning("⚠️ No Neo4j config found, using memory backend")
+                    self.logger.warning("⚠️ Neo4j connection failed, falling back to memory")
                     self.knowledge_graph = EnhancedKnowledgeGraph(backend='memory')
-                    
             except Exception as e:
                 self.logger.error(f"❌ Error initializing knowledge graph: {e}")
                 self.knowledge_graph = EnhancedKnowledgeGraph(backend='memory')
@@ -1089,7 +1073,7 @@ class AGIAgent:
         return insights
     
     def save_learning_progress(self):
-        """Save current learning progress to PostgreSQL database"""
+        """Save current learning progress using W&B analytics"""
         try:
             # Save learning progress data
             progress_data = {
@@ -1112,7 +1096,7 @@ class AGIAgent:
                 'timestamp': time.time()
             }
             
-            # Use PostgreSQL storage instead of Neo4j
+            # Use W&B analytics for learning progress tracking
             if hasattr(self.knowledge_graph, 'log_learning_event'):
                 self.knowledge_graph.log_learning_event(
                     "learning_progress_save",
@@ -1157,21 +1141,21 @@ class AGIAgent:
                         "system"
                     )
             
-            self.logger.info("✅ Learning progress saved to PostgreSQL database")
+            self.logger.info("✅ Learning progress logged to W&B analytics")
             
         except Exception as e:
             self.logger.error(f"❌ Error saving learning progress: {e}")
     
     def load_learning_progress(self):
-        """Load previous learning progress from PostgreSQL database"""
+        """Load previous learning progress from W&B and file storage"""
         try:
-            # For PostgreSQL-only architecture, we'll use a simplified approach
-            # Since neural networks contain the implicit knowledge, we mainly need basic stats
+            # Modern architecture: neural networks contain implicit knowledge
+            # Learning progress tracked in W&B dashboard
             
             self.logger.info("🔄 Attempting to load previous learning progress...")
             
-            # Note: In the PostgreSQL-only architecture, the neural networks themselves
-            # contain the learned knowledge, so we don't need to restore complex graph data
+            # Note: Neural networks contain the learned knowledge
+            # Learning history available in W&B dashboard
             
             # Check if we have any previous learning events
             if hasattr(self.knowledge_graph, 'get_recent_learning_events'):
@@ -1192,19 +1176,19 @@ class AGIAgent:
             return False
     
     def _load_active_hypotheses(self):
-        """Load active hypotheses from database - PostgreSQL simplified version"""
+        """Load active hypotheses - modern file-based version"""
         try:
             self.logger.info("🔄 Active hypotheses will be regenerated from neural network knowledge...")
-            # In PostgreSQL-only architecture, hypotheses are implicit in neural weights
+            # Hypotheses are implicit in neural weights, tracked in W&B
             
         except Exception as e:
             self.logger.error(f"❌ Error loading active hypotheses: {e}")
     
     def _load_causal_models(self):
-        """Load causal models from database - PostgreSQL simplified version"""
+        """Load causal models - modern file-based version"""
         try:
             self.logger.info("🔄 Causal models will be regenerated from neural network knowledge...")
-            # In PostgreSQL-only architecture, causal relationships are implicit in neural weights
+            # Causal relationships are implicit in neural weights, tracked in W&B
             # For now, we'll implement a basic version
             self.logger.info("🔄 Loading causal models from database...")
             

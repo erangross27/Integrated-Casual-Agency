@@ -1,9 +1,15 @@
 {
   "model_name": "pattern_recognizer",
   "file_path": "agi_checkpoints\\agi_session_1752739943\\models\\pattern_recognizer_latest.pth",
-  "file_size_bytes": 3284662732,
-  "file_size_mb": 3132.4984855651855,
+  "file_size_bytes": 3284666444,
+  "file_size_mb": 3132.502025604248,
   "parameter_count": 821063204,
-  "saved_at": "2025-07-17T11:14:55.137355",
-  "checksum": "75bc04b65b651e31ee97b2a7422c4e5092efd9c4127b52b72c51e41edb2ef26b"
+  "saved_at": "2025-07-17T12:51:18.174241",
+  "checksum": "2634faeb1a7cf87f90e995dca36a0a998d4db9332ff23e1be0a8ccb717d6a46b",
+  "learning_continuity": {
+    "preserves_previous_learning": true,
+    "total_learning_sessions": 17,
+    "accumulated_since": "2025-07-17T12:28:11.254786"
+  },
+  "total_learning_sessions": 17
 }

@@ -51,7 +51,6 @@ venv.bak/
 
 # AGI Model files and checkpoints (exclude all large files)
 agi_checkpoints/
-scripts/agi_checkpoints/
 **/agi_checkpoints/
 **/*.h5
 **/*.pth
@@ -61,6 +60,11 @@ scripts/agi_checkpoints/
 checkpoints/
 models/
 weights/
+
+# W&B and Weave data (exclude tracking data)
+wandb/
+weave/
+.weave/
 *.swo
 *~
 
@@ -103,6 +107,3 @@ datasets/
 
 # Virtual environments
 conda-meta/
-check_neo4j.py
-config/database/neo4j_custom.json
-agi_checkpoints/agi_session_1752739943/models/pattern_recognizer_backup.h5

@@ -33,7 +33,7 @@ class AGIRunner:
     
     def __init__(self):
         self.running = True
-        self.database_config = SystemUtils.load_database_config(PROJECT_ROOT)
+        # No database config needed - using W&B analytics and file storage
         
         # Component managers
         self.session_manager = None
@@ -52,8 +52,8 @@ class AGIRunner:
         flush_print("🚀 STARTING TRUE AGI CONTINUOUS LEARNING SYSTEM")
         flush_print("=" * 60)
         
-        # Initialize component initializer
-        self.component_initializer = ComponentInitializer(self.database_config)
+        # Initialize component initializer (no database config needed)
+        self.component_initializer = ComponentInitializer()
         
         # Initialize all components
         if not self.component_initializer.initialize_all_components():

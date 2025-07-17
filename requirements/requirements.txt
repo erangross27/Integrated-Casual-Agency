@@ -9,8 +9,11 @@ scikit-learn>=1.2.0
 scipy>=1.9.0
 
 # Database connections
-psycopg2-binary>=2.9.0  # PostgreSQL for neural networks
 neo4j>=5.0.0           # Neo4j for knowledge graph
+
+# ML Experiment Tracking (Modern ML Stack)
+wandb>=0.15.0          # Weights & Biases for experiment tracking
+weave>=0.50.0          # Weave for function tracing and observability
 
 # Visualization
 matplotlib>=3.5.0
@@ -21,9 +24,6 @@ click>=8.1.0
 
 # Optional logging (framework will fallback to standard logging)
 loguru>=0.7.0
-
-# Database support (optional - Neo4j for production)
-neo4j>=5.0.0
 
 # Development and testing
 pytest>=7.4.0
@@ -57,8 +57,9 @@ isort>=5.12.0
 # torch-cluster>=1.5.0
 
 # Progress tracking
-# tqdm>=4.60.0
-# wandb>=0.15.0
+tqdm>=4.60.0
+wandb>=0.15.0
+weave>=0.50.0
 
 # Environment management
 # python-dotenv>=1.0.0

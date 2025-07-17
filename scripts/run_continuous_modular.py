@@ -15,7 +15,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 # Import the modular TRUE AGI system
 from components.core import AGIRunner
 
-# Setup Windows encoding
+# Setup Windows encoding (W&B compatible)
 if sys.platform == "win32":
     import codecs
     import locale
@@ -36,15 +36,8 @@ if sys.platform == "win32":
         except:
             pass  # Use system default
     
-    # Only reconfigure stdout/stderr if they haven't been detached
-    try:
-        if hasattr(sys.stdout, 'detach'):
-            sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
-        if hasattr(sys.stderr, 'detach'):
-            sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
-    except ValueError:
-        # Streams already detached or configured
-        pass
+    # Skip stdout/stderr reconfiguration to avoid conflicts with W&B
+    # W&B handles its own console capture and encoding
 
 
 def main():

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
 Modern Database Manager for TRUE AGI
-Uses file-based storage for neural networks + PostgreSQL for events
+Uses file-based storage for neural networks + W&B analytics
 """
 
 import time
 from .modern_neural_persistence import ModernNeuralPersistence
-from .postgresql_agi_persistence import PostgreSQLAGIPersistence
+from .analytics_logger import WandBAGILogger
 
 
 class ModernDatabaseManager:
-    """Modern database manager using file-based neural storage + PostgreSQL events"""
+    """Modern database manager using file-based neural storage + W&B analytics"""
     
     def __init__(self, session_id):
         self.session_id = session_id
@@ -18,23 +18,31 @@ class ModernDatabaseManager:
         # Modern file-based neural network storage
         self.neural_persistence = ModernNeuralPersistence(session_id)
         
-        # PostgreSQL for learning events and metadata
+        # Weights & Biases analytics logger
         try:
-            self.agi_persistence = PostgreSQLAGIPersistence(session_id)
-            self.postgres_available = True
-            print(f"✅ [Modern] PostgreSQL available for event logging")
+            self.analytics_logger = WandBAGILogger(session_id=session_id)
+            self.analytics_available = self.analytics_logger.initialized
+            if self.analytics_available:
+                print(f"✅ [Modern] W&B Analytics initialized")
+            else:
+                print(f"⚠️ [Modern] W&B Analytics unavailable")
         except Exception as e:
-            print(f"⚠️ [Modern] PostgreSQL unavailable: {e}")
-            self.postgres_available = False
+            print(f"⚠️ [Modern] W&B Analytics error: {e}")
+            self.analytics_logger = None
+            self.analytics_available = False
         
         print(f"🧠 [Modern] Database manager initialized")
         print(f"🗂️ [Modern] Neural networks: File-based storage (PyTorch + HDF5)")
-        print(f"📊 [Modern] Events & metadata: {'PostgreSQL' if self.postgres_available else 'Local files'}")
+        print(f"📊 [Modern] Analytics: {'W&B Dashboard' if self.analytics_available else 'Local files'}")
     
     def store_learning_state(self, agi_agent, gpu_processor=None):
         """Store COMPLETE learning state using modern approach"""
         print("🧠 [Modern] Storing complete AGI learning state...")
         success = True
+        
+        # Log GPU performance to W&B
+        if self.analytics_available:
+            self.analytics_logger.log_gpu_performance()
         
         # Save neural networks to files (much more efficient)
         if gpu_processor:
@@ -47,6 +55,14 @@ class ModernDatabaseManager:
                         gpu_processor.pattern_recognizer,
                         {'type': 'pattern_recognition', 'architecture': 'neural_network'}
                     )
+                    
+                    # Log neural network info to W&B
+                    if self.analytics_available and neural_success:
+                        self.analytics_logger.log_neural_network_info(
+                            'pattern_recognizer', 
+                            gpu_processor.pattern_recognizer
+                        )
+                    
                     if not neural_success:
                         success = False
                 
@@ -57,6 +73,14 @@ class ModernDatabaseManager:
                         gpu_processor.hypothesis_generator,
                         {'type': 'hypothesis_generation', 'architecture': 'neural_network'}
                     )
+                    
+                    # Log neural network info to W&B
+                    if self.analytics_available and neural_success:
+                        self.analytics_logger.log_neural_network_info(
+                            'hypothesis_generator', 
+                            gpu_processor.hypothesis_generator
+                        )
+                    
                     if not neural_success:
                         success = False
                 
@@ -68,13 +92,13 @@ class ModernDatabaseManager:
         else:
             print("ℹ️ [Modern] No GPU processor provided - skipping neural network save")
         
-        # Log learning event to PostgreSQL (if available)
-        if agi_agent and self.postgres_available:
+        # Log to W&B Analytics (if available)
+        if agi_agent and self.analytics_available:
             try:
                 environment_state = getattr(agi_agent, 'environment_state', {})
                 current_action = getattr(agi_agent, 'current_action', {})
                 
-                self.agi_persistence.log_learning_event(
+                self.analytics_logger.log_learning_event(
                     'model_save',
                     environment_state,
                     current_action,
@@ -127,13 +151,13 @@ class ModernDatabaseManager:
         else:
             print("ℹ️ [Modern] No GPU processor provided - skipping neural network restore")
         
-        # Log learning event to PostgreSQL (if available)
-        if agi_agent and self.postgres_available:
+        # Log to W&B Analytics (if available)
+        if agi_agent and self.analytics_available:
             try:
                 environment_state = getattr(agi_agent, 'environment_state', {})
                 current_action = getattr(agi_agent, 'current_action', {})
                 
-                self.agi_persistence.log_learning_event(
+                self.analytics_logger.log_learning_event(
                     'model_restore',
                     environment_state,
                     current_action,
@@ -175,6 +199,31 @@ class ModernDatabaseManager:
             self.neural_persistence.cleanup_old_checkpoints(keep_latest)
         except Exception as e:
             print(f"⚠️ Cleanup error: {e}")
+    
+    def log_learning_episode(self, episode_data: dict):
+        """Log a learning episode to W&B analytics"""
+        if self.analytics_available:
+            try:
+                self.analytics_logger.log_learning_episode(episode_data)
+                self.analytics_logger.increment_step()
+            except Exception as e:
+                print(f"⚠️ [Modern] Episode logging failed: {e}")
+    
+    def log_learning_metrics(self, metrics: dict):
+        """Log learning metrics to W&B analytics"""
+        if self.analytics_available:
+            try:
+                self.analytics_logger.log_learning_metrics(metrics)
+            except Exception as e:
+                print(f"⚠️ [Modern] Metrics logging failed: {e}")
+    
+    def close(self):
+        """Close the database manager and finish W&B session"""
+        if self.analytics_available:
+            try:
+                self.analytics_logger.finish()
+            except Exception as e:
+                print(f"⚠️ [Modern] W&B finish failed: {e}")
     
     # Legacy compatibility methods
     def store_learning_state_legacy(self, agi_agent):

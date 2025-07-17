@@ -172,29 +172,14 @@ def test_neo4j_connection(config):
         return False
 
 
-def create_sample_database_config():
-    """Create sample database configuration files"""
-    configs_dir = Path("config/database")
-    configs_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Neo4j config
-    neo4j_config = {
-        "description": "Neo4j database configuration for TRUE AGI system",
-        "config": {
-            "uri": "neo4j://127.0.0.1:7687",
-            "username": "neo4j",
-            "password": "password",
-            "database": "neo4j"
-        }
-    }
-    
-    import json
-    
-    with open(configs_dir / "neo4j.json", 'w') as f:
-        json.dump(neo4j_config, f, indent=2)
-    
-    print(f"Neo4j configuration created in: {configs_dir}")
-    print("Edit neo4j.json with your actual Neo4j credentials")
+def create_wandb_setup_guide():
+    """Create guide for W&B setup (modern ML stack)"""
+    print("🚀 Modern ML Setup Guide:")
+    print("1. Install dependencies: pip install wandb weave")
+    print("2. Create W&B account: https://wandb.ai")
+    print("3. Login: wandb login")
+    print("4. Your dashboard: https://wandb.ai/your-username/TRUE-AGI-System")
+    print("✅ No database installation required!")
 
 
 def check_gpu_setup():
@@ -249,8 +234,17 @@ def verify_modular_components():
     return all_good
 
 
-def setup_database():
-    """Interactive database setup"""
+def check_wandb_availability():
+    """Check if W&B is available"""
+    try:
+        import wandb
+        return True
+    except ImportError:
+        return False
+
+
+def setup_modern_ml():
+    """Interactive modern ML setup for TRUE AGI"""
     print("ICA Framework Modular System Setup")
     print("=" * 50)
     print("Setting up the Modular TRUE AGI System")
@@ -276,7 +270,7 @@ def setup_database():
         choice = input("\nSelect an action (1-7): ").strip()
         
         if choice == '1':
-            create_sample_database_config()
+            create_wandb_setup_guide()
         
         elif choice == '2':
             config = setup_neo4j_config()
@@ -334,7 +328,7 @@ def setup_database():
 if __name__ == "__main__":
     # If run directly, do system setup
     if len(sys.argv) > 1 and sys.argv[1] == "setup":
-        setup_database()
+        setup_modern_ml()
     else:
         print("ICA Framework - Modular TRUE AGI System Setup")
         print("=" * 50)
@@ -352,5 +346,5 @@ if __name__ == "__main__":
         print("System requirements:")
         print("  - Python 3.13+")
         print("  - NVIDIA GPU with 4GB+ VRAM")
-        print("  - Neo4j Database")
+        print("  - W&B Account (https://wandb.ai)")
         print("  - CUDA Toolkit 11.8+ or 12.x")

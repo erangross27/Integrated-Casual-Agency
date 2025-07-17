@@ -82,6 +82,37 @@ class MainLoopController:
                 # Save session metadata
                 self.database_manager.store_session_state(self.agi_agent, gpu_stats)
                 
+                # Log learning metrics to W&B
+                try:
+                    if hasattr(self.database_manager, 'log_learning_metrics'):
+                        # Get world simulation stats
+                        world_stats = {}
+                        if self.world_simulator:
+                            world_stats = self.world_simulator.get_learning_statistics()
+                        
+                        # Prepare metrics for W&B
+                        learning_metrics = {
+                            'save_success': save_success,
+                            'periodic_save_completed': True,
+                            'simulation_steps': world_stats.get('simulation', {}).get('steps', 0),
+                            'learning_iterations': world_stats.get('learning', {}).get('total_iterations', 0),
+                            'timestamp': time.time()
+                        }
+                        
+                        # Add GPU metrics if available
+                        if gpu_stats:
+                            learning_metrics.update({
+                                'gpu_utilization': gpu_stats.get('utilization', 0),
+                                'gpu_memory_used': gpu_stats.get('memory_used', 0),
+                                'gpu_memory_total': gpu_stats.get('memory_total', 0)
+                            })
+                        
+                        self.database_manager.log_learning_metrics(learning_metrics)
+                        flush_print("[PERIODIC] 📊 Metrics logged to W&B dashboard")
+                        
+                except Exception as metrics_e:
+                    flush_print(f"[PERIODIC] ⚠️ W&B metrics logging failed: {metrics_e}")
+                
                 return save_success
                 
             except Exception as e:

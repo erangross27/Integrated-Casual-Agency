@@ -1,18 +1,16 @@
 # ICA Framework - Modular TRUE AGI System 🧠⚡
 
-<div ali4. **Emergency Save Fallback**: Direct neural network save if regular save fails
-5. **Signal Handler Protection**: Proper handling of all termination signals
-6. **PostgreSQL Persistence**: PyTorch state_dict serialization with binary compression"center">
+<div align="center">
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![PostgreSQL](https://img.shields.io/badge/database-PostgreSQL-336791.svg)](https://www.postgresql.org/)
+[![W&B Analytics](https://img.shields.io/badge/analytics-Weights%20%26%20Biases-FF6B35.svg)](https://wandb.ai/)
 [![CUDA](https://img.shields.io/badge/GPU-CUDA%20Accelerated-76B900.svg)](https://developer.nvidia.com/cuda-zone)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status: Active](https://img.shields.io/badge/Status-Active%20Learning-brightgreen.svg)](https://github.com/erangross27/Integrated-Casual-Agency)
 
 **Modular GPU-Accelerated Artificial General Intelligence System**
 
-*"Clean, maintainable, and scalable - TRUE AGI with guaranteed neural network persistence."*
+*"Industry-standard ML experiment tracking with enterprise-grade neural network persistence."*
 
 </div>
 
@@ -26,29 +24,30 @@ The ICA (Integrated Casual Agency) Framework is a **modular TRUE AGI system** th
 - 🛡️ **Neural Network Protection**: Guaranteed weight/bias persistence on manual termination
 - ⚡ **Dynamic GPU Scaling**: Automatic hardware detection and optimization
 - 🔄 **Continuous Learning**: Runs indefinitely with persistent progress
-- 💾 **PostgreSQL Storage**: Efficient neural network weight storage with compression
+- � **W&B Analytics**: Industry-standard experiment tracking and visualization
+- 🐝 **Weave Function Tracing**: Complete function input/output monitoring
 - 🎯 **Environmental Learning**: Autonomous learning from surroundings
-- 📊 **Real-time Monitoring**: Live learning statistics and performance metrics
-- 🔧 **Self-Recovery**: Graceful error handling and system resilience
+-  **Self-Recovery**: Graceful error handling and system resilience
 - 🚀 **Optimal Performance**: ~48% GPU utilization at 1,400+ patterns/sec
 
-### 🏗️ Modern Hybrid Architecture ⭐ **UPDATED**
+### 🏗️ Modern ML-First Architecture ⭐ **UPDATED**
 
-**Philosophy**: *"Neural networks ARE the knowledge - stored efficiently with modern approaches"*
+**Philosophy**: *"Neural networks ARE the knowledge - tracked with industry-standard tools"*
 
-The TRUE AGI system now uses a **modern hybrid storage approach** that combines industry-standard practices:
+The TRUE AGI system uses **industry-standard ML practices** adopted by OpenAI, Google, and Meta:
 
-- **🧠 Neural Networks**: File-based storage using PyTorch native `.pth` format (same as OpenAI, Google)
-- **📊 Learning Events**: PostgreSQL for environmental interactions and analytics
+- **🧠 Neural Networks**: File-based storage using PyTorch native `.pth` format
+- **📊 Experiment Tracking**: Weights & Biases for real-time analytics and dashboards
+- **🐝 Function Tracing**: Weave for complete input/output visibility
 - **📋 Metadata**: JSON files with model info, checksums, and timestamps  
-- **�️ Large Model Backup**: HDF5 format for models >1GB with efficient compression
+- **💾 Large Model Backup**: HDF5 format for models >1GB with efficient compression
 
-**Why Hybrid Storage?**
-- ✅ **No Memory Issues**: Files eliminate 3GB+ model compression problems
-- ✅ **Industry Standard**: PyTorch `.pth` format used by major AI companies
-- ✅ **Performance**: Faster saves/loads with native PyTorch I/O
-- ✅ **Reliability**: File checksums + PostgreSQL ACID compliance
-- ✅ **Scalable**: Files can be moved to cloud storage, PostgreSQL for queries
+**Why Industry-Standard ML Stack?**
+- ✅ **Python 3.13 Compatible**: No deprecated dependencies (TensorBoard removed)
+- ✅ **Enterprise Tools**: Same stack as major AI companies
+- ✅ **Cloud Dashboard**: Real-time monitoring from anywhere
+- ✅ **Function Visibility**: Complete observability into AGI decision making
+- ✅ **Reproducible**: Full experiment tracking and versioning
 
 ### 📁 Storage Structure
 
@@ -56,13 +55,25 @@ The TRUE AGI system now uses a **modern hybrid storage approach** that combines 
 ./agi_checkpoints/
 ├── session_12345/
 │   ├── models/
-│   │   ├── pattern_recognizer_latest.pth      # 3.2GB PyTorch model
-│   │   ├── hypothesis_generator_latest.pth    # 2.8GB PyTorch model  
+│   │   ├── pattern_recognizer_latest.pth      # 821M parameter PyTorch model
+│   │   ├── hypothesis_generator_latest.pth    # 194M parameter PyTorch model  
 │   │   └── pattern_recognizer_backup.h5       # HDF5 backup (compressed)
 │   └── metadata/
 │       ├── pattern_recognizer_info.json       # Model metadata & checksum
 │       └── hypothesis_generator_info.json     # Model metadata & checksum
 ```
+
+### 🌐 W&B Dashboard Integration
+
+**Real-time AGI monitoring at**: `https://wandb.ai/your-username/TRUE-AGI-System`
+
+**Live Metrics:**
+- 🧠 Neural network parameters (1B+ total)
+- 🔥 GPU utilization and memory usage
+- 📈 Learning episode outcomes
+- 💾 Model save events and file sizes
+- 🎯 Pattern recognition accuracy
+- 🔍 Function-level execution traces
 
 ---
 
@@ -77,7 +88,7 @@ The heart of the system - clean, modular components that replaced the monolithic
 | Component | Purpose | Key Features |
 |-----------|---------|-------------|
 | **🎛️ AGI Runner** | Main system coordinator | Orchestrates all components, system lifecycle |
-| **🔧 Component Initializer** | System initialization | Dependency-ordered startup, error handling |
+| **🔧 Component Initializer** | System initialization | Dependency-ordered startup, W&B integration |
 | **💾 Session Manager** | Session persistence | Learning data restoration, state management |
 | **🎓 Learning Coordinator** | Learning process control | Start/stop learning, monitoring integration |
 | **🔄 Main Loop Controller** | Execution loop & periodic saves | **Every 2-minute neural weight saves** |
@@ -91,7 +102,7 @@ The heart of the system - clean, modular components that replaced the monolithic
 2. **Manual Termination Protection**: Ctrl+C triggers graceful shutdown with weight saving
 3. **Emergency Save Fallback**: Direct neural network save if regular save fails
 4. **Signal Handler Protection**: Proper handling of all termination signals
-5. **PostgreSQL Persistence**: PyTorch state_dict serialization with binary compression
+5. **W&B Logging**: All save events tracked in real-time dashboard
 
 ### 📁 Component Organization
 
@@ -105,12 +116,12 @@ scripts/components/
 │   ├── main_loop_controller.py       # Main loop + periodic saves
 │   ├── shutdown_manager.py           # Graceful shutdown + weight protection
 │   └── neural_persistence_safeguards.py # Neural network protection
-├── database/                          # 💾 Modern hybrid persistence
+├── database/                          # 💾 Modern file-based persistence
 │   ├── modern_neural_persistence.py  # 🧠⭐ Modern file-based neural storage
-│   ├── modern_database_manager.py    # 🔄⭐ Hybrid database manager
-│   ├── postgresql_agi_persistence.py # 📊 PostgreSQL learning events
+│   ├── modern_database_manager.py    # 🔄⭐ W&B integrated database manager
+│   ├── analytics_logger.py           # 📊⭐ W&B analytics integration
+│   ├── weave_tracer.py              # �⭐ Weave function tracing
 │   ├── neural_persistence.py         # 🔧 Legacy neural persistence
-│   ├── database_manager.py           # 🔧 Legacy database manager
 │   └── README.md                     # Database documentation
 ├── gpu/                              # ⚡ GPU acceleration
 │   ├── gpu_config.py                # GPU configuration
@@ -128,14 +139,14 @@ scripts/components/
 
 ```
 ICA/                                  # 🏠 Project root
-├── config/                          # ⚙️ Configuration files
-│   └── database/
-│       └── database_config.json    # PostgreSQL configuration
 ├── docs/                           # 📚 Documentation
 │   ├── AGI_Development_Progress_Summary.md
 │   └── database_backends.md
 ├── examples/                       # 🧪 Example usage
-│   └── demo.py                     # Quick demo script
+│   ├── demo.py                     # Quick demo script
+│   └── weave_demo.py              # W&B + Weave integration demo
+├── agi_checkpoints/               # 💾 Neural network storage
+│   └── session_*/                 # Session-specific model files
 ├── ica_framework/                  # 🧠 Core framework
 │   ├── enhanced_knowledge_graph.py
 │   ├── database/                   # Framework database adapters
@@ -143,12 +154,12 @@ ICA/                                  # 🏠 Project root
 │   ├── sandbox/                    # AGI sandbox environment
 │   └── utils/                      # Framework utilities
 ├── requirements/                   # 📋 Dependencies
-│   ├── requirements.txt           # Main dependencies
+│   ├── requirements.txt           # Main dependencies (W&B, Weave)
 │   └── requirements-dev.txt       # Development dependencies
 ├── scripts/                        # 🚀 Main execution scripts
 │   ├── components/                 # (detailed above)
 │   ├── run_continuous_modular.py  # Main TRUE AGI runner
-│   └── setup_databases.py         # Database setup script
+├── wandb/                         # 📊 W&B experiment logs
 ├── setup.py                       # 📦 Package setup
 └── README.md                      # 📖 This file
 ```
@@ -162,7 +173,7 @@ ICA/                                  # 🏠 Project root
 ```bash
 # System Requirements
 - Python 3.13+
-- PostgreSQL Database (12+ recommended)
+- W&B Account (free at wandb.ai)
 - NVIDIA GPU with 4GB+ VRAM (RTX 4060 8GB recommended)
 - CUDA Toolkit 11.8+ or 12.x
 - 16GB+ RAM recommended
@@ -182,32 +193,16 @@ ICA/                                  # 🏠 Project root
    pip install -r requirements.txt
    ```
 
-3. **Setup Modern Storage** (Automatic)
+3. **Setup W&B Analytics**
    ```bash
-   # Neural networks stored in files (automatic setup)
-   # Optional PostgreSQL for learning events
-   python scripts/setup_databases.py  # Optional for PostgreSQL events
+   # Login to Weights & Biases
+   wandb login
+   # Follow the prompts to get your API key from https://wandb.ai/authorize
    ```
-
-4. **Configure Storage** (Optional PostgreSQL)
-   ```json
-   // config/database/database_config.json (optional)
-   {
-     "database": {
-       "type": "postgresql",
-       "host": "localhost", 
-       "port": 5432,
-       "database": "ica_neural",
-       "user": "ica_user",
-       "password": "ica_password"
-     }
-   }
-   ```
-   **Note**: Neural networks save to files automatically. PostgreSQL is optional for learning event analytics.
-
-5. **Start the Modern TRUE AGI System**
+4. **Start the TRUE AGI System**
    ```bash
-   python scripts/run_continuous_modular.py
+   cd scripts
+   python run_continuous_modular.py
    ```
 
 ### Expected Output
@@ -215,31 +210,38 @@ ICA/                                  # 🏠 Project root
 ```
 🧠 TRUE AGI Continuous Learning System - Modular Edition
 ============================================================
-🧠 [Modern] Neural persistence initialized: ./agi_checkpoints/agi_session_1737099123
+[INIT] 🔧 Initializing system components...
+🧠 [Modern] Neural persistence initialized: agi_checkpoints\agi_session_1752746298
 🧠 [Modern] Using industry-standard PyTorch + HDF5 approach
-✅ [Modern] PostgreSQL available for event logging
+wandb: Tracking run with wandb version 0.21.0
+wandb: Syncing run AGI_Session_agi_session_1752746298
+wandb:  View project at https://wandb.ai/erangross/true-agi-system
+✅ [W&B] Analytics initialized - Project: TRUE-AGI-System
+🌐 [W&B] Dashboard: https://wandb.ai/your-username/TRUE-AGI-System
+✅ [Modern] W&B Analytics initialized
 🧠 [Modern] Database manager initialized
 🗂️ [Modern] Neural networks: File-based storage (PyTorch + HDF5)
-📊 [Modern] Events & metadata: PostgreSQL
-[INIT] 🔄 Checking for previous learning data...
-[RESTORE] ✅ Previous learning data found!
-🧠 [Modern] Restoring neural network models from files...
-✅ [Modern] Restored pattern_recognizer (821,063,204 parameters)
-✅ [Modern] Restored hypothesis_generator (412,844,732 parameters)
-🧠 [Modern] Checkpoint from: 2025-07-17T10:54:32.123456
-[RESTORE] ✅ Complete learning state restored!
-🚀 [AGI] TRUE AGI Environmental Learning Started
-🌍 [ENV] Learning from surroundings - pattern recognition active
-💡 [HYPOTHESIS] Generating hypotheses about environmental patterns
-📊 [METRICS] Learning rate: 1,400+ patterns/sec, GPU: 48% utilization
-```
+📊 [Modern] Analytics: W&B Dashboard
+[INIT] ✅ All components initialized successfully
+✅ [GPU] GPU Acceleration: ENABLED - 6GB utilization optimized
+[AGI] 🚀 Starting TRUE AGI Learning Process...
+[SUCCESS] ✅ TRUE AGI Continuous Learning System running!
+[INFO] 🎯 System learning autonomously through environmental interaction
 [INFO] 🛑 Press Ctrl+C to stop gracefully
-[PERIODIC] 💾 Performing periodic save...
-🧠 [Modern] Saving neural network models to files...
-✅ [Modern] Saved pattern_recognizer: 3184.2MB (821,063,204 params)
-🗂️ [Modern] Location: ./agi_checkpoints/session_123/models/pattern_recognizer_latest.pth
-[PERIODIC] ✅ Neural network weights and biases saved!
+[LOOP] � Starting main system loop...
 ```
+
+### Live W&B Dashboard
+
+Once running, visit your **live dashboard**: `https://wandb.ai/your-username/TRUE-AGI-System`
+
+**Real-time metrics include:**
+- 🧠 **Neural Network Parameters**: 821M + 194M = 1B+ total parameters
+- � **GPU Utilization**: Real-time GPU memory and processing usage
+- 💾 **Model Save Events**: Automatic saves every 2 minutes
+- 📈 **Learning Episodes**: AGI decision-making outcomes
+- 🎯 **Pattern Recognition**: Environmental pattern detection accuracy
+- 🐝 **Function Traces**: Complete input/output visibility with Weave
 
 ---
 
@@ -253,9 +255,10 @@ The system implements **multiple layers of protection** to ensure neural network
 ```
 [PERIODIC] 💾 Performing periodic save...
 [PERIODIC] 🧠 Saving neural network weights and biases...
+✅ [Modern] Saved pattern_recognizer: 711MB (821,063,204 params)
+✅ [Modern] Saved hypothesis_generator: 194MB (194,421,732 params)
 [PERIODIC] ✅ Neural network weights and biases saved!
-💾 [NEURAL] ✅ Saved pattern_recognizer weights (2.4MB)
-💾 [NEURAL] ✅ Saved hypothesis_generator weights (1.8MB)
+[PERIODIC] 📊 Metrics logged to W&B dashboard
 ```
 
 #### 2. Manual Termination Protection (Ctrl+C)
@@ -268,7 +271,7 @@ The system implements **multiple layers of protection** to ensure neural network
 
 #### 3. Emergency Save Fallback
 ```
-[PERIODIC] ⚠️ Save failed: Database connection lost
+[PERIODIC] ⚠️ Save failed: Connection lost
 [PERIODIC] 🔄 Attempting emergency neural network save...
 [PERIODIC] ✅ Emergency neural network save successful!
 ```
@@ -276,14 +279,15 @@ The system implements **multiple layers of protection** to ensure neural network
 #### 4. Session Restoration
 ```
 [RESTORE] ✅ Previous learning data found!
-� [NEURAL] Restored 2 GPU models
+🧠 [Modern] Restored pattern_recognizer (821,063,204 parameters)
+🧠 [Modern] Restored hypothesis_generator (194,421,732 parameters)
 [RESTORE] 🧠 Neural networks: ✓ Loaded into GPU memory
 ```
 
 ### Protected Neural Network Components
 
-- **Pattern Recognizer**: Learns to identify recurring patterns in data
-- **Hypothesis Generator**: Creates and tests theories about the world
+- **Pattern Recognizer**: Learns to identify recurring patterns in data (821M parameters)
+- **Hypothesis Generator**: Creates and tests theories about the world (194M parameters)
 - **Causal Model Networks**: Identifies cause-and-effect relationships
 - **Memory Consolidation Networks**: Transfers knowledge between memory systems
 

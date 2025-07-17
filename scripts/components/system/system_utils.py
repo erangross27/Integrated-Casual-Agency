@@ -18,13 +18,13 @@ class SystemUtils:
     
     @staticmethod
     def setup_windows_encoding():
-        """Setup Windows console encoding for Unicode support"""
+        """Setup Windows console encoding for Unicode support (W&B compatible)"""
         if sys.platform == "win32":
-            import codecs
-            sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
-            sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+            # Skip stdout/stderr reconfiguration to avoid conflicts with W&B
+            # W&B handles its own console capture and encoding
             os.system('chcp 65001 > nul')
             os.environ['PYTHONUNBUFFERED'] = '1'
+            os.environ['PYTHONIOENCODING'] = 'utf-8'
     
     @staticmethod
     def flush_print(*args, **kwargs):
@@ -33,31 +33,28 @@ class SystemUtils:
         sys.stdout.flush()
     
     @staticmethod
-    def load_database_config(project_root):
-        """Load PostgreSQL configuration from config file"""
-        config_file = project_root / "config/database/database_config.json"
+    def load_wandb_config(project_root):
+        """Load W&B configuration from config file or environment"""
+        config_file = project_root / "config/wandb/wandb_config.json"
         if config_file.exists():
             try:
                 with open(config_file, 'r') as f:
                     config_data = json.load(f)
-                    db_config = config_data['database']
-                    print(f"[OK] Loaded PostgreSQL config from {config_file}")
-                    print(f"   Host: {db_config['host']}:{db_config['port']}")
-                    print(f"   Database: {db_config['database']}")
-                    print(f"   User: {db_config['user']}")
+                    wandb_config = config_data['wandb']
+                    print(f"[OK] Loaded W&B config from {config_file}")
+                    print(f"   Project: {wandb_config.get('project', 'TRUE-AGI-System')}")
+                    print(f"   Entity: {wandb_config.get('entity', 'default')}")
                     print()
-                    return db_config
+                    return wandb_config
                     
             except Exception as e:
-                print(f"[ERROR] Failed to load config file: {e}")
+                print(f"[ERROR] Failed to load W&B config file: {e}")
                 
-        print("[WARNING] Using default PostgreSQL configuration")
+        print("[INFO] Using default W&B configuration")
         return {
-            'host': 'localhost',
-            'port': 5432,
-            'database': 'ica_neural',
-            'user': 'ica_user',
-            'password': 'ica_password'
+            'project': 'TRUE-AGI-System',
+            'entity': None,  # Will use default user
+            'tags': ['TRUE-AGI', 'neural-networks', 'continuous-learning']
         }
 
 

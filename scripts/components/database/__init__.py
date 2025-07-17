@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """
-Database Module - PostgreSQL-Only TRUE AGI Storage
-Neural networks ARE the knowledge - no graph database needed
+Database Module - Modern ML-First TRUE AGI Storage
+Neural networks ARE the knowledge - W&B for analytics, files for storage
 """
 
-from .database_manager import DatabaseManager
-from .neural_persistence import NeuralPersistence
-from .postgresql_agi_persistence import PostgreSQLAGIPersistence
+from .modern_database_manager import ModernDatabaseManager
+from .modern_neural_persistence import ModernNeuralPersistence
+from .analytics_logger import WandBAGILogger
+from .weave_tracer import WeaveAGITracer
 
 __all__ = [
-    'DatabaseManager',
-    'NeuralPersistence',
-    'PostgreSQLAGIPersistence'
+    'ModernDatabaseManager',
+    'ModernNeuralPersistence', 
+    'WandBAGILogger',
+    'WeaveAGITracer'
 ]
