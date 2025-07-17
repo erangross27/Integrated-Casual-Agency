@@ -53,7 +53,12 @@ class WandBAGILogger:
             if self.epoch_file.exists():
                 with open(self.epoch_file, 'r') as f:
                     data = f.read().strip()
-                    self.epoch = int(data) if data else 0
+                    if ',' in data:
+                        # Old format: "epoch,step" - take only the epoch part
+                        self.epoch = int(data.split(',')[0]) if data else 0
+                    else:
+                        # New format: just epoch number
+                        self.epoch = int(data) if data else 0
                 print(f"📊 [W&B] Resuming from Epoch {self.epoch}")
             else:
                 self.epoch = 0
@@ -240,11 +245,10 @@ class WandBAGILogger:
                 f"{model_name}_size_mb": model_info.get("size_mb", 0),
                 f"{model_name}_saved_at": model_info.get("saved_at", time.time()),
                 "epoch": self.epoch,
-                "global_step": self.step,
                 "model_type": model_name
             }
             
-            wandb.log(checkpoint_data, step=self.step)
+            wandb.log(checkpoint_data)
             print(f"📊 [W&B] Logged {model_name} checkpoint at Epoch {self.epoch}")
             
         except Exception as e:
@@ -260,7 +264,6 @@ class WandBAGILogger:
                 "event_type": event_type,
                 "outcome": outcome,
                 "epoch": self.epoch,
-                "global_step": self.step,
                 "timestamp": time.time()
             }
             
@@ -272,7 +275,7 @@ class WandBAGILogger:
             if action:
                 event_data.update({f"action_{k}": v for k, v in action.items() if isinstance(v, (int, float, str, bool))})
             
-            wandb.log(event_data, step=self.step)
+            wandb.log(event_data)
             
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log learning event: {e}")

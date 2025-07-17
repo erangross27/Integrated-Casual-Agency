@@ -45,6 +45,11 @@ class AGIMonitor:
                 self.cycle_count += 1
                 self.save_counter += 1
                 
+                # Increment analytics learning cycle for epoch advancement
+                if hasattr(self, 'database_manager') and self.database_manager and hasattr(self.database_manager, 'analytics_logger'):
+                    if self.database_manager.analytics_logger:
+                        self.database_manager.analytics_logger.increment_learning_cycle()
+                
                 # GPU-accelerated learning processing
                 if self.gpu_processor.use_gpu and self.cycle_count % 1 == 0:
                     observation_data = {
