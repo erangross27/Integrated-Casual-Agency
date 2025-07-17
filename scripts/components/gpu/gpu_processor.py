@@ -117,6 +117,10 @@ class GPUProcessor:
                             'hypotheses': hypotheses,
                             'confidence': confidence
                         })
+                        
+                        # Track hypothesis generation in GPU stats
+                        hypothesis_count = hypotheses.size(0) if hasattr(hypotheses, 'size') else len(hypotheses) if hypotheses is not None else 0
+                        self.gpu_stats['hypotheses_generated'] += hypothesis_count
                     
                     # Clean up batch tensors to prevent memory leaks
                     del input_batch, pattern_scores, attended_patterns, hypotheses, confidence
