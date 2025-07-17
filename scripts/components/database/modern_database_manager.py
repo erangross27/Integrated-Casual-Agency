@@ -20,7 +20,7 @@ class ModernDatabaseManager:
         
         # Weights & Biases analytics logger
         try:
-            self.analytics_logger = WandBAGILogger(session_id=session_id)
+            self.analytics_logger = WandBAGILogger(resume_mode=True)
             self.analytics_available = self.analytics_logger.initialized
             if self.analytics_available:
                 print(f"✅ [Modern] W&B Analytics initialized")
