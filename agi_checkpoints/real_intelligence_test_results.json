@@ -1,38 +1,59 @@
 {
-  "timestamp": "2025-07-18T14:07:59.352943",
+  "timestamp": "2025-07-18T14:23:04.118980",
   "test_results": [
     {
-      "test": "Gravity Test",
-      "understanding_level": 5.00682839367073,
-      "pattern_confidence": 0.0013656787341460586,
-      "hypothesis_confidence": 1.0,
-      "interpretation": "Partial understanding - AGI identifies some relationships"
-    },
-    {
-      "test": "Pendulum Physics",
-      "understanding_level": 1.6721248345371955,
-      "pattern_confidence": 0.0010916335741057992,
+      "test": "Basic Motion",
+      "understanding_level": 1.6751518657353395,
+      "pattern_confidence": 0.001697039813734591,
       "hypothesis_confidence": 0.0,
       "interpretation": "Limited understanding - AGI needs more training on this concept"
     },
     {
+      "test": "Gravity Test",
+      "understanding_level": 1.6709002873782688,
+      "pattern_confidence": 0.0008467241423204541,
+      "hypothesis_confidence": 0.0,
+      "interpretation": "Limited understanding - AGI needs more training on this concept"
+    },
+    {
+      "test": "Simple Collision",
+      "understanding_level": 1.680082925983394,
+      "pattern_confidence": 0.002683251863345504,
+      "hypothesis_confidence": 0.0,
+      "interpretation": "Limited understanding - AGI needs more training on this concept"
+    },
+    {
+      "test": "Pendulum Physics",
+      "understanding_level": 5.00517446140293,
+      "pattern_confidence": 0.0010348922805860639,
+      "hypothesis_confidence": 1.0,
+      "interpretation": "Partial understanding - AGI identifies some relationships"
+    },
+    {
       "test": "Conservation of Energy",
-      "understanding_level": 5.0074492482235655,
-      "pattern_confidence": 0.0014898496447131038,
+      "understanding_level": 1.6715990901381397,
+      "pattern_confidence": 0.0009864846942946315,
+      "hypothesis_confidence": 0.0,
+      "interpretation": "Limited understanding - AGI needs more training on this concept"
+    },
+    {
+      "test": "Simple Force",
+      "understanding_level": 5.006218518246897,
+      "pattern_confidence": 0.001243703649379313,
       "hypothesis_confidence": 1.0,
       "interpretation": "Partial understanding - AGI identifies some relationships"
     },
     {
       "test": "Thermodynamics",
-      "understanding_level": 5.00399237847887,
-      "pattern_confidence": 0.0007984756957739592,
-      "hypothesis_confidence": 1.0,
-      "interpretation": "Partial understanding - AGI identifies some relationships"
+      "understanding_level": 1.6709516023790152,
+      "pattern_confidence": 0.000856987142469734,
+      "hypothesis_confidence": 0.0,
+      "interpretation": "Limited understanding - AGI needs more training on this concept"
     },
     {
       "test": "Wave Interference",
-      "understanding_level": 1.6719571109085032,
-      "pattern_confidence": 0.0010580888483673334,
+      "understanding_level": 1.672113399642209,
+      "pattern_confidence": 0.001089346595108509,
       "hypothesis_confidence": 0.0,
       "interpretation": "Limited understanding - AGI needs more training on this concept"
     }
