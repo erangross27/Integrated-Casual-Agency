@@ -52,7 +52,7 @@ class AGIAgent:
         self.attention_system = AttentionSystem()
         self.curiosity_engine = CuriosityEngine()
         self.pattern_learner = PatternLearner()
-        self.physics_learner = PhysicsLearner()
+        self.physics_learner = PhysicsLearner(causal_reasoning=self.causal_reasoning)
         self.exploration_controller = ExplorationController()
         
         # Set up world simulation callback
@@ -172,6 +172,22 @@ class AGIAgent:
                 for event in processed_sensory['events']:
                     self.causal_reasoning.observe_event(event)
             
+            # Also analyze causal relationships between consecutive observations
+            previous_observations = self.memory_system.get_recent_memories(1)
+            if previous_observations:
+                prev_obs = previous_observations[-1]
+                self.causal_reasoning.analyze_causal_relationship(prev_obs, learning_opportunity)
+                
+                # Update learning progress if new causal relationships discovered
+                new_causal_count = self.causal_reasoning.get_causal_relationship_count()
+                if hasattr(self, '_last_causal_count'):
+                    if new_causal_count > self._last_causal_count:
+                        discovered_count = new_causal_count - self._last_causal_count
+                        self.learning_progress.update_causal_relationships(discovered_count)
+                else:
+                    self._last_causal_count = 0
+                self._last_causal_count = new_causal_count
+            
             # 9. Plan exploration
             self.logger.debug("Step 9: Planning exploration")
             if attention_result['primary_focus']:
@@ -253,7 +269,7 @@ class AGIAgent:
             'concepts_learned': memory_summary['total_memories'],
             'hypotheses_formed': hypothesis_summary.get('active_count', 0) + hypothesis_summary.get('confirmed_count', 0),
             'hypotheses_confirmed': hypothesis_summary.get('confirmed_count', 0),
-            'causal_relationships_discovered': len(self.causal_reasoning.causal_relationships),
+            'causal_relationships_discovered': self.causal_reasoning.get_causal_relationship_count(),
             'patterns_recognized': pattern_summary.get('high_confidence_patterns', 0),
             'physics_concepts': len(physics_knowledge['concepts'])
         }
@@ -314,7 +330,7 @@ class AGIAgent:
             'attention_summary': self.attention_system.get_attention_summary(),
             'curiosity_summary': self.curiosity_engine.get_curiosity_summary(),
             'exploration_summary': self.exploration_controller.get_exploration_summary(),
-            'causal_relationships': len(self.causal_reasoning.causal_relationships),
+            'causal_relationships': self.causal_reasoning.get_causal_relationship_count(),
             'timestamp': time.time()
         }
     

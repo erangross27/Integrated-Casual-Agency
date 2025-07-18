@@ -11,10 +11,11 @@ from typing import Dict, List, Any
 class PhysicsLearner:
     """Learns physics concepts from environmental observations"""
     
-    def __init__(self):
+    def __init__(self, causal_reasoning=None):
         self.physics_concepts = {}
         self.physics_laws = {}
         self.experimental_data = []
+        self.causal_reasoning = causal_reasoning
         
         # Physics learning parameters
         self.gravity_constant = 9.8
@@ -285,9 +286,30 @@ class PhysicsLearner:
     def get_physics_knowledge(self) -> Dict[str, Any]:
         """Get all learned physics knowledge"""
         
+        # Get causal models from causal reasoning system if available
+        causal_laws = {}
+        if self.causal_reasoning:
+            causal_models = self.causal_reasoning.get_causal_models()
+            # Convert causal models to physics laws format
+            for model_id, model in causal_models.items():
+                if model.get('confidence', 0) > 0.3:  # Only include confident models
+                    law_name = f"causal_law_{model['cause']}_to_{model['effect']}"
+                    causal_laws[law_name] = {
+                        'type': 'causal_relationship',
+                        'cause': model['cause'],
+                        'effect': model['effect'],
+                        'confidence': model.get('confidence', 0),
+                        'strength': model.get('strength', 0),
+                        'evidence_count': len(model.get('evidence', []))
+                    }
+        
+        # Combine physics laws with causal laws
+        all_laws = self.physics_laws.copy()
+        all_laws.update(causal_laws)
+        
         return {
             'concepts': self.physics_concepts.copy(),
-            'laws': self.physics_laws.copy(),
+            'laws': all_laws,
             'experimental_data_count': len(self.experimental_data)
         }
     
