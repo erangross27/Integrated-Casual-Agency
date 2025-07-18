@@ -34,7 +34,7 @@ class AGIAgent:
     - Exploration control
     """
     
-    def __init__(self, world_simulator: WorldSimulator, knowledge_graph: Optional[EnhancedKnowledgeGraph] = None):
+    def __init__(self, world_simulator: WorldSimulator, knowledge_graph: Optional[EnhancedKnowledgeGraph] = None, analytics_logger=None):
         self.logger = ica_logger
         self.world_simulator = world_simulator
         self.running = False
@@ -45,7 +45,7 @@ class AGIAgent:
         
         # Initialize all modular components
         self.memory_system = MemorySystem()
-        self.learning_progress = LearningProgress()
+        self.learning_progress = LearningProgress(analytics_logger=analytics_logger)
         self.hypothesis_manager = HypothesisManager()
         self.causal_reasoning = CausalReasoning()
         self.sensory_processor = SensoryProcessor()

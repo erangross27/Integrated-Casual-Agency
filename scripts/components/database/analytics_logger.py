@@ -41,8 +41,22 @@ class WandBAGILogger:
         self.epoch_file = Path("agi_checkpoints/persistent_epoch.txt")
         self.epoch_file.parent.mkdir(exist_ok=True)
         
+        # Persistent learning statistics file
+        self.stats_file = Path("agi_checkpoints/persistent_learning_stats.json")
+        self.persistent_stats = {
+            'total_concepts_learned': 0,
+            'total_hypotheses_formed': 0,
+            'total_hypotheses_confirmed': 0,
+            'total_causal_relationships': 0,
+            'session_count': 0,
+            'last_updated': 0
+        }
+        
         # Load last epoch from file
         self._load_last_epoch()
+        
+        # Load persistent statistics
+        self._load_persistent_stats()
         
         # Check if W&B should be disabled
         import os
@@ -103,6 +117,62 @@ class WandBAGILogger:
         except Exception as e:
             print(f"⚠️ [W&B] Could not save epoch data: {e}")
     
+    def _load_persistent_stats(self):
+        """Load persistent learning statistics from file"""
+        try:
+            if self.stats_file.exists():
+                import json
+                with open(self.stats_file, 'r') as f:
+                    saved_stats = json.load(f)
+                    self.persistent_stats.update(saved_stats)
+                print(f"📊 [Stats] Loaded persistent stats: {self.persistent_stats['total_concepts_learned']} concepts, {self.persistent_stats['total_hypotheses_formed']} hypotheses")
+            else:
+                print(f"📊 [Stats] Starting fresh statistics")
+                self._save_persistent_stats()  # Create the file
+        except Exception as e:
+            print(f"⚠️ [Stats] Could not load persistent stats: {e}")
+    
+    def _save_persistent_stats(self):
+        """Save current learning statistics to persistent storage"""
+        try:
+            import json
+            self.persistent_stats['last_updated'] = time.time()
+            with open(self.stats_file, 'w') as f:
+                json.dump(self.persistent_stats, f, indent=2)
+        except Exception as e:
+            print(f"⚠️ [Stats] Could not save persistent stats: {e}")
+    
+    def update_learning_stats(self, concepts_learned: int = 0, hypotheses_formed: int = 0, 
+                             hypotheses_confirmed: int = 0, causal_relationships: int = 0):
+        """Update persistent learning statistics with new learning progress"""
+        # Add new learning to persistent totals
+        if concepts_learned > 0:
+            self.persistent_stats['total_concepts_learned'] += concepts_learned
+        if hypotheses_formed > 0:
+            self.persistent_stats['total_hypotheses_formed'] += hypotheses_formed
+        if hypotheses_confirmed > 0:
+            self.persistent_stats['total_hypotheses_confirmed'] += hypotheses_confirmed
+        if causal_relationships > 0:
+            self.persistent_stats['total_causal_relationships'] += causal_relationships
+            
+        # Save immediately to persist across sessions
+        self._save_persistent_stats()
+        
+        # Log to W&B if active
+        if self.initialized:
+            stats_data = {
+                "persistent_concepts_total": self.persistent_stats['total_concepts_learned'],
+                "persistent_hypotheses_total": self.persistent_stats['total_hypotheses_formed'],
+                "persistent_hypotheses_confirmed": self.persistent_stats['total_hypotheses_confirmed'],
+                "persistent_causal_total": self.persistent_stats['total_causal_relationships'],
+                "epoch": self.epoch
+            }
+            self._safe_wandb_log(stats_data)
+    
+    def get_persistent_stats(self):
+        """Get current persistent statistics for display"""
+        return self.persistent_stats.copy()
+
     def _resume_or_create_session(self):
         """Resume existing session or create new one if none exists"""
         

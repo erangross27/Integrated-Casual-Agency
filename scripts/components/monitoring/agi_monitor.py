@@ -111,23 +111,40 @@ class AGIMonitor:
         learning_progress_data = agent_summary.get('learning_progress', {})
         progress = learning_progress_data.get('progress', {})
         
-        concepts_learned = progress.get('concepts_learned', 0)
+        # Get current session learning
+        session_concepts = progress.get('concepts_learned', 0)
+        session_hypotheses_formed = progress.get('hypotheses_formed', 0)
+        session_hypotheses_confirmed = progress.get('hypotheses_confirmed', 0)
+        session_causal = progress.get('causal_relationships_discovered', 0)
         
-        # Get hypothesis data from multiple sources for reliability
-        hypotheses_formed = progress.get('hypotheses_formed', 0)
-        hypotheses_confirmed = progress.get('hypotheses_confirmed', 0)
+        # Get persistent stats from analytics logger
+        persistent_stats = None
+        if hasattr(self, 'database_manager') and self.database_manager.analytics_logger:
+            persistent_stats = self.database_manager.analytics_logger.get_persistent_stats()
+            
+        # Use persistent stats for display (total across all sessions)
+        if persistent_stats:
+            # For all statistics, use persistent stats directly (they all update immediately now)
+            concepts_learned = persistent_stats['total_concepts_learned']
+            hypotheses_formed = persistent_stats['total_hypotheses_formed']
+            hypotheses_confirmed = persistent_stats['total_hypotheses_confirmed']
+            causal_relationships = persistent_stats['total_causal_relationships']
+        else:
+            # Fallback to session stats if persistent stats not available
+            concepts_learned = session_concepts
+            hypotheses_formed = session_hypotheses_formed
+            hypotheses_confirmed = session_hypotheses_confirmed
+            causal_relationships = session_causal
         
-        # Also check hypothesis manager directly for more accurate counts
+        # Also check hypothesis manager directly for more accurate counts (for session data only)
         hypothesis_summary = agent_summary.get('hypothesis_summary', {})
-        if hypothesis_summary:
-            # Use hypothesis manager counts if available (more accurate)
+        if hypothesis_summary and not persistent_stats:
+            # Use hypothesis manager counts if available and no persistent stats
             hypotheses_formed = max(hypotheses_formed, hypothesis_summary.get('active_count', 0))
             hypotheses_confirmed = max(hypotheses_confirmed, hypothesis_summary.get('confirmed_count', 0))
         
-        causal_relationships = progress.get('causal_relationships_discovered', 0)
-        
-        # Also check for direct causal_relationships in agent_summary (fallback)
-        if causal_relationships == 0:
+        # Also check for direct causal_relationships in agent_summary (fallback for session data)
+        if not persistent_stats and causal_relationships == 0:
             causal_relationships = agent_summary.get('causal_relationships', 0)
         
         # Track learning velocity (concepts per cycle)
@@ -158,7 +175,12 @@ class AGIMonitor:
         
         # Enhanced concept learning display
         velocity_trend = f"(+{self.learning_velocity}/cycle)" if self.learning_velocity > 0 else ""
-        print(f"[AGI] 🧠 Concepts: {concepts_learned} {velocity_trend} | Hypotheses: {hypotheses_formed} formed, {hypotheses_confirmed} confirmed | Causal: {causal_relationships}")
+        
+        # Show stats - concepts update immediately, so no session breakdown needed
+        if persistent_stats:
+            print(f"[AGI] 🧠 Concepts: {concepts_learned} {velocity_trend} | Hypotheses: {hypotheses_formed} formed, {hypotheses_confirmed} confirmed | Causal: {causal_relationships}")
+        else:
+            print(f"[AGI] 🧠 Concepts: {concepts_learned} {velocity_trend} | Hypotheses: {hypotheses_formed} formed, {hypotheses_confirmed} confirmed | Causal: {causal_relationships}")
         
         # Memory usage and curiosity - fix the paths to access nested data
         memory_summary = agent_summary.get('memory_summary', {})

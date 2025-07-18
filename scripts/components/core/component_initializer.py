@@ -105,9 +105,16 @@ class ComponentInitializer:
         # For modern ML architecture, we don't need a separate knowledge graph
         # The neural networks and W&B analytics handle knowledge storage
         
-        # Initialize world simulator and AGI agent
+        # Initialize world simulator first
         self.world_simulator = WorldSimulator()
-        self.agi_agent = AGIAgent(self.world_simulator, knowledge_graph=None)
+        
+        # Get analytics logger from database manager if available
+        analytics_logger = None
+        if hasattr(self, 'database_manager') and self.database_manager and hasattr(self.database_manager, 'analytics_logger'):
+            analytics_logger = self.database_manager.analytics_logger
+        
+        # Initialize AGI agent with analytics logger for persistent stats
+        self.agi_agent = AGIAgent(self.world_simulator, knowledge_graph=None, analytics_logger=analytics_logger)
         
         # Configure for continuous learning
         self.world_simulator.set_simulation_speed(0.1)

@@ -107,7 +107,7 @@ class AGIRunner:
         
         # Show GPU status
         if components['gpu_processor'] and components['gpu_processor'].use_gpu:
-            flush_print("✅ [GPU] GPU Acceleration: ENABLED - 6GB utilization optimized")
+            flush_print("✅ [GPU] GPU Acceleration: ENABLED - utilization optimized")
         else:
             flush_print("⚠️ [GPU] GPU Acceleration: DISABLED (using CPU)")
         

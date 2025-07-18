@@ -10,7 +10,7 @@ from typing import Dict, Any
 class LearningProgress:
     """Tracks AGI learning progress and metrics"""
     
-    def __init__(self):
+    def __init__(self, analytics_logger=None):
         # Core learning metrics
         self.progress = {
             'concepts_learned': 0,
@@ -25,26 +25,45 @@ class LearningProgress:
         self.session_start_time = time.time()
         self.last_update_time = time.time()
         self.learning_events = []
+        
+        # Analytics logger for persistent statistics
+        self.analytics_logger = analytics_logger
     
     def update_concepts(self, count: int):
         """Update concepts learned count"""
         self.progress['concepts_learned'] += count
         self._record_event('concepts_learned', count)
+        
+        # Update persistent statistics immediately for concepts
+        if self.analytics_logger and hasattr(self.analytics_logger, 'update_learning_stats'):
+            self.analytics_logger.update_learning_stats(concepts_learned=count)
     
     def update_hypotheses_formed(self, count: int):
         """Update hypotheses formed count"""
         self.progress['hypotheses_formed'] += count
         self._record_event('hypotheses_formed', count)
+        
+        # Update persistent statistics immediately for hypotheses formed
+        if self.analytics_logger and hasattr(self.analytics_logger, 'update_learning_stats'):
+            self.analytics_logger.update_learning_stats(hypotheses_formed=count)
     
     def update_hypotheses_confirmed(self, count: int):
         """Update hypotheses confirmed count"""
         self.progress['hypotheses_confirmed'] += count
         self._record_event('hypotheses_confirmed', count)
+        
+        # Update persistent statistics immediately for confirmed hypotheses (significant milestone)
+        if self.analytics_logger and hasattr(self.analytics_logger, 'update_learning_stats'):
+            self.analytics_logger.update_learning_stats(hypotheses_confirmed=count)
     
     def update_causal_relationships(self, count: int):
         """Update causal relationships discovered count"""
         self.progress['causal_relationships_discovered'] += count
         self._record_event('causal_relationships_discovered', count)
+        
+        # Update persistent statistics immediately for causal relationships (significant milestone)
+        if self.analytics_logger and hasattr(self.analytics_logger, 'update_learning_stats'):
+            self.analytics_logger.update_learning_stats(causal_relationships=count)
     
     def update_patterns(self, count: int):
         """Update patterns recognized count"""
@@ -145,3 +164,15 @@ class LearningProgress:
         self.session_start_time = time.time()
         self.last_update_time = time.time()
         self.learning_events.clear()
+    
+    def save_session_to_persistent_stats(self):
+        """Save current session progress to persistent statistics (called on session end)"""
+        if self.analytics_logger and hasattr(self.analytics_logger, 'update_learning_stats'):
+            # Update persistent stats with current session totals
+            self.analytics_logger.update_learning_stats(
+                concepts_learned=self.progress['concepts_learned'],
+                hypotheses_formed=self.progress['hypotheses_formed'], 
+                hypotheses_confirmed=self.progress['hypotheses_confirmed'],
+                causal_relationships=self.progress['causal_relationships_discovered']
+            )
+            print(f"💾 [Session] Saved session progress to persistent stats: {self.progress['concepts_learned']} concepts")

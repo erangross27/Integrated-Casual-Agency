@@ -42,6 +42,14 @@ class ShutdownManager:
                 # Save complete learning state (neural networks + AGI state)
                 save_success = self.database_manager.store_learning_state(self.agi_agent, self.gpu_processor)
                 
+                # Save current session progress to persistent statistics
+                if hasattr(self.agi_agent, 'learning_progress') and hasattr(self.agi_agent.learning_progress, 'save_session_to_persistent_stats'):
+                    try:
+                        self.agi_agent.learning_progress.save_session_to_persistent_stats()
+                        flush_print("[SHUTDOWN] ✅ Session progress saved to persistent statistics!")
+                    except Exception as e:
+                        flush_print(f"[SHUTDOWN] ⚠️ Failed to save persistent stats: {e}")
+                
                 if save_success:
                     flush_print("[SHUTDOWN] ✅ Complete learning state saved!")
                     flush_print("[SHUTDOWN] ✅ Neural network weights and biases saved!")
