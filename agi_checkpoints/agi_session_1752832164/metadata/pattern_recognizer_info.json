@@ -1,0 +1,9 @@
+{
+  "model_name": "pattern_recognizer",
+  "file_path": "agi_checkpoints\\agi_session_1752832164\\models\\pattern_recognizer_latest.pth",
+  "file_size_bytes": 3284663416,
+  "file_size_mb": 3132.499137878418,
+  "parameter_count": 821063204,
+  "saved_at": "2025-07-18T12:54:58.389047",
+  "checksum": "da13272617940d1cb0e6bdea6c7b2bbb3eed612aa56614b24de19101ade9b59b"
+}
