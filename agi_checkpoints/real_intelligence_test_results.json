@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-07-18T14:07:59.352943",
+  "test_results": [
+    {
+      "test": "Gravity Test",
+      "understanding_level": 5.00682839367073,
+      "pattern_confidence": 0.0013656787341460586,
+      "hypothesis_confidence": 1.0,
+      "interpretation": "Partial understanding - AGI identifies some relationships"
+    },
+    {
+      "test": "Pendulum Physics",
+      "understanding_level": 1.6721248345371955,
+      "pattern_confidence": 0.0010916335741057992,
+      "hypothesis_confidence": 0.0,
+      "interpretation": "Limited understanding - AGI needs more training on this concept"
+    },
+    {
+      "test": "Conservation of Energy",
+      "understanding_level": 5.0074492482235655,
+      "pattern_confidence": 0.0014898496447131038,
+      "hypothesis_confidence": 1.0,
+      "interpretation": "Partial understanding - AGI identifies some relationships"
+    },
+    {
+      "test": "Thermodynamics",
+      "understanding_level": 5.00399237847887,
+      "pattern_confidence": 0.0007984756957739592,
+      "hypothesis_confidence": 1.0,
+      "interpretation": "Partial understanding - AGI identifies some relationships"
+    },
+    {
+      "test": "Wave Interference",
+      "understanding_level": 1.6719571109085032,
+      "pattern_confidence": 0.0010580888483673334,
+      "hypothesis_confidence": 0.0,
+      "interpretation": "Limited understanding - AGI needs more training on this concept"
+    }
+  ],
+  "session": "agi_session_1752835133"
+}
