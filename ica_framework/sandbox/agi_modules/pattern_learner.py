@@ -25,17 +25,25 @@ class PatternLearner:
     def learn_patterns(self, observations: List[Dict[str, Any]], context: str = "general"):
         """Learn patterns from a sequence of observations"""
         
+        new_patterns = []
+        
         # Learn temporal patterns
-        self._learn_temporal_patterns(observations, context)
+        temporal_patterns = self._learn_temporal_patterns(observations, context)
+        new_patterns.extend(temporal_patterns)
         
         # Learn behavioral patterns
-        self._learn_behavioral_patterns(observations, context)
+        behavioral_patterns = self._learn_behavioral_patterns(observations, context)
+        new_patterns.extend(behavioral_patterns)
         
         # Learn spatial patterns
-        self._learn_spatial_patterns(observations, context)
+        spatial_patterns = self._learn_spatial_patterns(observations, context)
+        new_patterns.extend(spatial_patterns)
         
         # Learn sequence patterns
-        self._learn_sequence_patterns(observations, context)
+        sequence_patterns = self._learn_sequence_patterns(observations, context)
+        new_patterns.extend(sequence_patterns)
+        
+        return new_patterns
     
     def _learn_temporal_patterns(self, observations: List[Dict[str, Any]], context: str):
         """Learn patterns that repeat over time"""
@@ -44,6 +52,20 @@ class PatternLearner:
             self.temporal_patterns[context] = {}
         
         patterns = self.temporal_patterns[context]
+        new_patterns = []
+        
+        # Always create a basic observation pattern to get learning started
+        basic_pattern_key = f"basic_observation_{context}"
+        if basic_pattern_key not in patterns and observations:
+            patterns[basic_pattern_key] = {
+                'type': 'basic_observation',
+                'event_type': 'observation',
+                'intervals': [],
+                'average_interval': 1.0,
+                'confidence': 0.5,
+                'occurrences': 1
+            }
+            new_patterns.append(basic_pattern_key)
         
         # Extract time intervals between similar events
         event_types = {}
@@ -74,6 +96,7 @@ class PatternLearner:
                             'confidence': 0.0,
                             'occurrences': 0
                         }
+                        new_patterns.append(pattern_key)  # Add to new patterns list!
                     
                     pattern = patterns[pattern_key]
                     pattern['intervals'].extend(intervals)
@@ -87,6 +110,8 @@ class PatternLearner:
                         if mean_interval > 0:
                             consistency = 1.0 - min(1.0, std_dev / mean_interval)
                             pattern['confidence'] = consistency
+        
+        return new_patterns
     
     def _learn_behavioral_patterns(self, observations: List[Dict[str, Any]], context: str):
         """Learn patterns in object behavior"""
@@ -127,6 +152,8 @@ class PatternLearner:
                             'confidence': min(1.0, count / len(behaviors)),
                             'context': context
                         }
+        
+        return []  # For now, return empty list
     
     def _learn_spatial_patterns(self, observations: List[Dict[str, Any]], context: str):
         """Learn patterns in spatial arrangements and movements"""
@@ -183,6 +210,8 @@ class PatternLearner:
                         'confidence': count / len(movements),
                         'context': context
                     }
+        
+        return []  # For now, return empty list
     
     def _learn_sequence_patterns(self, observations: List[Dict[str, Any]], context: str):
         """Learn patterns in sequences of events or states"""
@@ -220,6 +249,8 @@ class PatternLearner:
                         'confidence': count / (len(event_sequence) - length + 1),
                         'context': context
                     }
+        
+        return []  # For now, return empty list
     
     def _find_repeated_subsequences(self, sequence: List[str]) -> Dict[str, int]:
         """Find repeated subsequences in a sequence"""

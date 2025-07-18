@@ -452,6 +452,8 @@ class ModernNeuralPersistence:
 def create_session_persistence(session_id=None):
     """Create a modern neural persistence instance"""
     if session_id is None:
+        # Create new timestamped session 
+        import time
         session_id = f"agi_session_{int(time.time())}"
     
     return ModernNeuralPersistence(session_id)

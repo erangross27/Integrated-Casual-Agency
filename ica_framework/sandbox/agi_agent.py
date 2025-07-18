@@ -105,57 +105,102 @@ class AGIAgent:
         if not learning_opportunity:
             return
         
-        # 1. Store in memory system
-        self.memory_system.store_experience(learning_opportunity)
+        # Ensure learning_opportunity is a dictionary
+        if not isinstance(learning_opportunity, dict):
+            self.logger.warning(f"⚠️ Received non-dict learning opportunity: {type(learning_opportunity)}")
+            return
         
-        # 2. Process sensory input
-        sensory_input = learning_opportunity.get('sensory_input', {})
-        processed_sensory = self.sensory_processor.process_sensory_input(sensory_input)
-        
-        # 3. Update attention system
-        stimuli = self._extract_stimuli(learning_opportunity)
-        attention_result = self.attention_system.process_stimuli(stimuli)
-        
-        # 4. Learn patterns
-        observations = [learning_opportunity]
-        self.pattern_learner.learn_patterns(observations)
-        
-        # 5. Learn physics concepts
-        objects = learning_opportunity.get('objects', {})
-        motion_events = processed_sensory.get('motion_events', [])
-        self.physics_learner.learn_from_observation(objects, motion_events)
-        
-        # 6. Generate curiosity and questions
-        current_knowledge = self.learning_progress.get_progress_summary()
-        curiosity_result = self.curiosity_engine.assess_curiosity(observations, current_knowledge)
-        
-        # 7. Form and test hypotheses
-        if curiosity_result['generated_questions']:
-            for question in curiosity_result['generated_questions'][:2]:  # Limit questions
-                hypothesis = self.hypothesis_manager.generate_hypothesis(question['text'], learning_opportunity)
-                if hypothesis:
-                    self.hypothesis_manager.test_hypothesis(hypothesis['id'], learning_opportunity)
-        
-        # 8. Update causal reasoning
-        if processed_sensory.get('events'):
-            for event in processed_sensory['events']:
-                self.causal_reasoning.observe_event(event)
-        
-        # 9. Plan exploration
-        if attention_result['primary_focus']:
-            current_pos = learning_opportunity.get('agent_position', [0, 0, 0])
-            exploration_action = self.exploration_controller.plan_exploration(
-                current_pos, 
-                learning_opportunity,
-                curiosity_result.get('curiosity_targets', [])
-            )
-        
-        # 10. Update learning progress with GPU discoveries
-        gpu_discoveries = learning_opportunity.get('gpu_discoveries', {})
-        if gpu_discoveries:
-            self.learning_progress.process_gpu_discoveries(gpu_discoveries)
-        
-        # 11. Update overall progress
+        try:
+            # 1. Store in memory system
+            self.logger.debug("Step 1: Storing experience")
+            self.memory_system.store_experience(learning_opportunity)
+            
+            # 2. Process sensory input
+            self.logger.debug("Step 2: Processing sensory input")
+            sensory_input = learning_opportunity.get('sensory_input', {})
+            if not isinstance(sensory_input, dict):
+                self.logger.error(f"❌ sensory_input is not dict: {type(sensory_input)}")
+                return
+            processed_sensory = self.sensory_processor.process_sensory_input(sensory_input)
+            
+            # 3. Update attention system
+            self.logger.debug("Step 3: Updating attention system")
+            stimuli = self._extract_stimuli(learning_opportunity)
+            attention_result = self.attention_system.process_stimuli(stimuli)
+            
+            # 4. Learn patterns
+            self.logger.debug("Step 4: Learning patterns")
+            observations = [learning_opportunity]
+            patterns_learned = self.pattern_learner.learn_patterns(observations)
+            
+            # Update learning progress with patterns learned
+            if patterns_learned:
+                self.learning_progress.update_concepts(len(patterns_learned))
+            
+            # 5. Learn physics concepts
+            self.logger.debug("Step 5: Learning physics concepts")
+            # Extract objects from the correct location in the data structure
+            objects = learning_opportunity.get('sensory_input', {}).get('raw_physics', {}).get('objects', {})
+            motion_events = processed_sensory.get('motion_events', [])
+            physics_concepts = self.physics_learner.learn_from_observation(objects, motion_events)
+            
+            # Update learning progress with physics concepts
+            if physics_concepts:
+                self.learning_progress.update_concepts(len(physics_concepts))
+            
+            # 6. Generate curiosity and questions
+            self.logger.debug("Step 6: Generating curiosity")
+            current_knowledge = self.learning_progress.get_progress_summary()
+            curiosity_result = self.curiosity_engine.assess_curiosity(observations, current_knowledge)
+            
+            # 7. Form and test hypotheses
+            self.logger.debug("Step 7: Forming hypotheses")
+            if curiosity_result['generated_questions']:
+                # Use current and previous learning opportunities for hypothesis generation
+                previous_observations = self.memory_system.get_recent_memories(2)
+                if len(previous_observations) >= 1:
+                    for question in curiosity_result['generated_questions'][:2]:  # Limit questions
+                        # Use the most recent observation and current one
+                        prev_obs = previous_observations[-1] if previous_observations else learning_opportunity
+                        hypothesis = self.hypothesis_manager.generate_hypothesis(prev_obs, learning_opportunity)
+                        if hypothesis:
+                            self.hypothesis_manager.test_hypothesis(hypothesis, learning_opportunity)
+            
+            # 8. Update causal reasoning
+            self.logger.debug("Step 8: Updating causal reasoning")
+            if processed_sensory.get('events'):
+                for event in processed_sensory['events']:
+                    self.causal_reasoning.observe_event(event)
+            
+            # 9. Plan exploration
+            self.logger.debug("Step 9: Planning exploration")
+            if attention_result['primary_focus']:
+                current_pos = learning_opportunity.get('agent_position', [0, 0, 0])
+                exploration_action = self.exploration_controller.plan_exploration(
+                    current_pos, 
+                    learning_opportunity,
+                    curiosity_result.get('curiosity_targets', [])
+                )
+            
+            # 10. Update learning progress with GPU discoveries
+            self.logger.debug("Step 10: Updating learning progress")
+            gpu_discoveries = learning_opportunity.get('gpu_discoveries', {})
+            if gpu_discoveries:
+                self.learning_progress.process_gpu_discoveries(gpu_discoveries)
+            
+            # 11. Update overall progress
+            self.logger.debug("Step 11: Finalizing progress update")
+            self.learning_progress.update_metrics({
+                'observations_processed': 1,
+                'sensory_inputs_processed': 1,
+                'learning_cycles': 1
+            })
+                    
+        except Exception as e:
+            self.logger.error(f"❌ Error in _process_world_feedback at step: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
+            raise
         self._update_learning_metrics()
     
     def _extract_stimuli(self, learning_opportunity: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -164,7 +209,15 @@ class AGIAgent:
         
         # Extract objects as stimuli
         objects = learning_opportunity.get('objects', {})
+        if not isinstance(objects, dict):
+            self.logger.warning(f"⚠️ objects is not dict in _extract_stimuli: {type(objects)}")
+            return stimuli
+            
         for obj_id, obj_data in objects.items():
+            if not isinstance(obj_data, dict):
+                self.logger.warning(f"⚠️ obj_data for {obj_id} is not dict: {type(obj_data)}")
+                continue
+                
             stimulus = {
                 'id': obj_id,
                 'type': obj_data.get('type', 'object'),
@@ -180,6 +233,8 @@ class AGIAgent:
     
     def _assess_object_novelty(self, obj_data: Dict[str, Any]) -> float:
         """Quick novelty assessment for attention system"""
+        if not isinstance(obj_data, dict):
+            return 0.0
         obj_type = obj_data.get('type', 'unknown')
         if not self.memory_system.recall_by_type(obj_type):
             return 0.9  # High novelty for new types
@@ -196,8 +251,8 @@ class AGIAgent:
         # Update learning progress
         progress_update = {
             'concepts_learned': memory_summary['total_memories'],
-            'hypotheses_formed': hypothesis_summary['total_hypotheses'],
-            'hypotheses_confirmed': hypothesis_summary['confirmed_hypotheses'],
+            'hypotheses_formed': hypothesis_summary.get('active_count', 0) + hypothesis_summary.get('confirmed_count', 0),
+            'hypotheses_confirmed': hypothesis_summary.get('confirmed_count', 0),
             'causal_relationships_discovered': len(self.causal_reasoning.causal_relationships),
             'patterns_recognized': pattern_summary.get('high_confidence_patterns', 0),
             'physics_concepts': len(physics_knowledge['concepts'])
@@ -248,10 +303,12 @@ class AGIAgent:
     
     def get_comprehensive_progress(self) -> Dict[str, Any]:
         """Get complete learning progress from all modules"""
+        hypothesis_summary = self.hypothesis_manager.get_hypothesis_summary()
+        
         return {
             'learning_progress': self.learning_progress.get_progress_summary(),
             'memory_summary': self.memory_system.get_memory_summary(),
-            'hypothesis_summary': self.hypothesis_manager.get_hypothesis_summary(),
+            'hypothesis_summary': hypothesis_summary,
             'physics_knowledge': self.physics_learner.get_physics_knowledge(),
             'pattern_summary': self.pattern_learner.get_pattern_summary(),
             'attention_summary': self.attention_system.get_attention_summary(),
@@ -283,8 +340,81 @@ class AGIAgent:
         self.logger.info(f"✅ Novelty threshold set to {threshold}")
     
     def process_gpu_discoveries(self, gpu_results: Dict[str, Any], cycle_count: int):
-        """Delegate to learning progress"""
+        """Process GPU discoveries and update all relevant systems"""
+        if not gpu_results or 'processed_entities' not in gpu_results:
+            return
+            
+        processed_count = gpu_results.get('processed_entities', 0)
+        if processed_count <= 0:
+            return
+            
+        # Store GPU discoveries in memory system
+        for i in range(min(processed_count, 50)):  # Limit to prevent memory overflow
+            discovery = {
+                'type': 'gpu_discovery',
+                'cycle': cycle_count,
+                'entity_id': i,
+                'confidence': gpu_results.get('confidence', 0.8),
+                'patterns_found': gpu_results.get('patterns_found', 0),
+                'importance': gpu_results.get('importance', 0.8)  # Add importance for consolidation
+            }
+            
+            # Store in short-term memory first
+            self.memory_system.store_short_term(discovery)
+            
+            # Force consolidation for high-confidence discoveries
+            if discovery['confidence'] > 0.7:
+                # Wait a moment to ensure it's in short-term memory, then consolidate
+                if discovery in self.memory_system.short_term_memory:
+                    self.memory_system.consolidate_memory(discovery)
+                else:
+                    # Force consolidation even if not found in deque
+                    self.memory_system.store_long_term(discovery.copy())
+                    self.memory_system.memory_stats['consolidations'] += 1
+                
+                # Generate hypothesis from high-confidence discoveries
+                if i > 0:  # Need at least one previous discovery for comparison
+                    prev_discovery = {
+                        'type': 'gpu_discovery',
+                        'cycle': cycle_count,
+                        'entity_id': i-1,
+                        'confidence': gpu_results.get('confidence', 0.8),
+                        'patterns_found': gpu_results.get('patterns_found', 0)
+                    }
+                    hypothesis = self.hypothesis_manager.generate_hypothesis(prev_discovery, discovery)
+                    if hypothesis:
+                        # Test the hypothesis with current data
+                        self.hypothesis_manager.test_hypothesis(hypothesis, discovery)
+        
+        # Update learning progress with GPU discoveries
         self.learning_progress.process_gpu_discoveries(gpu_results, cycle_count)
+        
+        # Update learning metrics to get fresh counts from modules
+        self._update_learning_metrics()
+    
+    def _update_learning_metrics(self):
+        """Update learning metrics with current counts from all modules"""
+        try:
+            # Get current counts from hypothesis manager
+            hypothesis_summary = self.hypothesis_manager.get_hypothesis_summary()
+            active_hypotheses = hypothesis_summary.get('active_count', 0)
+            confirmed_hypotheses = hypothesis_summary.get('confirmed_count', 0)
+            
+            # Update learning progress with actual counts
+            if active_hypotheses > 0:
+                current_formed = self.learning_progress.progress.get('hypotheses_formed', 0)
+                if active_hypotheses > current_formed:
+                    new_hypotheses = active_hypotheses - current_formed
+                    self.learning_progress.update_hypotheses_formed(new_hypotheses)
+            
+            if confirmed_hypotheses > 0:
+                current_confirmed = self.learning_progress.progress.get('hypotheses_confirmed', 0) 
+                if confirmed_hypotheses > current_confirmed:
+                    new_confirmed = confirmed_hypotheses - current_confirmed
+                    self.learning_progress.update_hypotheses_confirmed(new_confirmed)
+                    
+        except Exception as e:
+            self.logger.debug(f"Learning metrics update failed: {e}")
     
     def get_learning_summary(self) -> Dict[str, Any]:
         """Delegate to comprehensive progress"""

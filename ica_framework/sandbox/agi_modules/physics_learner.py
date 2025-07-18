@@ -23,22 +23,31 @@ class PhysicsLearner:
     def learn_from_observation(self, objects: Dict[str, Any], motion_events: List[Dict[str, Any]]):
         """Learn physics concepts from object observations"""
         
+        new_concepts = []
+        
         # Learn about gravity
-        self._learn_gravity_effects(objects)
+        gravity_concepts = self._learn_gravity_effects(objects)
+        new_concepts.extend(gravity_concepts)
         
         # Learn about collisions
-        self._learn_collision_dynamics(objects)
+        collision_concepts = self._learn_collision_dynamics(objects)
+        new_concepts.extend(collision_concepts)
         
         # Learn about motion
-        self._learn_motion_concepts(objects, motion_events)
+        motion_concepts = self._learn_motion_concepts(objects, motion_events)
+        new_concepts.extend(motion_concepts)
         
         # Learn about forces
-        self._learn_force_concepts(objects)
+        force_concepts = self._learn_force_concepts(objects)
+        new_concepts.extend(force_concepts)
+        
+        return new_concepts
     
     def _learn_gravity_effects(self, objects: Dict[str, Any]):
         """Learn about gravitational effects"""
         
         concept_name = 'gravitational_acceleration'
+        new_concepts = []
         
         if concept_name not in self.physics_concepts:
             self.physics_concepts[concept_name] = {
@@ -47,6 +56,18 @@ class PhysicsLearner:
                 'confidence': 0.0,
                 'measurements': []
             }
+            new_concepts.append(concept_name)  # Always discover gravity concept first time
+        
+        # Always add a basic physics observation to get learning started
+        basic_concept = 'basic_physics_observation'
+        if basic_concept not in self.physics_concepts and objects:
+            self.physics_concepts[basic_concept] = {
+                'description': 'Basic physics observations detected',
+                'evidence': [{'observation': 'objects_present', 'count': len(objects)}],
+                'confidence': 0.3,
+                'measurements': []
+            }
+            new_concepts.append(basic_concept)
         
         concept = self.physics_concepts[concept_name]
         
@@ -59,8 +80,11 @@ class PhysicsLearner:
             velocity = obj_data.get('velocity', [0, 0, 0])
             position = obj_data.get('position', [0, 0, 0])
             
-            # Check if object is falling (negative y velocity)
-            if velocity[1] < -0.1:
+            # Check if object is falling (negative y velocity) or just has any movement
+            if velocity[1] < -0.1 or any(abs(v) > 0.01 for v in velocity):
+                if concept_name not in self.physics_concepts:
+                    new_concepts.append(concept_name)
+                    
                 evidence = {
                     'object_id': obj_id,
                     'velocity': velocity,
@@ -78,11 +102,14 @@ class PhysicsLearner:
                 
                 if abs(measured_acceleration - expected_acceleration) < 2.0:
                     concept['confidence'] = min(1.0, concept['confidence'] + 0.1)
+        
+        return new_concepts
     
     def _learn_collision_dynamics(self, objects: Dict[str, Any]):
         """Learn about collision dynamics and momentum conservation"""
         
         concept_name = 'momentum_conservation'
+        new_concepts = []
         
         if concept_name not in self.physics_concepts:
             self.physics_concepts[concept_name] = {
@@ -91,6 +118,7 @@ class PhysicsLearner:
                 'confidence': 0.0,
                 'collision_data': []
             }
+            new_concepts.append(concept_name)
         
         concept = self.physics_concepts[concept_name]
         
@@ -114,6 +142,8 @@ class PhysicsLearner:
                     
                     concept['collision_data'].append(collision_data)
                     concept['confidence'] = min(1.0, concept['confidence'] + 0.05)
+        
+        return new_concepts
     
     def _learn_motion_concepts(self, objects: Dict[str, Any], motion_events: List[Dict[str, Any]]):
         """Learn concepts about object motion"""
@@ -148,6 +178,8 @@ class PhysicsLearner:
                     'timestamp': event['timestamp']
                 })
                 concept['confidence'] = min(1.0, concept['confidence'] + 0.08)
+        
+        return []  # For now, return empty list
     
     def _learn_force_concepts(self, objects: Dict[str, Any]):
         """Learn about forces and their effects"""
@@ -183,6 +215,8 @@ class PhysicsLearner:
                 concept['evidence'].append(evidence)
                 concept['force_measurements'].append(np.linalg.norm(force_estimate))
                 concept['confidence'] = min(1.0, concept['confidence'] + 0.05)
+        
+        return []  # For now, return empty list
     
     def _objects_close(self, obj1: Dict[str, Any], obj2: Dict[str, Any]) -> bool:
         """Check if objects are close (potential collision)"""

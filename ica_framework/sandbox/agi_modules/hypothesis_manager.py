@@ -23,6 +23,10 @@ class HypothesisManager:
     def generate_hypothesis(self, observation1: Dict[str, Any], observation2: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Generate hypothesis from two observations"""
         
+        # Type checking
+        if not isinstance(observation1, dict) or not isinstance(observation2, dict):
+            return None
+        
         # Look for cause-effect relationships
         if self._has_significant_change(observation1, observation2):
             hypothesis = {
@@ -38,12 +42,17 @@ class HypothesisManager:
             }
             
             self.active_hypotheses.append(hypothesis)
+            self.last_update = time.time()  # Track when we last updated
             return hypothesis
         
         return None
     
     def test_hypothesis(self, hypothesis: Dict[str, Any], observation: Dict[str, Any]) -> Optional[bool]:
         """Test hypothesis against new observation"""
+        
+        # Type checking
+        if not isinstance(hypothesis, dict) or not isinstance(observation, dict):
+            return None
         
         if hypothesis['tested']:
             return hypothesis.get('confirmed', False)
@@ -66,6 +75,10 @@ class HypothesisManager:
     
     def _has_significant_change(self, obs1: Dict[str, Any], obs2: Dict[str, Any]) -> bool:
         """Check if observations show significant change"""
+        
+        # Type checking
+        if not isinstance(obs1, dict) or not isinstance(obs2, dict):
+            return False
         
         # Check for object changes
         sensory1 = obs1.get('sensory_input', {})
@@ -177,14 +190,27 @@ class HypothesisManager:
     
     def get_hypothesis_summary(self) -> Dict[str, Any]:
         """Get comprehensive hypothesis summary"""
-        stats = self.get_hypothesis_stats()
+        active_count = len(self.active_hypotheses)
+        confirmed_count = len(self.confirmed_hypotheses)
+        total_hypotheses = active_count + confirmed_count
+        
         return {
-            'stats': stats,
-            'active_hypotheses': list(self.active_hypotheses.keys()),
-            'confirmed_count': stats['confirmed'],
-            'confidence_scores': {hid: h.get('confidence', 0.0) 
-                                for hid, h in self.active_hypotheses.items()}
+            'active_count': active_count,
+            'confirmed_count': confirmed_count,
+            'total_hypotheses': total_hypotheses,
+            'evidence_threshold': self.evidence_threshold,
+            'confidence_threshold': self.confidence_threshold,
+            'last_update': getattr(self, 'last_update', time.time())
         }
+    
+    
+    def _calculate_average_confidence(self) -> float:
+        """Calculate average confidence of active hypotheses"""
+        if not self.active_hypotheses:
+            return 0.0
+        
+        total_confidence = sum(h.get('confidence', 0.0) for h in self.active_hypotheses if isinstance(h, dict))
+        return total_confidence / len(self.active_hypotheses)
     
     def get_hypothesis_stats(self) -> Dict[str, int]:
         """Get hypothesis statistics"""

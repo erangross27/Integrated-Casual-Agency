@@ -608,3 +608,26 @@ class EnhancedKnowledgeGraph:
     def find_unexpected_connections(self):
         """Find unexpected or novel connections"""
         return self.db.find_unexpected_connections() if hasattr(self.db, 'find_unexpected_connections') else []
+    
+    def store_learning_progress(self, progress: Dict[str, Any]) -> bool:
+        """Store learning progress in the knowledge graph"""
+        try:
+            # Create a progress node with timestamp
+            progress_id = f"progress_{int(time.time())}"
+            
+            # Add progress as a special node
+            self.add_node(
+                progress_id,
+                node_type="learning_progress",
+                properties={
+                    **progress,
+                    'timestamp': time.time(),
+                    'stored_at': time.strftime('%Y-%m-%d %H:%M:%S')
+                }
+            )
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error storing learning progress: {e}")
+            return False

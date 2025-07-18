@@ -130,7 +130,18 @@ class GPUProcessor:
             self.gpu_stats['gpu_time'] += gpu_time
             self.gpu_stats['patterns_processed'] += batch_size * parallel_batches
             
-            return {'processed_entities': batch_size, 'gpu_time': gpu_time}
+            # Return comprehensive data for AGI agent processing
+            total_hypotheses = sum(len(result['hypotheses']) if result['hypotheses'] is not None else 0 for result in all_results)
+            avg_confidence = sum(result['confidence'].mean().item() if result['confidence'] is not None else 0.5 for result in all_results) / len(all_results) if all_results else 0.5
+            
+            return {
+                'processed_entities': batch_size * parallel_batches,
+                'patterns_found': len(all_results),
+                'confidence': avg_confidence,
+                'hypotheses_generated': total_hypotheses,
+                'gpu_time': gpu_time,
+                'batch_results': all_results
+            }
             
         except Exception as e:
             print(f"[GPU] ⚠️ Error processing AGI learning: {e}")

@@ -255,6 +255,12 @@ class DatabaseManager:
         # File-based system doesn't need explicit closing
         print("🧠 [DB] File-based storage - no connections to close")
     
+    def finalize_session_setup(self):
+        """Run cleanup after session restoration is decided"""
+        if self.cleanup_needed:
+            self._cleanup_old_sessions()
+            self.cleanup_needed = False
+    
     # === LEGACY COMPATIBILITY METHODS ===
     def save_learning_state(self, agi_agent):
         """Legacy method for backwards compatibility"""
@@ -303,7 +309,7 @@ class DatabaseManager:
             return False
     
     def _cleanup_old_sessions(self):
-        """Keep only the most recent session and delete all others"""
+        """Keep only the current session and delete ALL others"""
         try:
             import shutil
             from pathlib import Path
@@ -312,32 +318,32 @@ class DatabaseManager:
             if not checkpoints_dir.exists():
                 return
             
-            # Find all AGI session directories
-            session_dirs = []
+            # Find ALL session directories except current one
+            current_session = self.session_id
+            old_session_dirs = []
             for item in checkpoints_dir.iterdir():
-                if item.is_dir() and item.name.startswith("agi_session_"):
-                    try:
-                        timestamp_str = item.name.replace("agi_session_", "")
-                        timestamp = int(timestamp_str)
-                        session_dirs.append((timestamp, item))
-                    except ValueError:
-                        continue
+                if item.is_dir() and item.name.startswith("agi_session_") and item.name != current_session:
+                    old_session_dirs.append(item)
             
-            # Keep only the most recent session (if any)
-            if len(session_dirs) > 1:
-                session_dirs.sort(key=lambda x: x[0], reverse=True)
-                dirs_to_delete = session_dirs[1:]  # All except newest
-                
+            # Delete ALL old sessions
+            if old_session_dirs:
+                print(f"🧹 [DB] Cleaning up {len(old_session_dirs)} old session folders...")
                 deleted_count = 0
-                for timestamp, dir_path in dirs_to_delete:
+                for dir_path in old_session_dirs:
                     try:
                         shutil.rmtree(dir_path)
                         deleted_count += 1
+                        print(f"🗑️ [DB] Deleted old session: {dir_path.name}")
                     except Exception as e:
                         print(f"⚠️ [DB] Could not delete old session {dir_path.name}: {e}")
                 
                 if deleted_count > 0:
                     print(f"🧹 [DB] Auto-cleanup: Deleted {deleted_count} old session directories")
+                    
+        except Exception as e:
+            print(f"⚠️ [DB] Warning: Session cleanup failed: {e}")
+            import traceback
+            traceback.print_exc()
                     
         except Exception as e:
             print(f"⚠️ [DB] Session cleanup error: {e}")

@@ -257,6 +257,8 @@ class ModernDatabaseManager:
 def create_modern_database_manager(session_id=None):
     """Create a modern database manager instance"""
     if session_id is None:
+        # Create new timestamped session, cleanup will handle old ones
+        import time
         session_id = f"agi_session_{int(time.time())}"
     
     return ModernDatabaseManager(session_id)

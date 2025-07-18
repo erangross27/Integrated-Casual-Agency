@@ -76,18 +76,32 @@ class LearningEnvironment:
         if not self.running:
             return {}
         
-        # Get physics observation
-        physics_obs = self.physics_engine.step()
-        
-        # Process through sensors
-        sensory_input = self._process_sensory_input(physics_obs)
-        
-        # Create learning opportunity
-        learning_opportunity = self._create_learning_opportunity(sensory_input)
-        
-        # Store in history
-        self.learning_history.append(learning_opportunity)
-        self.step_count += 1
+        try:
+            # Get physics observation
+            physics_obs = self.physics_engine.step()
+            
+            # Process through sensors
+            sensory_input = self._process_sensory_input(physics_obs)
+            
+            # Create learning opportunity
+            learning_opportunity = self._create_learning_opportunity(sensory_input)
+            
+            # Validate that learning_opportunity is a dict
+            if not isinstance(learning_opportunity, dict):
+                self.logger.error(f"❌ _create_learning_opportunity returned {type(learning_opportunity)}: {learning_opportunity}")
+                return {}
+            
+            # Store in history
+            self.learning_history.append(learning_opportunity)
+            self.step_count += 1
+            
+            return learning_opportunity
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error in learning environment step: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
+            return {}
         
         return learning_opportunity
     

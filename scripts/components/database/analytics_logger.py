@@ -15,13 +15,27 @@ from pathlib import Path
 class WandBAGILogger:
     """Weights & Biases logger for TRUE AGI experiments with epoch-based tracking"""
     
+    _instance = None
+    _session_active = False
+    
+    def __new__(cls, *args, **kwargs):
+        """Singleton pattern to ensure only one W&B session"""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
     def __init__(self, project_name: str = "TRUE-AGI-System", resume_mode: bool = True):
+        # Prevent re-initialization
+        if hasattr(self, '_initialized_once'):
+            return
+        
         self.project_name = project_name
         self.epoch = 0
         self.learning_cycles = 0  # Internal counter for learning cycles within epoch
         self.initialized = False
         self.resume_mode = resume_mode
         self.run_name = "TRUE_AGI_Continuous_Learning"
+        self._initialized_once = True
         
         # Persistent epoch tracking file
         self.epoch_file = Path("agi_checkpoints/persistent_epoch.txt")
@@ -29,6 +43,19 @@ class WandBAGILogger:
         
         # Load last epoch from file
         self._load_last_epoch()
+        
+        # Check if W&B should be disabled
+        import os
+        if os.getenv('DISABLE_WANDB', '').lower() in ['true', '1', 'yes']:
+            print("🚫 [W&B] Disabled via DISABLE_WANDB environment variable")
+            self.initialized = False
+            return
+        
+        # Check if we already have an active session
+        if self._session_active and wandb.run is not None:
+            print("✅ [W&B] Using existing active session")
+            self.initialized = True
+            return
         
         # Try to resume existing session or create new one
         try:
@@ -39,7 +66,8 @@ class WandBAGILogger:
                 # Create new session
                 self._create_new_session()
                 
-            self.initialized = True
+            if self.initialized:
+                self._session_active = True
             print(f"✅ [W&B] Analytics initialized - Project: {self.project_name}")
             print(f"🌐 [W&B] Dashboard: https://wandb.ai/your-username/{self.project_name}")
             print(f"📊 [W&B] Epoch-Based Learning | Current Epoch: {self.epoch}")
@@ -77,8 +105,24 @@ class WandBAGILogger:
     
     def _resume_or_create_session(self):
         """Resume existing session or create new one if none exists"""
+        
+        # Check if wandb is already initialized and active
+        if wandb.run is not None:
+            print("✅ [W&B] Already connected - using existing session")
+            self.initialized = True
+            self._session_active = True
+            return
+            
+        print("🔄 [W&B] Connecting to W&B (no existing session found)...")
+        
         try:
-            # Try to resume with a consistent run name
+            # Silent login check first - no messages
+            if not wandb.api.api_key:
+                print("⚠️ [W&B] No API key found - disabling W&B for this session")
+                self.initialized = False
+                return
+            
+            # Single attempt with short timeout - if it fails, skip W&B entirely
             wandb.init(
                 project=self.project_name,
                 name=self.run_name,
@@ -94,9 +138,34 @@ class WandBAGILogger:
                     "system": "TRUE AGI Continuous Learning",
                     "start_time": time.time(),
                     "tracking_mode": "epoch_based"
-                }
+                },
+                settings=wandb.Settings(
+                    init_timeout=15,  # Short 15 second timeout
+                    console="off",    # Reduce console output
+                    quiet=True        # Minimize logging messages
+                )
             )
             
+            print("✅ [W&B] Successfully connected!")
+            self.initialized = True
+            
+        except Exception as e:
+            error_msg = str(e).lower()
+            if "rate limit" in error_msg or "429" in error_msg:
+                print("❌ [W&B] Rate limit detected - skipping W&B for this session")
+                print("🔄 [W&B] AGI will continue learning without W&B tracking")
+            elif "timeout" in error_msg:
+                print("❌ [W&B] Connection timeout - skipping W&B for this session")
+                print("🔄 [W&B] AGI will continue learning without W&B tracking")
+            else:
+                print(f"❌ [W&B] Connection failed: {e}")
+                print("🔄 [W&B] AGI will continue learning without W&B tracking")
+            
+            # Disable W&B logging for this session
+            self.initialized = False
+            return
+        
+        try:
             # Define custom metrics to use epoch as x-axis (instead of default step)
             if not wandb.run.resumed:
                 wandb.define_metric("epoch")
@@ -126,22 +195,45 @@ class WandBAGILogger:
     
     def _create_new_session(self):
         """Create a completely new W&B session"""
-        wandb.init(
-            project=self.project_name,
-            name=f"{self.run_name}_backup_{int(time.time())}",
-            tags=["TRUE-AGI", "Continuous-Learning", "Backup"],
-            config={
-                "framework": "PyTorch", 
-                "system": "TRUE AGI Continuous Learning",
-                "start_time": time.time(),
-                "backup_session": True
-            }
-        )
+        
+        # Check if wandb is already initialized and active
+        if wandb.run is not None:
+            print("✅ [W&B] Already connected - using existing session")
+            self.initialized = True
+            self._session_active = True
+            return
+            
+        try:
+            wandb.init(
+                project=self.project_name,
+                name=f"{self.run_name}_backup_{int(time.time())}",
+                tags=["TRUE-AGI", "Continuous-Learning", "Backup"],
+                config={
+                    "framework": "PyTorch", 
+                    "system": "TRUE AGI Continuous Learning",
+                    "start_time": time.time(),
+                    "tracking_mode": "epoch_based"
+                },
+                settings=wandb.Settings(
+                    init_timeout=15,
+                    console="off",
+                    quiet=True
+                )
+            )
+            
+            self.initialized = True
+            print("✅ [W&B] New session created successfully")
+            
+        except Exception as e:
+            print(f"⚠️ [W&B] Failed to create new session: {e}")
+            print("🔄 [W&B] AGI will continue learning without W&B tracking")
+            self.initialized = False
+
     def advance_epoch(self):
         """Advance to next epoch - this is the main progression method"""
         # Complete current epoch
         if self.initialized:
-            wandb.log({
+            self._safe_wandb_log({
                 "epoch_completed": self.epoch,
                 "learning_cycle": "completed",
                 "epoch": self.epoch
@@ -153,7 +245,7 @@ class WandBAGILogger:
         self._save_epoch_data()
         
         if self.initialized:
-            wandb.log({
+            self._safe_wandb_log({
                 "new_epoch_started": True,
                 "epoch": self.epoch,
                 "learning_phase": f"Epoch_{self.epoch}"
@@ -162,6 +254,31 @@ class WandBAGILogger:
             print(f"🎯 [W&B] ✅ Epoch {self.epoch - 1} completed → Epoch {self.epoch} started")
         
         return self.epoch
+    
+    def _safe_wandb_log(self, data: Dict[str, Any], commit: bool = True, retries: int = 2):
+        """Safely log data to W&B with rate limit handling"""
+        if not self.initialized:
+            return False
+            
+        for attempt in range(retries + 1):
+            try:
+                wandb.log(data, commit=commit)
+                return True
+            except Exception as e:
+                error_msg = str(e).lower()
+                if "rate limit" in error_msg or "429" in error_msg:
+                    if attempt < retries:
+                        wait_time = (attempt + 1) * 10  # 10, 20, 30 seconds
+                        print(f"⚠️ [W&B] Rate limit hit, waiting {wait_time}s before retry...")
+                        time.sleep(wait_time)
+                        continue
+                    else:
+                        print("❌ [W&B] Rate limit exceeded, skipping this log entry")
+                        return False
+                else:
+                    print(f"⚠️ [W&B] Logging error: {e}")
+                    return False
+        return False
     
     def increment_learning_cycle(self):
         """Internal learning cycle counter - triggers epoch advancement"""
@@ -185,8 +302,9 @@ class WandBAGILogger:
                 "timestamp": time.time()
             }
             
-            wandb.log(episode_data_with_epoch, commit=False)
-            wandb.log({"epoch": self.epoch})  # This will be the x-axis
+            # Use safe logging
+            self._safe_wandb_log(episode_data_with_epoch, commit=False)
+            self._safe_wandb_log({"epoch": self.epoch})  # This will be the x-axis
             
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log episode: {e}")
@@ -204,8 +322,9 @@ class WandBAGILogger:
                 "learning_phase": f"Epoch_{self.epoch}"
             }
             
-            wandb.log(metrics_with_epoch, commit=False)
-            wandb.log({"epoch": self.epoch})  # This will be the x-axis
+            # Use safe logging
+            self._safe_wandb_log(metrics_with_epoch, commit=False)
+            self._safe_wandb_log({"epoch": self.epoch})  # This will be the x-axis
             
         except Exception as e:
             print(f"⚠️ [W&B] Failed to log metrics: {e}")
@@ -344,7 +463,7 @@ class WandBAGILogger:
     
     def finish(self):
         """Finish the W&B run"""
-        if self.initialized:
+        if self.initialized and wandb.run is not None:
             try:
                 # Save final state
                 self._save_epoch_data()
@@ -353,6 +472,25 @@ class WandBAGILogger:
                 print(f"✅ [W&B] Session finished at Epoch {self.epoch}")
             except Exception as e:
                 print(f"⚠️ [W&B] Error finishing session: {e}")
+        else:
+            print(f"⚠️ [W&B] Cannot finish - session not properly initialized")
+    
+    def is_session_active(self):
+        """Check if W&B session is currently active"""
+        return self.initialized and wandb.run is not None and self._session_active
+    
+    def close_session(self):
+        """Properly close W&B session"""
+        if wandb.run is not None:
+            try:
+                wandb.finish()
+                print("✅ [W&B] Session closed properly")
+            except Exception as e:
+                print(f"⚠️ [W&B] Error closing session: {e}")
+        
+        self._session_active = False
+        self.initialized = False
+        WandBAGILogger._instance = None  # Reset singleton
 
 
 # Test the epoch-only logger if run directly

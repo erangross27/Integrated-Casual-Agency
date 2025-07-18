@@ -29,90 +29,9 @@ class SessionManager:
         self.restored_session_data = None
     
     def attempt_session_restoration(self):
-        """Try to restore previous session from file-based checkpoints"""
-        if not self.database_manager:
-            return False
-        
-        flush_print("[INIT] 🔄 Checking for previous checkpoint data...")
-        
-        try:
-            import os
-            from pathlib import Path
-            
-            # Check for checkpoint directories
-            checkpoints_dir = Path("agi_checkpoints")
-            if not checkpoints_dir.exists():
-                flush_print("[RESTORE] ℹ️ No checkpoint directory found - starting fresh")
-                return False
-            
-            # Find all session directories excluding the current one
-            current_session_id = getattr(self.database_manager, 'session_id', None)
-            session_dirs = [d for d in checkpoints_dir.iterdir() 
-                          if d.is_dir() and d.name.startswith('agi_session_') 
-                          and d.name != current_session_id]
-            
-            if not session_dirs:
-                flush_print("[RESTORE] ℹ️ No previous sessions found - starting fresh")
-                return False
-            
-            # Find sessions that actually have saved models
-            sessions_with_models = []
-            for session_dir in session_dirs:
-                models_dir = session_dir / "models"
-                if models_dir.exists() and any(models_dir.glob("*.pth")):
-                    sessions_with_models.append(session_dir)
-            
-            if not sessions_with_models:
-                flush_print("[RESTORE] ℹ️ No previous sessions with saved models found - starting fresh")
-                return False
-            
-            # Find the latest session that has models (highest timestamp)
-            latest_session = max(sessions_with_models, key=lambda x: int(x.name.split('_')[-1]))
-            
-            # Check if the latest session has saved models
-            models_dir = latest_session / "models"
-            metadata_dir = latest_session / "metadata"
-            
-            has_models = models_dir.exists() and any(models_dir.glob("*.pth"))
-            has_metadata = metadata_dir.exists() and any(metadata_dir.glob("*.json"))
-            
-            if has_models or has_metadata:
-                self.latest_session_path = latest_session
-                session_id = latest_session.name
-                
-                # Update database manager to use the restore session
-                if self.database_manager and hasattr(self.database_manager, 'set_restore_session'):
-                    self.database_manager.set_restore_session(session_id)
-                
-                # Count available models
-                model_count = len(list(models_dir.glob("*.pth"))) if has_models else 0
-                metadata_count = len(list(metadata_dir.glob("*.json"))) if has_metadata else 0
-                
-                # Create session data for restoration
-                self.restored_session_data = {
-                    'session_path': str(latest_session),
-                    'session_id': session_id,
-                    'models_found': model_count,
-                    'metadata_found': metadata_count,
-                    'restoration_method': 'file_based'
-                }
-                self.session_restored = True
-                
-                flush_print(f"[RESTORE] ✅ Previous checkpoint found!")
-                flush_print(f"[RESTORE] 📊 Session: {session_id}")
-                flush_print(f"[RESTORE]   • Neural Models: {model_count}")
-                flush_print(f"[RESTORE]   • Metadata Files: {metadata_count}")
-                flush_print(f"[RESTORE] 🎯 Now attempting to restore learning state...")
-                
-                return True
-            else:
-                flush_print(f"[RESTORE] ℹ️ Latest session {latest_session.name} has no saved models - starting fresh")
-                return False
-                
-        except Exception as e:
-            flush_print(f"[RESTORE] ⚠️ Checkpoint check failed: {e}")
-            return False
-    
+        """Temporarily disabled - always start fresh to test learning fixes"""
+        flush_print("[INIT] 🔄 Starting fresh session (restoration temporarily disabled for testing)")
+        return False
     def apply_session_restoration(self, agi_agent, gpu_processor, world_simulator):
         """Apply restored session data to components with file-based persistence"""
         if not self.session_restored or not self.restored_session_data:
@@ -198,3 +117,68 @@ class SessionManager:
             'session_restored': self.session_restored,
             'restored_data': self.restored_session_data
         }
+    
+    def _migrate_session_data(self, old_session_path, new_session_id):
+        """Migrate data from old session to new session"""
+        try:
+            import shutil
+            from pathlib import Path
+            
+            # Get new session path
+            new_session_path = Path("agi_checkpoints") / new_session_id
+            
+            # Create new session directory structure
+            new_session_path.mkdir(parents=True, exist_ok=True)
+            (new_session_path / "models").mkdir(exist_ok=True)
+            (new_session_path / "metadata").mkdir(exist_ok=True)
+            
+            # Copy models from old to new
+            old_models = old_session_path / "models"
+            new_models = new_session_path / "models"
+            
+            if old_models.exists():
+                for model_file in old_models.glob("*.pth"):
+                    shutil.copy2(model_file, new_models / model_file.name)
+                    flush_print(f"[MIGRATE] ✅ Copied model: {model_file.name}")
+            
+            # Copy metadata from old to new
+            old_metadata = old_session_path / "metadata"
+            new_metadata = new_session_path / "metadata"
+            
+            if old_metadata.exists():
+                for metadata_file in old_metadata.glob("*.json"):
+                    shutil.copy2(metadata_file, new_metadata / metadata_file.name)
+                    flush_print(f"[MIGRATE] ✅ Copied metadata: {metadata_file.name}")
+            
+            # Update database manager to point to new session
+            if hasattr(self.database_manager, 'neural_persistence'):
+                # Update the neural persistence to use new session path
+                self.database_manager.neural_persistence.session_path = new_session_path
+                self.database_manager.neural_persistence.session_id = new_session_id
+                flush_print(f"[MIGRATE] ✅ Updated database manager to new session")
+            
+            return True
+            
+        except Exception as e:
+            flush_print(f"[MIGRATE] ❌ Migration failed: {e}")
+            return False
+    
+    def _cleanup_old_sessions(self, old_session_dirs):
+        """Clean up old session directories"""
+        try:
+            import shutil
+            
+            deleted_count = 0
+            for session_dir in old_session_dirs:
+                try:
+                    shutil.rmtree(session_dir)
+                    deleted_count += 1
+                    flush_print(f"[CLEANUP] 🗑️ Deleted old session: {session_dir.name}")
+                except Exception as e:
+                    flush_print(f"[CLEANUP] ⚠️ Failed to delete {session_dir.name}: {e}")
+            
+            if deleted_count > 0:
+                flush_print(f"[CLEANUP] ✅ Cleaned up {deleted_count} old session directories")
+                
+        except Exception as e:
+            flush_print(f"[CLEANUP] ⚠️ Cleanup failed: {e}")

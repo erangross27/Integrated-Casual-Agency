@@ -13,7 +13,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # Import the modular TRUE AGI system
-from components.core import AGIRunner
+from scripts.components.core import AGIRunner
 
 # Setup Windows encoding (W&B compatible)
 if sys.platform == "win32":

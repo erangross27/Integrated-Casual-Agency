@@ -13,6 +13,7 @@ class CausalReasoning:
     def __init__(self):
         self.causal_models = {}
         self.causal_links = []
+        self.causal_relationships = []  # Add missing attribute
         self.temporal_patterns = []
         
         # Causal reasoning parameters

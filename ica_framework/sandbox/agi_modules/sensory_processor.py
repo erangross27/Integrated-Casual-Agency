@@ -33,6 +33,16 @@ class SensoryProcessor:
                 'events': []
             }
         
+        # Handle empty or None input
+        if not sensory_input:
+            return {
+                'objects': {},
+                'motion_events': [],
+                'collision_events': [],
+                'environmental_changes': [],
+                'events': []
+            }
+        
         processed_data = {
             'objects': {},
             'motion_events': [],
@@ -43,6 +53,8 @@ class SensoryProcessor:
         # Process visual input
         if 'visual' in sensory_input:
             processed_data['objects'] = self._process_visual_input(sensory_input['visual'])
+        elif 'processed_sensors' in sensory_input and 'vision' in sensory_input['processed_sensors']:
+            processed_data['objects'] = self._process_visual_input(sensory_input['processed_sensors']['vision'])
         
         # Process physics data
         if 'raw_physics' in sensory_input and 'objects' in sensory_input['raw_physics']:

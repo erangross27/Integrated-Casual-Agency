@@ -12,7 +12,7 @@ import random
 class AGIMonitor:
     """Monitors AGI learning progress and displays statistics"""
     
-    def __init__(self, world_simulator, agi_agent, gpu_processor, database_manager):
+    def __init__(self, world_simulator, agi_agent, gpu_processor, database_manager=None):
         self.world_simulator = world_simulator
         self.agi_agent = agi_agent
         self.gpu_processor = gpu_processor
@@ -107,13 +107,28 @@ class AGIMonitor:
         # World simulation stats
         sim_stats = world_stats.get('simulation', {})
         
-        # Agent learning progress
-        progress = agent_summary.get('learning_progress', {})
+        # Agent learning progress - fix the path to access nested progress data
+        learning_progress_data = agent_summary.get('learning_progress', {})
+        progress = learning_progress_data.get('progress', {})
         
         concepts_learned = progress.get('concepts_learned', 0)
+        
+        # Get hypothesis data from multiple sources for reliability
         hypotheses_formed = progress.get('hypotheses_formed', 0)
         hypotheses_confirmed = progress.get('hypotheses_confirmed', 0)
+        
+        # Also check hypothesis manager directly for more accurate counts
+        hypothesis_summary = agent_summary.get('hypothesis_summary', {})
+        if hypothesis_summary:
+            # Use hypothesis manager counts if available (more accurate)
+            hypotheses_formed = max(hypotheses_formed, hypothesis_summary.get('active_count', 0))
+            hypotheses_confirmed = max(hypotheses_confirmed, hypothesis_summary.get('confirmed_count', 0))
+        
         causal_relationships = progress.get('causal_relationships_discovered', 0)
+        
+        # Also check for direct causal_relationships in agent_summary (fallback)
+        if causal_relationships == 0:
+            causal_relationships = agent_summary.get('causal_relationships', 0)
         
         # Track learning velocity (concepts per cycle)
         if not hasattr(self, 'prev_concepts'):
@@ -145,13 +160,28 @@ class AGIMonitor:
         velocity_trend = f"(+{self.learning_velocity}/cycle)" if self.learning_velocity > 0 else ""
         print(f"[AGI] 🧠 Concepts: {concepts_learned} {velocity_trend} | Hypotheses: {hypotheses_formed} formed, {hypotheses_confirmed} confirmed | Causal: {causal_relationships}")
         
-        # Memory usage and curiosity
-        memory = agent_summary.get('memory_usage', {})
-        print(f"[AGI] 💾 Memory: ST={memory.get('short_term', 0)}, LT={memory.get('long_term', 0)} | Curiosity: {agent_summary.get('curiosity_level', 0):.2f}")
+        # Memory usage and curiosity - fix the paths to access nested data
+        memory_summary = agent_summary.get('memory_summary', {})
+        
+        # Get memory counts from multiple sources for reliability
+        memory_usage = memory_summary.get('usage', {})
+        short_term = memory_usage.get('short_term', 0)
+        long_term = memory_usage.get('long_term', 0)
+        
+        # Also check direct memory counts if available
+        if short_term == 0 and long_term == 0:
+            short_term = memory_summary.get('short_term', 0)
+            long_term = memory_summary.get('long_term', 0)
+        
+        curiosity_summary = agent_summary.get('curiosity_summary', {})
+        curiosity_level = curiosity_summary.get('average_curiosity_level', 0.0)
+        
+        print(f"[AGI] 💾 Memory: ST={short_term}, LT={long_term} | Curiosity: {curiosity_level:.2f}")
         
         # Knowledge base size with learning efficiency
-        kb_size = agent_summary.get('knowledge_base_size', 0)
-        causal_models = agent_summary.get('causal_models', 0)
+        physics_knowledge = agent_summary.get('physics_knowledge', {})
+        kb_size = len(physics_knowledge.get('concepts', {}))
+        causal_models = len(physics_knowledge.get('laws', {}))
         
         # Calculate learning efficiency (concepts per simulation step)
         total_steps = sim_stats.get('steps', 1)

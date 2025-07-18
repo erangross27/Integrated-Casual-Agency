@@ -96,7 +96,13 @@ class WorldSimulator:
                 
                 # Call learning callback if provided
                 if self.learning_callback:
-                    self.learning_callback(learning_opportunity)
+                    try:
+                        self.learning_callback(learning_opportunity)
+                    except Exception as callback_e:
+                        self.logger.error(f"Error in learning callback: {callback_e}")
+                        self.logger.error(f"Learning opportunity type: {type(learning_opportunity)}")
+                        if isinstance(learning_opportunity, str):
+                            self.logger.error(f"Learning opportunity content: {learning_opportunity[:200]}")
                 
                 self.step_count += 1
                 
@@ -105,10 +111,18 @@ class WorldSimulator:
                 
             except Exception as e:
                 self.logger.error(f"Error in simulation loop: {e}")
+                self.logger.error(f"Exception type: {type(e)}")
+                import traceback
+                self.logger.error(f"Traceback: {traceback.format_exc()}")
                 time.sleep(1.0)  # Longer sleep on error
     
     def _process_learning_opportunity(self, opportunity: Dict[str, Any]):
         """Process a learning opportunity"""
+        
+        # Ensure opportunity is a dictionary
+        if not isinstance(opportunity, dict):
+            self.logger.warning(f"⚠️ Received non-dict opportunity in _process_learning_opportunity: {type(opportunity)}")
+            return
         
         # Extract learning context
         context = opportunity.get('learning_context', {})

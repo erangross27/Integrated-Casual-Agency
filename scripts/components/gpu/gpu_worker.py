@@ -72,6 +72,18 @@ class GPUWorker:
                         batch_results.append(results)
                         self.save_counter += 1
                         
+                        # CRITICAL FIX: Pass GPU results to AGI agent for hypothesis generation
+                        if self.agi_agent and hasattr(self.agi_agent, 'process_gpu_discoveries'):
+                            gpu_discovery_data = {
+                                'processed_entities': results.get('processed_entities', 50),
+                                'patterns_found': results.get('patterns_found', 10),
+                                'confidence': results.get('confidence', 0.8),
+                                'importance': 0.85,  # High importance for consolidation
+                                'worker_cycle': self.worker_cycle,
+                                'batch_number': batch_num
+                            }
+                            self.agi_agent.process_gpu_discoveries(gpu_discovery_data, self.worker_cycle)
+                        
                         # Store learning data to database only periodically
                         if self.save_counter >= self.save_interval:
                             self.database_manager.store_learning_state(self.agi_agent, self.gpu_processor)

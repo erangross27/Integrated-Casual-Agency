@@ -17,7 +17,8 @@ class LearningProgress:
             'hypotheses_formed': 0,
             'hypotheses_confirmed': 0,
             'causal_relationships_discovered': 0,
-            'patterns_recognized': 0
+            'patterns_recognized': 0,
+            'physics_concepts': 0
         }
         
         # Learning metadata
@@ -94,29 +95,24 @@ class LearningProgress:
         """Get current learning progress"""
         return self.progress.copy()
     
-    def get_progress_summary(self) -> Dict[str, Any]:
-        """Get comprehensive progress summary for monitoring"""
-        session_time = time.time() - self.session_start_time
-        return {
-            'progress': self.progress.copy(),
-            'learning_rate': self.get_learning_rate(),
-            'session_time': session_time,
-            'total_events': len(self.learning_events),
-            'last_update': self.last_update_time,
-            'session_start': self.session_start_time
-        }
-    
-    def update_metrics(self, metrics_update: Dict[str, Any]):
-        """Update learning progress metrics"""
-        for key, value in metrics_update.items():
-            if key in self.progress:
-                if isinstance(value, (int, float)):
-                    self.progress[key] += value
-                else:
-                    self.progress[key] = value
+    def update_metrics(self, metrics: Dict[str, Any]):
+        """Update learning metrics from external source"""
+        if not isinstance(metrics, dict):
+            return
         
-        # Record the update
-        self.record_learning_event(f"Metrics updated: {list(metrics_update.keys())}")
+        for key, value in metrics.items():
+            if key in self.progress and isinstance(value, (int, float)):
+                # For most metrics, we want to set the absolute value from external modules
+                # But preserve accumulated values for core learning metrics
+                if key in ['concepts_learned', 'hypotheses_formed', 'hypotheses_confirmed', 
+                          'causal_relationships_discovered', 'patterns_recognized', 'physics_concepts']:
+                    # For core learning metrics, take the maximum to avoid overwriting accumulated progress
+                    self.progress[key] = max(self.progress[key], int(value))
+                else:
+                    # For other metrics, set absolute value
+                    self.progress[key] = int(value)
+                self._record_event(key, int(value))
+        
         self.last_update_time = time.time()
     
     def get_learning_rate(self) -> float:
@@ -125,6 +121,17 @@ class LearningProgress:
         total_learning = sum(self.progress.values())
         return total_learning / max(session_time, 1.0)
     
+    def get_progress_summary(self) -> Dict[str, Any]:
+        """Get comprehensive progress summary"""
+        session_time = time.time() - self.session_start_time
+        return {
+            'progress': self.progress.copy(),
+            'session_duration': session_time,
+            'learning_rate': self.get_learning_rate(),
+            'total_events': len(self.learning_events),
+            'last_update': self.last_update_time
+        }
+    
     def reset_progress(self):
         """Reset all learning progress"""
         self.progress = {
@@ -132,7 +139,8 @@ class LearningProgress:
             'hypotheses_formed': 0,
             'hypotheses_confirmed': 0,
             'causal_relationships_discovered': 0,
-            'patterns_recognized': 0
+            'patterns_recognized': 0,
+            'physics_concepts': 0
         }
         self.session_start_time = time.time()
         self.last_update_time = time.time()

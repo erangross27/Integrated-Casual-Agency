@@ -20,12 +20,24 @@ class ExplorationController:
         
         # Exploration parameters
         self.exploration_radius = 5.0
+        self.exploration_rate = 0.1  # Base exploration rate
         self.novelty_threshold = 0.3
         self.goal_achievement_radius = 1.0
         self.max_goals = 5
         
         # Initialize exploration strategies
         self._initialize_strategies()
+    
+    def set_exploration_rate(self, rate: float):
+        """Set the exploration rate"""
+        self.exploration_rate = max(0.0, min(1.0, rate))
+    
+    def set_exploration_rate(self, rate: float):
+        """Set the exploration rate for the controller"""
+        if 0.0 <= rate <= 1.0:
+            self.exploration_rate = rate
+        else:
+            self.exploration_rate = max(0.0, min(1.0, rate))  # Clamp to valid range
     
     def _initialize_strategies(self):
         """Initialize different exploration strategies"""
