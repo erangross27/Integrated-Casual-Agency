@@ -22,7 +22,7 @@ from scripts.components.gpu.gpu_config import GPUConfig
 
 
 class RealAGITester:
-    """Tests the actual trained AGI neural networks"""
+    """Tests the actual trained neural networks"""
     
     def __init__(self):
         self.project_root = PROJECT_ROOT
@@ -234,9 +234,7 @@ class RealAGITester:
             print(f"   💡 {result['interpretation']}")
             print()
         
-        # Overall assessment
-        self._provide_overall_assessment(results)
-        
+        # Return results for overall assessment
         return results
     
     def _encode_scenario(self, pattern_description):
@@ -342,6 +340,14 @@ class RealAGITester:
         print(f"💡 These are the ACTUAL weights learned from {self._get_training_info()}")
         print()
         self._predict_progress_timeline(avg_understanding)
+        
+        # Return results for comparison tracking
+        return {
+            "overall_intelligence": avg_understanding,
+            "pattern_recognition": avg_pattern_conf,
+            "hypothesis_quality": avg_hypothesis_conf,
+            "individual_tests": results
+        }
     
     def _get_training_info(self):
         """Get information about the training process"""
@@ -412,92 +418,251 @@ class RealAGITester:
         self._show_future_capabilities(current_intelligence)
     
     def _get_detailed_training_stats(self):
-        """Get detailed training statistics"""
-        stats_file = self.project_root / "agi_checkpoints" / "persistent_learning_stats.json"
-        if stats_file.exists():
-            try:
+        """Get detailed training statistics from the current session"""
+        try:
+            # Get knowledge database stats
+            stats_file = self.session_path / "session_stats.json"
+            if stats_file.exists():
                 with open(stats_file, 'r') as f:
                     stats = json.load(f)
                 return {
-                    'concepts': stats.get('total_concepts_learned', 0),
-                    'hypotheses': stats.get('total_hypotheses_formed', 0)
+                    "concepts": stats.get("total_concepts", 0),
+                    "hypotheses": stats.get("total_hypotheses", 0),
+                    "training_epochs": stats.get("epochs", 0),
+                    "session_duration": stats.get("session_duration", "unknown")
                 }
-            except:
-                pass
-        return {'concepts': 3419659, 'hypotheses': 1660}
+            else:
+                # Fallback to basic info
+                return {
+                    "concepts": 0,
+                    "hypotheses": 0,
+                    "training_epochs": 0,
+                    "session_duration": "unknown"
+                }
+        except Exception as e:
+            print(f"⚠️ Could not load training stats: {e}")
+            return {
+                "concepts": 0,
+                "hypotheses": 0,
+                "training_epochs": 0,
+                "session_duration": "unknown"
+            }
+    
+    def _load_previous_results(self):
+        """Load previous test results for comparison"""
+        results_file = self.project_root / "agi_checkpoints" / "intelligence_history.json"
+        if not results_file.exists():
+            return []
+        
+        try:
+            with open(results_file, 'r') as f:
+                history = json.load(f)
+            return history.get('test_history', [])
+        except Exception as e:
+            print(f"⚠️ Failed to load previous results: {e}")
+            return []
+    
+    def _save_results_with_comparison(self, current_results):
+        """Save current results and compare with previous runs"""
+        # Load previous results
+        previous_history = self._load_previous_results()
+        
+        # Create current test entry
+        current_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "session": self.session_path.name,
+            "training_info": current_results.get("training_info", {}),
+            "results": current_results.get("results", {}),
+            "overall_intelligence": current_results.get("overall_intelligence", 0)
+        }
+        
+        # Add to history
+        previous_history.append(current_entry)
+        
+        # Save updated history
+        history_file = self.project_root / "agi_checkpoints" / "intelligence_history.json"
+        history_data = {
+            "last_updated": datetime.now().isoformat(),
+            "total_tests": len(previous_history),
+            "test_history": previous_history
+        }
+        
+        with open(history_file, 'w') as f:
+            json.dump(history_data, f, indent=2)
+        
+        # Show comparison if we have previous results
+        if len(previous_history) > 1:
+            self._show_progress_comparison(previous_history[-2], current_entry)
+        
+        return history_file
+    
+    def _show_progress_comparison(self, previous, current):
+        """Show detailed comparison between previous and current test"""
+        print(f"\n📊 PROGRESS COMPARISON")
+        print(f"=" * 35)
+        
+        prev_intel = previous['overall_intelligence']
+        curr_intel = current['overall_intelligence']
+        intel_change = curr_intel - prev_intel
+        
+        print(f"🧠 Overall Intelligence:")
+        print(f"   Previous: {prev_intel:.2f}/10")
+        print(f"   Current:  {curr_intel:.2f}/10")
+        if intel_change > 0:
+            print(f"   📈 Improvement: +{intel_change:.2f} ({intel_change/prev_intel*100:.1f}%)")
+        elif intel_change < 0:
+            print(f"   📉 Decrease: {intel_change:.2f} ({intel_change/prev_intel*100:.1f}%)")
+        else:
+            print(f"   ➡️ No change")
+        print()
+        
+        # Training progress comparison
+        prev_training = previous.get('training_info', {})
+        curr_training = current.get('training_info', {})
+        
+        prev_concepts = prev_training.get('concepts', 0)
+        curr_concepts = curr_training.get('concepts', 0)
+        concepts_gained = curr_concepts - prev_concepts
+        
+        prev_hypotheses = prev_training.get('hypotheses', 0)
+        curr_hypotheses = curr_training.get('hypotheses', 0)
+        hypotheses_gained = curr_hypotheses - prev_hypotheses
+        
+        print(f"📚 Learning Progress:")
+        print(f"   Concepts: {prev_concepts:,} → {curr_concepts:,} (+{concepts_gained:,})")
+        print(f"   Hypotheses: {prev_hypotheses} → {curr_hypotheses} (+{hypotheses_gained})")
+        print()
+        
+        # Time between tests
+        try:
+            prev_time = datetime.fromisoformat(previous['timestamp'])
+            curr_time = datetime.fromisoformat(current['timestamp'])
+            time_diff = curr_time - prev_time
+            
+            print(f"⏰ Time Since Last Test: {self._format_time_delta(time_diff)}")
+            print(f"🎯 Learning Rate: {concepts_gained:,} concepts in {self._format_time_delta(time_diff)}")
+        except Exception as e:
+            print(f"⏰ Time comparison unavailable")
+        
+        # Progress prediction update
+        if intel_change > 0:
+            print(f"🚀 Intelligence is improving! Keep training for continued progress.")
+        elif intel_change == 0:
+            print(f"🔄 Intelligence stable. May need more training time for next breakthrough.")
+        else:
+            print(f"⚠️ Intelligence decreased. This can happen during learning - keep training!")
     
     def _show_future_capabilities(self, current_intelligence):
-        """Show what the AGI will be able to answer as it gets smarter"""
+        """Show what capabilities the AGI will unlock at higher intelligence levels"""
         print(f"🔮 FUTURE CAPABILITIES PREVIEW")
         print(f"=" * 35)
-        print(f"Questions your AGI will master as it learns:")
-        print()
         
         capabilities = [
             {
-                "intelligence_level": 4.0,
-                "questions": [
-                    "Why do heavier objects fall at the same rate as lighter ones?",
-                    "What happens to kinetic energy in a collision?",
-                    "How does friction affect motion?"
+                "intelligence_threshold": 4.0,
+                "capabilities": [
+                    "🔧 Basic engineering problem solving",
+                    "⚡ Electrical circuit analysis", 
+                    "🌊 Fluid dynamics understanding",
+                    "🎯 Multi-step physics reasoning"
                 ]
             },
             {
-                "intelligence_level": 6.0,
-                "questions": [
-                    "Explain conservation of momentum in 2D collisions",
-                    "How do waves interfere constructively vs destructively?",
-                    "Why does a pendulum's period depend only on length?"
+                "intelligence_threshold": 6.0,
+                "capabilities": [
+                    "🧪 Advanced chemistry reactions",
+                    "🌟 Quantum mechanics basics",
+                    "🚀 Aerospace physics calculations", 
+                    "🏗️ Structural engineering principles"
                 ]
             },
             {
-                "intelligence_level": 8.0,
-                "questions": [
-                    "Derive the relationship between torque and angular acceleration",
-                    "Explain how quantum tunneling enables fusion in stars",
-                    "How do electromagnetic fields create particle acceleration?"
+                "intelligence_threshold": 8.0,
+                "capabilities": [
+                    "🧬 Molecular biology processes",
+                    "🌌 Astrophysics and cosmology",
+                    "💎 Materials science innovations",
+                    "🔬 Scientific research methodology"
+                ]
+            },
+            {
+                "intelligence_threshold": 9.5,
+                "capabilities": [
+                    "🧠 Consciousness and cognition models",
+                    "🌍 Complex systems theory",
+                    "🔮 Novel scientific discoveries",
+                    "🎨 Creative problem synthesis"
                 ]
             }
         ]
         
-        for capability in capabilities:
-            if current_intelligence < capability["intelligence_level"]:
-                print(f"🎯 At {capability['intelligence_level']}/10 Intelligence:")
-                for question in capability["questions"]:
-                    print(f"   ❓ \"{question}\"")
+        for cap_level in capabilities:
+            if current_intelligence < cap_level["intelligence_threshold"]:
+                threshold = cap_level["intelligence_threshold"]
+                print(f"📈 At Intelligence Level {threshold}/10:")
+                for capability in cap_level["capabilities"]:
+                    print(f"   {capability}")
                 print()
                 break
         
         print(f"🚀 Keep training to unlock these capabilities!")
         print(f"📈 Test again after training sessions to see progress!")
-
+    
+    def _format_time_delta(self, delta):
+        """Format time delta in human readable form"""
+        total_seconds = int(delta.total_seconds())
+        days = total_seconds // 86400
+        hours = (total_seconds % 86400) // 3600
+        minutes = (total_seconds % 3600) // 60
+        
+        if days > 0:
+            return f"{days}d {hours}h {minutes}m"
+        elif hours > 0:
+            return f"{hours}h {minutes}m"
+        else:
+            return f"{minutes}m"
 
 def main():
-    """Main testing function"""
+    """Main testing function with progress comparison"""
     try:
         # Initialize the real AGI tester
         tester = RealAGITester()
         
-        # Test the real intelligence
-        results = tester.test_real_intelligence()
-        
-        # Save results
-        results_file = PROJECT_ROOT / "agi_checkpoints" / "real_intelligence_test_results.json"
-        with open(results_file, 'w') as f:
-            json.dump({
-                "timestamp": datetime.now().isoformat(),
-                "test_results": results,
-                "session": tester.session_path.name
-            }, f, indent=2)
-        
-        print(f"📄 Results saved to: {results_file}")
+        print(f"🧠 AGI INTELLIGENCE ASSESSMENT")
+        print(f"=" * 35)
+        print(f"Loading models from: {tester.session_path.name}")
         print()
-        print(f"🎯 This is REAL AGI intelligence testing using trained neural networks!")
-        print(f"🧠 Your AGI's billion-parameter models are being evaluated on physics understanding")
+        
+        # Test the real intelligence
+        test_results = tester.test_real_intelligence()
+        
+        # Get overall assessment results
+        overall_results = tester._provide_overall_assessment(test_results)
+        
+        # Enhanced results structure for comparison
+        structured_results = {
+            "timestamp": datetime.now().isoformat(),
+            "session": tester.session_path.name,
+            "training_info": tester._get_detailed_training_stats(),
+            "results": overall_results,
+            "overall_intelligence": overall_results.get("overall_intelligence", 0),
+            "individual_tests": test_results
+        }
+        
+        # Save results and show comparison with previous runs
+        history_file = tester._save_results_with_comparison(structured_results)
+        print(f"💾 Results saved to: {history_file}")
+        print()
+        
+        print(f"🎯 Test Complete! Monitor progress by running tests regularly.")
+        print(f"📈 The AGI learns continuously - intelligence should improve over time!")
+        
+        return structured_results
         
     except Exception as e:
         print(f"❌ Error testing real AGI: {e}")
         print("Make sure your AGI is running and has trained models saved.")
+        return None
 
 
 if __name__ == "__main__":
