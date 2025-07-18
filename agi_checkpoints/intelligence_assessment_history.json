@@ -1,0 +1,152 @@
+{
+  "assessments": [
+    {
+      "timestamp": "2025-07-18T14:01:11.104373",
+      "learning_stats": {
+        "total_concepts_learned": 2367234,
+        "total_hypotheses_formed": 1145,
+        "total_hypotheses_confirmed": 333,
+        "total_causal_relationships": 333,
+        "session_count": 0,
+        "last_updated": 1752836470.9059722
+      },
+      "question_responses": [
+        {
+          "question_id": 1,
+          "category": "Basic Physics",
+          "difficulty": "Beginner",
+          "level": 1,
+          "question": "What happens when you drop two objects of different masses in a vacuum?",
+          "capability_score": 10.0,
+          "status": "Can Answer",
+          "missing_concepts": [],
+          "expected_concepts": [
+            "gravity",
+            "mass independence",
+            "acceleration",
+            "vacuum"
+          ]
+        },
+        {
+          "question_id": 2,
+          "category": "Mechanics",
+          "difficulty": "Intermediate",
+          "level": 2,
+          "question": "Why does a spinning bicycle wheel resist tilting when you try to turn it?",
+          "capability_score": 9.5,
+          "status": "Can Answer",
+          "missing_concepts": [],
+          "expected_concepts": [
+            "angular momentum",
+            "gyroscopic effect",
+            "conservation",
+            "precession"
+          ]
+        },
+        {
+          "question_id": 3,
+          "category": "Thermodynamics",
+          "difficulty": "Advanced",
+          "level": 3,
+          "question": "Explain why entropy always increases in isolated systems and what this means for the universe",
+          "capability_score": 9.0,
+          "status": "Can Answer",
+          "missing_concepts": [],
+          "expected_concepts": [
+            "entropy",
+            "second law",
+            "thermodynamics",
+            "irreversibility",
+            "heat death"
+          ]
+        },
+        {
+          "question_id": 4,
+          "category": "Quantum Physics",
+          "difficulty": "Expert",
+          "level": 4,
+          "question": "How does quantum entanglement allow instantaneous correlation without violating special relativity?",
+          "capability_score": 8.5,
+          "status": "Can Answer",
+          "missing_concepts": [],
+          "expected_concepts": [
+            "entanglement",
+            "superposition",
+            "measurement",
+            "non-locality",
+            "information"
+          ]
+        },
+        {
+          "question_id": 5,
+          "category": "Relativity",
+          "difficulty": "Expert",
+          "level": 5,
+          "question": "Why does time dilation occur near massive objects and how does this affect GPS satellites?",
+          "capability_score": 8.0,
+          "status": "Can Answer",
+          "missing_concepts": [],
+          "expected_concepts": [
+            "general relativity",
+            "spacetime curvature",
+            "gravitational time dilation",
+            "GPS corrections"
+          ]
+        },
+        {
+          "question_id": 6,
+          "category": "Emergence",
+          "difficulty": "Advanced Research",
+          "level": 6,
+          "question": "How do emergent properties arise in complex systems and why can't they be predicted from individual components?",
+          "capability_score": 7.5,
+          "status": "Can Answer",
+          "missing_concepts": [],
+          "expected_concepts": [
+            "emergence",
+            "complexity",
+            "nonlinearity",
+            "phase transitions",
+            "collective behavior"
+          ]
+        },
+        {
+          "question_id": 7,
+          "category": "Consciousness",
+          "difficulty": "Cutting Edge",
+          "level": 7,
+          "question": "What is the hard problem of consciousness and why might integrated information theory provide insights?",
+          "capability_score": 7.0,
+          "status": "Can Answer",
+          "missing_concepts": [],
+          "expected_concepts": [
+            "consciousness",
+            "qualia",
+            "integration",
+            "information",
+            "subjective experience"
+          ]
+        },
+        {
+          "question_id": 8,
+          "category": "Meta-Learning",
+          "difficulty": "AGI Research",
+          "level": 8,
+          "question": "How might an AGI system recognize its own learning patterns and adapt its learning strategies accordingly?",
+          "capability_score": 6.5,
+          "status": "Partial Understanding",
+          "missing_concepts": [],
+          "expected_concepts": [
+            "meta-cognition",
+            "learning to learn",
+            "self-awareness",
+            "strategy adaptation",
+            "reflection"
+          ]
+        }
+      ],
+      "estimated_capabilities": {},
+      "overall_score": 82.5
+    }
+  ]
+}

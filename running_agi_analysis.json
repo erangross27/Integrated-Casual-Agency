@@ -1,0 +1,23 @@
+{
+  "persistent_stats": {
+    "total_concepts_learned": 2066681,
+    "total_hypotheses_formed": 1010,
+    "total_hypotheses_confirmed": 264,
+    "total_causal_relationships": 264,
+    "session_count": 0,
+    "last_updated": 1752836217.1529565
+  },
+  "recent_sessions": [
+    {
+      "name": "agi_session_1752835133",
+      "created": "2025-07-18T13:38:53.544009",
+      "files_count": 2,
+      "time_ago_seconds": 1083.859168
+    }
+  ],
+  "analysis_metadata": {
+    "analysis_time": "2025-07-18T13:56:57.408921",
+    "analyzer_version": "standalone_v1.0",
+    "project_root": "c:\\Users\\erang\\ICA"
+  }
+}
