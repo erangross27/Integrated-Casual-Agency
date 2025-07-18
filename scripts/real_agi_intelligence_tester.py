@@ -5,6 +5,12 @@ Tests the actual trained neural networks of your AGI system
 Loads the real PyTorch models and queries them with physics questions
 """
 
+import os
+# Disable W&B logging before any imports
+os.environ['WANDB_MODE'] = 'disabled'
+os.environ['WANDB_SILENT'] = 'true'
+os.environ['WANDB_DISABLED'] = 'true'
+
 import sys
 import json
 import torch
@@ -112,7 +118,7 @@ class RealAGITester:
                 with open(hypothesis_info_file, 'r') as f:
                     hypothesis_info = json.load(f)
                 
-                print(f"\\n🧪 Loading Hypothesis Generator:")
+                print(f"\n🧪 Loading Hypothesis Generator:")
                 print(f"   Parameters: {hypothesis_info['parameter_count']:,}")
                 print(f"   Size: {hypothesis_info['file_size_mb']:.1f} MB")
                 print(f"   Saved: {hypothesis_info['saved_at']}")

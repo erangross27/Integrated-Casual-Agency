@@ -1,6 +1,6 @@
 {
-  "last_updated": "2025-07-18T15:15:40.641899",
-  "total_tests": 1,
+  "last_updated": "2025-07-18T16:22:42.223297",
+  "total_tests": 3,
   "test_history": [
     {
       "timestamp": "2025-07-18T15:15:40.641881",
@@ -75,6 +75,154 @@
         ]
       },
       "overall_intelligence": 2.922843043221898
+    },
+    {
+      "timestamp": "2025-07-18T16:17:25.092959",
+      "session": "agi_session_1752835133",
+      "training_info": {
+        "concepts": 0,
+        "hypotheses": 0,
+        "training_epochs": 0,
+        "session_duration": "unknown"
+      },
+      "results": {
+        "overall_intelligence": 2.505367564981438,
+        "pattern_recognition": 0.0010677773971110582,
+        "hypothesis_quality": 0.25000860339876496,
+        "individual_tests": [
+          {
+            "test": "Basic Motion",
+            "understanding_level": 1.6723285700815418,
+            "pattern_confidence": 0.0011323806829750538,
+            "hypothesis_confidence": 0.0,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Gravity Test",
+            "understanding_level": 1.6715348026870438,
+            "pattern_confidence": 0.0009736272040754557,
+            "hypothesis_confidence": 0.0,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Simple Collision",
+            "understanding_level": 5.005701227346435,
+            "pattern_confidence": 0.0011402454692870378,
+            "hypothesis_confidence": 1.0,
+            "interpretation": "Partial understanding - AGI identifies some relationships"
+          },
+          {
+            "test": "Pendulum Physics",
+            "understanding_level": 1.6723200552708781,
+            "pattern_confidence": 0.0010849660029634833,
+            "hypothesis_confidence": 6.856757681816816e-05,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Conservation of Energy",
+            "understanding_level": 1.6716041600254052,
+            "pattern_confidence": 0.000987498671747744,
+            "hypothesis_confidence": 0.0,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Simple Force",
+            "understanding_level": 5.005661466857418,
+            "pattern_confidence": 0.0011322933714836836,
+            "hypothesis_confidence": 1.0,
+            "interpretation": "Partial understanding - AGI identifies some relationships"
+          },
+          {
+            "test": "Thermodynamics",
+            "understanding_level": 1.6719120539341739,
+            "pattern_confidence": 0.0010489043779671192,
+            "hypothesis_confidence": 2.5961330152313167e-07,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Wave Interference",
+            "understanding_level": 1.671878183648611,
+            "pattern_confidence": 0.0010423033963888884,
+            "hypothesis_confidence": 0.0,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          }
+        ]
+      },
+      "overall_intelligence": 2.505367564981438
+    },
+    {
+      "timestamp": "2025-07-18T16:22:42.223284",
+      "session": "agi_session_1752835133",
+      "training_info": {
+        "concepts": 0,
+        "hypotheses": 0,
+        "training_epochs": 0,
+        "session_duration": "unknown"
+      },
+      "results": {
+        "overall_intelligence": 2.5064369449683,
+        "pattern_recognition": 0.001287388993659988,
+        "hypothesis_quality": 0.25,
+        "individual_tests": [
+          {
+            "test": "Basic Motion",
+            "understanding_level": 1.6742820057940357,
+            "pattern_confidence": 0.001523067825473845,
+            "hypothesis_confidence": 0.0,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Gravity Test",
+            "understanding_level": 1.672046545233267,
+            "pattern_confidence": 0.0010759757133200765,
+            "hypothesis_confidence": 0.0,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Simple Collision",
+            "understanding_level": 5.007424636860378,
+            "pattern_confidence": 0.0014849273720756173,
+            "hypothesis_confidence": 1.0,
+            "interpretation": "Partial understanding - AGI identifies some relationships"
+          },
+          {
+            "test": "Pendulum Physics",
+            "understanding_level": 1.6726225793051221,
+            "pattern_confidence": 0.0011911825276911259,
+            "hypothesis_confidence": 0.0,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Conservation of Energy",
+            "understanding_level": 1.6735076134015494,
+            "pattern_confidence": 0.0013681893469765782,
+            "hypothesis_confidence": 4.80918587416943e-22,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Simple Force",
+            "understanding_level": 1.6753775048224875,
+            "pattern_confidence": 0.0017421676311641932,
+            "hypothesis_confidence": 0.0,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          },
+          {
+            "test": "Thermodynamics",
+            "understanding_level": 5.005021286779083,
+            "pattern_confidence": 0.0010042573558166623,
+            "hypothesis_confidence": 1.0,
+            "interpretation": "Partial understanding - AGI identifies some relationships"
+          },
+          {
+            "test": "Wave Interference",
+            "understanding_level": 1.6712133875504755,
+            "pattern_confidence": 0.000909344176761806,
+            "hypothesis_confidence": 0.0,
+            "interpretation": "Limited understanding - AGI needs more training on this concept"
+          }
+        ]
+      },
+      "overall_intelligence": 2.5064369449683
     }
   ]
 }
