@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Simple TRUE AGI Continuous Learning Runner
-Uses modular components for clean, maintainable code
+TRUE AGI Continuous Learning Runner
+Explores physical world simulation through curiosity-driven experimentation
 """
 
 import sys
@@ -12,7 +12,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-# Import the modular TRUE AGI system
+# Import the TRUE AGI system
 from scripts.components.core import AGIRunner
 
 # Setup Windows encoding (W&B compatible)
@@ -41,8 +41,8 @@ if sys.platform == "win32":
 
 
 def main():
-    """Main entry point - clean and simple"""
-    print("🧠 TRUE AGI Continuous Learning System - Modular Edition")
+    """Main entry point - TRUE AGI through curiosity and experimentation"""
+    print("🧠 TRUE AGI: Curiosity-Driven Physical World Explorer")
     print("=" * 60)
     
     # Create and run the TRUE AGI system
