@@ -1,4 +1,4 @@
-# ICA Framework - Modular TRUE AGI System 🧠⚡
+# ICA Framework - TRUE AGI System 🧠⚡
 
 <div align="center">
 
@@ -8,9 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status: Active](https://img.shields.io/badge/Status-Active%20Learning-brightgreen.svg)](https://github.com/erangross27/Integrated-Casual-Agency)
 
-**Modular GPU-Accelerated Artificial General Intelligence System**
+**Production-Ready GPU-Accelerated Artificial General Intelligence System**
 
-*"Industry-standard ML experiment tracking with enterprise-grade neural network persistence."*
+*"File-based neural persistence with W&B analytics for experiment tracking."*
 
 </div>
 
@@ -37,19 +37,18 @@
 
 ## 🌟 Overview
 
-The ICA (Integrated Casual Agency) Framework is a **production-ready modular TRUE AGI system** that creates genuine artificial general intelligence through autonomous environmental learning with dynamic GPU acceleration. Our system features a clean, component-based architecture with **all critical production issues resolved** and guaranteed neural network weight persistence.
+The ICA (Integrated Casual Agency) Framework is a **production-ready TRUE AGI system** that creates genuine artificial general intelligence through autonomous environmental learning with dynamic GPU acceleration. Our system features clean architecture with **all critical production issues resolved** and guaranteed neural network weight persistence.
 
 ### ✨ Key Features
 
-- 🧠 **Modular Architecture**: Clean separation of concerns with organized components
-- 🛡️ **Neural Network Protection**: Guaranteed weight/bias persistence on manual termination
+- 🧠 **Neural Network Protection**: Guaranteed weight/bias persistence on manual termination
 - ⚡ **Dynamic GPU Scaling**: Automatic hardware detection and optimization
 - 🔄 **Continuous Learning**: Runs indefinitely with persistent progress
-- � **W&B Analytics**: Industry-standard experiment tracking and visualization
+- 📊 **W&B Analytics**: Real-time experiment tracking and visualization
 - 🐝 **Weave Function Tracing**: Complete function input/output monitoring
 - 🎯 **Environmental Learning**: Autonomous learning from surroundings
--  **Self-Recovery**: Graceful error handling and system resilience
-- 🚀 **Optimal Performance**: ~48% GPU utilization at 1,400+ patterns/sec
+- 🛡️ **Self-Recovery**: Graceful error handling and system resilience
+- 🚀 **Optimal Performance**: ~52% GPU utilization at 1,500+ patterns/sec
 
 ### 🏗️ Modern ML-First Architecture ⭐ **UPDATED**
 
@@ -240,7 +239,7 @@ wandb:  View project at https://wandb.ai/erangross/true-agi-system
 ✅ [W&B] Analytics initialized - Project: TRUE-AGI-System
 🌐 [W&B] Dashboard: https://wandb.ai/your-username/TRUE-AGI-System
 ✅ [Modern] W&B Analytics initialized
-🧠 [Modern] Database manager initialized
+🧠 [Modern] Neural storage initialized
 🗂️ [Modern] Neural networks: File-based storage (PyTorch + HDF5)
 📊 [Modern] Analytics: W&B Dashboard
 [INIT] ✅ All components initialized successfully
@@ -322,8 +321,8 @@ The system implements **multiple layers of protection** to ensure neural network
 |-----------|----------|---------|-------------|
 | **🎛️ Core System** | `scripts/components/core/` | System coordination | Modular components, neural weight protection |
 | **⚡ GPU Processor** | `scripts/components/gpu/` | GPU acceleration | Dynamic scaling, memory management, pattern processing |
-| **💾 Database Manager** | `scripts/components/database/` | Neo4j storage | Progress tracking, neural weight persistence |
-| **🧠 AGI Storage** | `scripts/components/database/agi_storage/` | Learning storage | Modular concept, hypothesis, causal model storage |
+| **💾 Neural Storage** | `scripts/components/neural/` | File-based storage | Neural weight persistence, auto-saves |
+| **🧠 Neural Storage** | `ica_framework/neural/` | File-based storage | Concept, hypothesis, causal model storage |
 | **👁️ AGI Monitor** | `scripts/components/monitoring/` | System monitoring | Performance metrics, learning progress |
 | **🛠️ System Utils** | `scripts/components/system/` | Utilities | Console handling, signal processing, error management |
 
@@ -338,7 +337,7 @@ The heart of the modular architecture - these components replaced the monolithic
 
 #### � Component Initializer (`core/component_initializer.py`)
 - **Purpose**: Handles initialization of all system components in dependency order
-- **Features**: Hardware detection, database connection, simulator setup
+- **Features**: Hardware detection, neural storage setup, simulator setup
 - **Benefits**: Robust startup sequence, proper error handling
 
 #### 💾 Session Manager (`core/session_manager.py`)
@@ -361,7 +360,7 @@ The heart of the modular architecture - these components replaced the monolithic
 - **Features**: **Emergency neural weight protection**, component cleanup
 - **Benefits**: No data loss on manual termination, clean resource management
 
-### 🧠 AGI Storage Components (`database/agi_storage/`)
+### 🧠 Neural Storage Components (`neural/`)
 
 Specialized storage components for different types of learning data:
 
@@ -402,7 +401,7 @@ The system is built with a clean, modular architecture that separates concerns a
 |-----------|----------|---------|--------------|
 | **🎯 Main Runner** | `scripts/components/main_runner.py` | System coordinator | Orchestrates all components, manages lifecycle |
 | **⚡ GPU Processor** | `scripts/components/gpu/` | GPU acceleration | Dynamic scaling, memory management, pattern processing |
-| **💾 Database Manager** | `scripts/components/database/` | Neo4j storage | Progress tracking, learning phase detection |
+| **💾 Neural Storage** | `scripts/components/neural/` | File-based storage | Progress tracking, learning phase detection |
 | **👁️ AGI Monitor** | `scripts/components/monitoring/` | System monitoring | Performance metrics, learning progress |
 | **🛠️ System Utils** | `scripts/components/system/` | Utilities | Console handling, error management |
 
@@ -434,16 +433,7 @@ Handles all GPU-related functionality with dynamic scaling:
 - **Queue Management**: Manages pattern processing queues
 - **Performance Optimization**: Maximizes throughput and efficiency
 
-#### 💾 Database Components (`database/`)
-Manages all data persistence and learning progress:
-
-**Database Manager (`database_manager.py`)**:
-- **Neo4j Integration**: Connects to and manages Neo4j database
-- **Progress Tracking**: Monitors learning phases and milestones
-- **Learning Detection**: Identifies when significant learning occurs
-- **Knowledge Storage**: Stores concepts, hypotheses, and causal models
-
-#### 👁️ Monitoring Components (`monitoring/`)
+#### ️ Monitoring Components (`monitoring/`)
 Provides comprehensive system monitoring:
 
 **AGI Monitor (`agi_monitor.py`)**:
@@ -577,50 +567,37 @@ The system automatically injects learning scenarios to accelerate development:
 
 ---
 
-## 💾 Neo4j Knowledge Graph Database
+## � W&B Analytics Dashboard
 
-### Database Architecture
+### Real-time Learning Analytics
 
-The Neo4j brain stores all learning in a structured knowledge graph:
+All learning progress is tracked in real-time using Weights & Biases:
 
-#### 🧠 Knowledge Storage Structure
-- **Concepts**: Fundamental knowledge entities (objects, properties, relationships)
-- **Hypotheses**: Theories being tested or confirmed
-- **Causal Models**: Discovered cause-and-effect relationships
-- **Patterns**: Recurring behaviors and structures
-- **Learning Progress**: System state and milestone tracking
+**Dashboard URL**: `https://wandb.ai/your-username/TRUE-AGI-System`
 
-#### 🔗 Relationship Types
-- **CAUSES**: Direct causal relationships between concepts
-- **INFLUENCES**: Indirect effects and secondary impacts
-- **RELATED_TO**: General associations and correlations
-- **PART_OF**: Hierarchical relationships and component structures
+#### 📈 Live Metrics Tracked
+- **🧠 Neural Network Parameters**: 1B+ total parameters (821M + 194M)
+- **⚡ GPU Performance**: Real-time utilization and memory usage
+- **🎯 Learning Progress**: Concepts, hypotheses, and causal discoveries
+- **� Model Saves**: Automatic neural network checkpoints
+- **🔍 Function Traces**: Complete execution visibility with Weave
+- **📊 Performance**: Pattern processing rates and efficiency
 
-### Real-time Progress Tracking
-
-The system provides comprehensive progress tracking with learning phase indicators:
-
+#### 🏆 Production Performance Status
 ```
-[AGI] 📊 TRUE AGI Learning Progress (Cycle 30) - 🔴 Basic learning phase
-[AGI] 🌍 Simulation: 879 steps, 9.9 steps/sec
-[AGI] 🧠 Concepts: 0 | Hypotheses: 0 formed, 0 confirmed | Causal: 0
-[AGI] 💾 Memory: ST=100, LT=0 | Curiosity: 1.00
-[AGI] 📚 Knowledge Base: 4 concepts, 0 causal models
+[AGI] 📊 TRUE AGI Learning Progress (Cycle 50) - � Advanced learning phase        
+[AGI] 🧠 Concepts: 215384 (+29370/cycle) | Hypotheses: 25 formed, 6 confirmed | Causal: 6
+[AGI] 💾 Memory: ST=100, LT=120210 | Curiosity: 0.77
+[GPU] � GPU Stats: 215380 patterns, 215736 hypotheses
+[GPU] ⚡ Throughput: 1503.1 patterns/sec, GPU Util: 100.0%
 ```
 
-### Database Configuration
+### File-based Neural Storage
 
-- **Location**: `config/database/neo4j.json`
-- **Connection**: neo4j://127.0.0.1:7687
-- **Database**: neo4j
-- **Authentication**: Username/password based
-
-### Session Persistence
-
-- **⏱️ Automatic Saves**: Progress saved continuously
-- **🔄 Session Continuity**: Resumes exactly where it left off
-- **🛡️ Graceful Shutdown**: Proper cleanup on system exit
-- **📈 Progress Restoration**: Displays learning state on startup
+- **📁 Storage Format**: PyTorch `.pth` files for optimal performance
+- **💾 Backup System**: HDF5 compression for large models
+- **🔄 Auto-save**: Every 2 minutes during operation
+- **🛡️ Protection**: Emergency saves on manual termination
 
 ---
 
@@ -803,21 +780,21 @@ ICA/
 - Configures neural networks based on available memory
 - Optimizes for maximum performance and stability
 
-**`scripts/components/database/database_manager.py`** - Neo4j integration
-- Manages knowledge graph storage
+**`scripts/components/neural/neural_storage.py`** - File-based neural storage
+- Manages PyTorch .pth file storage
 - Tracks learning progress and phases
 - Provides comprehensive progress indicators
 
 ---
 
-##  Troubleshooting
+## 🛠️ Troubleshooting
 
 ### Common Issues
 
-#### Neo4j Connection Issues
-- ✅ Ensure Neo4j is running on localhost:7687
-- ✅ Check credentials in `config/database/neo4j.json`
-- ✅ System automatically falls back to memory if Neo4j unavailable
+#### W&B Authentication Issues
+- ✅ Run `wandb login` to authenticate with your W&B account
+- ✅ Check internet connection for W&B dashboard sync
+- ✅ System can run offline - W&B will sync when connection restored
 
 #### GPU Performance Issues
 - ✅ System automatically detects and configures GPU
